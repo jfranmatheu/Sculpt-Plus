@@ -1,3 +1,4 @@
+
 import bpy
 sculpt_hotbar_classes = []
 

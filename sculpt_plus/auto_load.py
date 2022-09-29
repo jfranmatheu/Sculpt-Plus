@@ -5,6 +5,7 @@ import pkgutil
 import importlib
 from pathlib import Path
 
+
 __all__ = (
     "init",
     "register",
@@ -38,6 +39,11 @@ if __package__ == 'sculpt_plus':
                 continue
             if hasattr(module, "register"):
                 module.register()
+        
+        from bpy.types import WindowManager as WM
+        from bpy.props import PointerProperty
+        from sculpt_plus.core.data import SCULPTPLUS_PG_wm
+        WM.sculpt_plus = PointerProperty(type=SCULPTPLUS_PG_wm)
 
     def unregister():
         global sculpt_hotbar_classes

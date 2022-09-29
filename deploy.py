@@ -3,7 +3,7 @@ import python_minifier
 from os.path import join, dirname
 from shutil import ignore_patterns, make_archive, copytree, rmtree
 
-module_name='sculpt_hotbar' # Rename this to match your module name (addon src folder name).
+module_name='sculpt_plus' # Rename this to match your module name (addon src folder name).
 
 root=dirname(__file__)
 module_dir=join(root, module_name)
@@ -15,7 +15,7 @@ module_copy_dir = join(_temp_dir, module_name) # So that we have a folder inside
 copytree(module_dir, module_copy_dir, ignore=ignore_patterns('__pycache__', '*.pyc', '*.pyo', '*.old.py', '*.dev.py'))
 
 # Minify .py files to decrease space.
-minify_re=join(module_copy_dir, '*.py') # r'.\sculpt_hotbar\*.py'
+minify_re=join(module_copy_dir, '*.py') # r'.\sculpt_plus\*.py'
 code=''
 for filepath in glob.iglob(minify_re, recursive=True):
     with open(filepath, 'r') as f:

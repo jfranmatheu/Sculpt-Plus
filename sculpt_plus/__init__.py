@@ -12,17 +12,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "Sculpt Plus",
+    "name" : "Sculpt +",
     "author" : "J. Fran Matheu (@jfranmatheu)",
     "description" : "",
-    "blender" : (3, 2, 0),
+    "blender" : (3, 3, 1),
     "version" : (0, 1, 0),
     "location" : "3D Viewport > Sculpt Mode",
     "warning" : "",
     "category" : "General"
 }
 
-if __package__ != ''sculpt_plus'':
+if __package__ != 'sculpt_plus':
     import sys
     print("[Sculpt+] Please, rename the addon folder as 'sculpt_plus'")
     sys.exit(0)
