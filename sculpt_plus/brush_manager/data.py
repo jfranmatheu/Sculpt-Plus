@@ -1,3 +1,4 @@
+from os import path
 from typing import List
 
 import bpy
@@ -6,6 +7,7 @@ from bpy.types import PropertyGroup, Brush, Context
 from bpy.props import PointerProperty, IntProperty, StringProperty, BoolProperty, CollectionProperty, EnumProperty
 
 from sculpt_plus.core.data.common import SCULPTPLUS_PG_id, SCULPTPLUS_PG_collection
+from sculpt_plus.prefs import get_prefs
 
 
 class SCULPTPLUS_PG_slot(PropertyGroup, SCULPTPLUS_PG_id):
@@ -33,6 +35,9 @@ class SCULPTPLUS_PG_slot_set(PropertyGroup, SCULPTPLUS_PG_id, SCULPTPLUS_PG_coll
         new_slot.name = brush.name if brush else 'NULL'
         return new_slot
     def remove_slot(self, item) -> None: self.remove_item(item)
+
+    def save_replace(self, context) -> None:
+        out_path: str = get_prefs(context).
 
 
 class SCULPTPLUS_PG_brush_manager(PropertyGroup, SCULPTPLUS_PG_collection):
