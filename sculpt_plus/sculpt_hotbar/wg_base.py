@@ -6,12 +6,12 @@ from typing import Dict, List, Set, Tuple
 from mathutils import Vector
 from bpy.app import timers
 from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST
-from sculpt_hotbar.canvas import Canvas
-from sculpt_hotbar.di import DiRct, DiText
-from sculpt_hotbar.prefs import SculptHotbarPreferences
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
+from sculpt_plus.sculpt_hotbar.di import DiRct, DiText
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 
-from sculpt_hotbar.utils.math import ease_quad_in_out, lerp
-from sculpt_hotbar.utils.cursor import Cursor, CursorIcon
+from sculpt_plus.utils.math import ease_quad_in_out, lerp
+from sculpt_plus.utils.cursor import Cursor, CursorIcon
 
 num_str = {
     'ONE':1,
@@ -54,7 +54,7 @@ class WidgetBase:
     def init(self) -> None:
         pass
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         pass
 
     def invoke(self, ctx, evt, cv: Canvas, m: Vector) -> bool:
@@ -387,7 +387,7 @@ class WidgetBase:
             return
         timers.register(functools.partial(fun, *args), first_interval=time)
 
-    def _draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def _draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if not self.enabled:
             return False
         if self.size.x == 0 or self.size.y == 0:
@@ -407,12 +407,12 @@ class WidgetBase:
     def draw_poll(self, context, cv: Canvas) -> bool:
         return True
 
-    def draw_post(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw_post(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
 
-    def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         #print("Draw::", self, self.pos, self.size)
         DiRct(self.pos, self.size, (.1, .1, .1, .8))

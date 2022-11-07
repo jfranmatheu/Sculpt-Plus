@@ -1,7 +1,9 @@
 from os.path import realpath, relpath, abspath, join, basename, dirname, exists, isfile
 import bpy
 
-images_folder = join(dirname(__file__), 'lib', 'images')
+from sculpt_plus.path import SculptPlusPaths
+
+images_folder = SculptPlusPaths.SRC_LIB_IMAGES
 
 def clear_image(image):
     if not image:

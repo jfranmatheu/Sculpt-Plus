@@ -6,9 +6,9 @@ def register():
     print("[SculptHotbar] Registering...")
     from bpy.types import GizmoGroup as GZG, Gizmo as GZ
     from mathutils import Vector
-    from sculpt_hotbar.prefs import get_prefs
-    from sculpt_hotbar.km import WidgetKM as KM
-    from sculpt_hotbar.canvas import Canvas as CV
+    from sculpt_plus.prefs import get_prefs
+    from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
+    from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
     def init_master(gzg,ctx,gmaster):
         gzg.rdim = (ctx.region.width, ctx.region.height)
         gmaster.reg=ctx.region
@@ -18,7 +18,10 @@ def register():
         gmaster.scale_basis = 1.0
         if not bpy.sculpt_hotbar._cv_instance:
             bpy.sculpt_hotbar._cv_instance = gmaster.cv
-            ctx.scene.sculpt_hotbar.init_brushes()
+            # Now Blender says: 
+            # "AttributeError: Writing to ID classes in this context is not allowed:
+            # Scene, Scene datablock, error setting SculptHotbarPG.<UNKNOWN>"
+            # ctx.scene.sculpt_hotbar.init_brushes()
         gzg.master = gmaster
     def update_master(gzg,ctx,cv):
         if cv.reg != ctx.region or gzg.rdim[0] != ctx.region.width or gzg.rdim[1] != ctx.region.height:
@@ -65,10 +68,10 @@ def register():
     bpy.sculpt_hotbar = master
 
 
-def register():
+def unregister():
     print("[SculptHotbar] Unregistering...")
     for cls in sculpt_hotbar_classes:
         bpy.utils.unregister_class(cls)
-    if 'sculpt_hotbar' in bpy:
+    if getattr(bpy, 'sculpt_hotbar', None):
         del bpy.sculpt_hotbar
     sculpt_hotbar_classes.clear()

@@ -11,7 +11,15 @@ class SCULPTPLUS_PG_id:
     uid: StringProperty(default="")
     created_at: StringProperty()
     updated_at: StringProperty()
-    
+
+    def setup_id(self) -> None:
+        self.uid = uuid4().hex
+        self.created_at = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+        self.updated_at = self.created_at
+
+    def update_date(self) -> None:
+        self.updated_at = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+
 
 class SCULPTPLUS_PG_collection:
     class DummyClass:
@@ -57,10 +65,8 @@ class SCULPTPLUS_PG_collection:
     def new_item(self) -> collection_type:
         collection = getattr(self, self.collection_name)
         item = collection.add()
-        if hasattr(item, 'uid'):
-            item.uid = uuid4().hex
-            item.created_at = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-            item.updated_at = item.created_at
+        if isinstance(self, SCULPTPLUS_PG_id):
+            item.setup_id()
         self.active_index = len(collection) - 1
         return item
 

@@ -2,7 +2,7 @@ from typing import Any, Dict, Tuple
 
 from bpy import ops as OPS
 
-from .icons import BrushIcon, Icon
+from sculpt_plus.lib.icons import BrushIcon, Icon
 from .wg_group_but import ButtonGroup, MultiButtonGroup
 
 '''

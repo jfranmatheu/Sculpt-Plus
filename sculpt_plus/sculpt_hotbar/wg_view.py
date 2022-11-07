@@ -2,11 +2,11 @@ from math import floor
 from bpy.types import Brush, Texture
 from mathutils import Vector
 
-from sculpt_hotbar.canvas import Canvas
-from sculpt_hotbar.di import DiLine, DiText
-from sculpt_hotbar.prefs import SculptHotbarPreferences
-from sculpt_hotbar.utils.cursor import Cursor, CursorIcon
-from sculpt_hotbar.utils.math import clamp
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
+from sculpt_plus.sculpt_hotbar.di import DiLine, DiText
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
+from sculpt_plus.utils.cursor import Cursor, CursorIcon
+from sculpt_plus.utils.math import clamp
 from .wg_base import WidgetBase
 
 
@@ -33,7 +33,7 @@ class ViewWidget(WidgetBase):
         
         self.use_smooth_scroll = False
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences):
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         if prefs:
             self.use_smooth_scroll = prefs.use_smooth_scroll
 
@@ -214,16 +214,16 @@ class ViewWidget(WidgetBase):
     def on_scroll_down(self, ctx, cv: Canvas):
         self.do_scroll(cv, self.grid_slot_size*cv.scale if self.use_smooth_scroll else 10*cv.scale, anim=self.use_smooth_scroll)
 
-    def draw_item(self, slot_p, slot_s, item, scale: float, prefs: SculptHotbarPreferences):
+    def draw_item(self, slot_p, slot_s, item, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
 
     def draw_poll(self, context, cv: Canvas) -> bool:
         return True
 
-    def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SculptHotbarPreferences) -> tuple:
+    def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         return ()
 
-    def draw(self, context, cv: Canvas, _mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, _mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         item_args = self.get_draw_item_args(context, cv, scale, prefs)
         if not item_args:
             return
@@ -238,7 +238,7 @@ class ViewWidget(WidgetBase):
                 3.0*scale,
                 prefs.theme_shelf)
 
-    def draw_post(self, _context, cv: Canvas, mouse: Vector, scale: float, _prefs: SculptHotbarPreferences):
+    def draw_post(self, _context, cv: Canvas, mouse: Vector, scale: float, _prefs: SCULPTPLUS_AddonPreferences):
         if not self.hovered_item:# self._is_on_hover
             return
         # BLENDER BUG: Needs 2 passes.

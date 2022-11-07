@@ -2,7 +2,7 @@ from typing import Tuple
 import bpy
 from bpy.types import Operator
 from bpy.props import IntProperty, EnumProperty, BoolProperty
-from sculpt_hotbar.prefs import get_prefs
+from sculpt_plus.prefs import get_prefs
 
 
 class SCULPTHOTBAR_OT_set_brush(Operator):

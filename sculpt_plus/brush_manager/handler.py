@@ -1,15 +1,12 @@
-import bpy
-from bpy.app.handlers import load_post, persistent
-
-
+''' handler.py
 @persistent
 def on_load_post(dummy):
-    print("[SculptPlus] Initializing brushes...")
-    bpy.context.scene.sculpt_hotbar.init_brushes()
+    SCULPTPLUS_PG_brush_manager.get_data(bpy.context).setup()
 
 def register():
     load_post.append(on_load_post)
-    
+
 def unregister():
     if on_load_post in load_post:
         load_post.remove(on_load_post)
+'''

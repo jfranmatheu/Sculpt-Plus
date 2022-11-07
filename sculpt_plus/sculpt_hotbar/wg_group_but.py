@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Set, Tuple
 from uuid import uuid4
 from bpy import ops as OP
 from mathutils import Vector
-from sculpt_hotbar.canvas import Canvas
-from sculpt_hotbar.di import DiCage, DiIma, DiImaco, DiRct, DiText
-from sculpt_hotbar.icons import BrushIcon, Icon
-from sculpt_hotbar.prefs import SculptHotbarPreferences
-from sculpt_hotbar.wg_base import WidgetBase
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
+from sculpt_plus.sculpt_hotbar.di import DiCage, DiIma, DiImaco, DiRct, DiText
+from sculpt_plus.lib.icons import BrushIcon, Icon
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
+from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
 
 
 SLOT_SIZE = 22
@@ -37,7 +37,7 @@ class ButtonGroup(WidgetBase):
         return None
 
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         item_count: int = len(self.items)
         self.cols = ceil(item_count / self.rows)
 
@@ -45,8 +45,8 @@ class ButtonGroup(WidgetBase):
         pad = self.padding * cv.scale
         isize = SLOT_SIZE * cv.scale
         self.size = s = Vector((
-            (isize+pad)*self.cols,# + pad*(self.cols-1),
-            (isize+pad)*self.rows #+ pad*(self.rows-1)
+            isize*self.cols + int((pad-1)*self.cols), # (isize+pad)*self.cols,
+            isize*self.rows + int((pad-1)*self.rows), # (isize+pad)*self.rows
         ))
 
         # Position.
@@ -62,7 +62,7 @@ class ButtonGroup(WidgetBase):
         if self.relative_to_bar_pos[0] != 0:
             origin.x -= s.x * self.relative_to_bar_pos[0]
             if self.align_dir == 'RIGHT':
-                origin.x += (s.x + pad*2 + isize)
+                origin.x += (s.x + pad + isize)
         #if self.relative_to_bar_pos[1] != 0:
         #    origin.y += s.y * self.relative_to_bar_pos[1]
         is_zero: bool = not all(self.relative_to_bar_pos)
@@ -70,6 +70,8 @@ class ButtonGroup(WidgetBase):
             origin.x - pad*2 if is_zero else origin.x,
             origin.y if is_zero else origin.y + pad*2
         ))
+
+        # print(self.relative_to_bar_pos, origin, self.pos, self.size)
 
         # Slot Size.
         self.item_size = Vector((isize, isize))
@@ -163,20 +165,24 @@ class ButtonGroup(WidgetBase):
     def draw_poll(self, context, cv: Canvas) -> bool:
         return cv.shelf.anim_running() and not cv.shelf.expand and not cv.shelf_drag.dragging
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if self.item_toggle:
             if not self.item_toggle['toggle'](context):
                 self.item_toggle = None
         p, s = self.pos, self.size
-        DiText(p, ".", 1, scale, prefs.theme_text)
-        isize = self.item_size
         hover_item = self.hovered_item
+        DiText(p, ".", 1, scale, prefs.theme_text)
+
+        DiRct(p, s, (0, 0, 0, .54))
+
+        isize = self.item_size
         for idx, (ipos, item) in enumerate(zip(self.items_pos, self.items)):
-            color = list(prefs.theme_hotbar_slot if (idx!=hover_item and item!=self.item_toggle) else prefs.theme_active_slot_color)
-            color[-1] *= self.opacity
-            DiRct(ipos, isize, color)
+            if idx==hover_item or item==self.item_toggle:
+                color = list(prefs.theme_hotbar_slot if (idx!=hover_item and item!=self.item_toggle) else prefs.theme_active_slot_color)
+                color[-1] *= self.opacity * .75
+                DiRct(ipos, isize, color)
             color = list(Vector(prefs.theme_hotbar_slot)*.9)
-            color[-1] *= self.opacity
+            color[-1] *= self.opacity * .5
             DiCage(ipos, isize, 1.3, color)
             # TODO: support icons.
             #DiIma(Vector((0,0)), Vector((1,1)), bpy.data)
@@ -211,6 +217,9 @@ class ButtonGroup(WidgetBase):
                 color[-1] *= self.opacity
                 DiText(ipos+isize/2, icon, 12, scale, prefs.theme_text, (.5, .5))
 
+        color = list(Vector(prefs.theme_hotbar_slot)*1.1)
+        color[-1] *= self.opacity
+        DiCage(p, s, 1.3, color)
 
 class MultiButtonGroup(WidgetBase):
     #interactable: bool = False
@@ -246,7 +255,7 @@ class MultiButtonGroup(WidgetBase):
             return self.hovered_group.get_hovered_item_data()
         return None
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         prev_pos: Vector = None
         prev_size: Vector = None
         pos_off: Vector = Vector((0, 0))
@@ -261,11 +270,12 @@ class MultiButtonGroup(WidgetBase):
                     group.pos.x += pos_off.x
                 elif self.relative_to_bar_pos[0] == 1:# or is_zero:
                     group.pos.x -= pos_off.x
+                group.size.x -= i*.36*group.padding
                 group.update_items()
             # print(i, group.pos, group.size)
             prev_pos = group.pos.copy()
             prev_size = group.size.copy()
-            pos_off.x += (prev_size.x + 8*cv.scale)
+            pos_off.x += (prev_size.x + 10*cv.scale)
             if prev_pos.x < min_pos.x:
                 min_pos.x = prev_pos.x
             if prev_pos.y < min_pos.y:

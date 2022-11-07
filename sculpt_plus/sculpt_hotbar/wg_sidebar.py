@@ -5,15 +5,15 @@ from typing import Set
 import bpy
 from bpy.types import Brush, Texture
 from mathutils import Vector
-from sculpt_hotbar.canvas import Canvas
-from sculpt_hotbar.prefs import SculptHotbarPreferences
-from sculpt_hotbar.utils.cursor import Cursor, CursorIcon
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
+from sculpt_plus.utils.cursor import Cursor, CursorIcon
 
-from sculpt_hotbar.utils.math import clamp, point_inside_circle
-from sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim
-from sculpt_hotbar.wg_view import ViewWidget
+from sculpt_plus.utils.math import clamp, point_inside_circle
+from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim
+from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
-from sculpt_hotbar.icons import Icon
+from sculpt_plus.lib.icons import Icon
 
 
 SLOT_SIZE = 80
@@ -27,7 +27,7 @@ class Sidebar(WidgetBase):
         self.handler_size = Vector((30, 100))
         self.handler_pos = Vector((10, 500))
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         bar_height = (cv.hotbar.size.y) * 2.0
         height = cv.size.y - bar_height * 2
 
@@ -96,7 +96,7 @@ class Sidebar(WidgetBase):
     def draw_poll(self, context, cv: Canvas) -> bool:
         return True
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if self.expand:
             out_col = Vector(prefs.theme_sidebar)*.9
             out_col.w = 1.0
@@ -106,7 +106,7 @@ class Sidebar(WidgetBase):
             glEnable(GL_POLYGON_SMOOTH)
             DiCage(self.pos, self.size, 3.2*scale, out_col)
      
-    def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if not self.expand:
             DiRct(self.handler_pos, self.handler_size, (.16, .16, .16, .5))
             #DiText(self.handler_pos+self.handler_size/2, ": : :", 14, scale, pivot=(-.24,1), rotation=radians(90))
@@ -125,7 +125,7 @@ class SidebarGrid(ViewWidget):
         padding = 6 * scale
         return self.slot_size * 5.5 - padding * 2
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences):
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         scale = cv.scale
 
         p = self.cv.sidebar.pos.copy()
@@ -160,11 +160,11 @@ class SidebarGrid(ViewWidget):
     def draw_poll(self, context, cv: Canvas) -> bool:
         return cv.sidebar.expand and cv.sidebar.size.x > self.slot_size
 
-    def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SculptHotbarPreferences) -> tuple:
+    def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         slot_color = Vector(prefs.theme_sidebar_slot)
         return (slot_color,)
 
-    def draw_item(self, slot_p, slot_s, tex, slot_color, scale: float, prefs: SculptHotbarPreferences):
+    def draw_item(self, slot_p, slot_s, tex, slot_color, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         #print(tex.name, slot_p, slot_s)
         DiRct(slot_p, slot_s, slot_color)
         DiIma(slot_p, slot_s, tex)

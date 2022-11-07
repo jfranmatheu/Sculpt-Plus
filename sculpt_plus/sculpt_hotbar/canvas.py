@@ -11,11 +11,11 @@ from bpy.app import timers
 from bpy import ops as OP
 from bpy.types import Brush
 import functools
-from .utils.math import distance_between, ease_quad_in_out, lerp, lerp_smooth, map_value, point_inside_circle, smoothstep, vector
+from sculpt_plus.utils.math import distance_between, ease_quad_in_out, lerp, lerp_smooth, map_value, point_inside_circle, smoothstep, vector
 from .types import Return
-from .prefs import get_prefs
+from sculpt_plus.prefs import get_prefs
 from .di import set_font
-from .fonts import Fonts
+from sculpt_plus.lib.fonts import Fonts
 
 
 class Canvas:
@@ -54,7 +54,7 @@ class Canvas:
                          self.shelf, self.shelf_drag, self.shelf_search, self.shelf_grid,
                          self.group_mask, self.group_t,
                          )
-    def update(self, dimensions: Vector, scale: float, prefs) -> 'Canvas': # SculptHotbarPreferences
+    def update(self, dimensions: Vector, scale: float, prefs) -> 'Canvas': # SCULPTPLUS_AddonPreferences
         if dimensions:
             self.size = dimensions
         self.scale = scale

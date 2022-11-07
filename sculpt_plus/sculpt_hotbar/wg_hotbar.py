@@ -4,11 +4,11 @@ from time import time
 from typing import Set, Tuple
 from bpy import ops as OP
 from mathutils import Vector
-from sculpt_hotbar.canvas import Canvas
-from sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiText
-from sculpt_hotbar.prefs import SculptHotbarPreferences
-from sculpt_hotbar.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth
-from sculpt_hotbar.wg_base import WidgetBase
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
+from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiText
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
+from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth
+from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
 
 
 SLOT_SIZE = 48
@@ -33,7 +33,7 @@ class Hotbar(WidgetBase):
         self.brush_rolling = False
         self.brush_scrolling_m = Vector((0, 0))
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         # Size.
         isize = SLOT_SIZE*cv.scale
         self.size = s = Vector((
@@ -196,7 +196,7 @@ class Hotbar(WidgetBase):
         self.moving_slot = False
         self._press_time = None
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         p = self.pos.copy()
         s = self.size.copy()
 
@@ -249,7 +249,7 @@ class Hotbar(WidgetBase):
             text = str(idx+1)
             DiText(slot_pos+pad, '0' if idx==9 else text, 10, scale, prefs.theme_text)
 
-    def draw_over(self, ctx, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw_over(self, ctx, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if self.moving_slot:
             idx = self.slot_on_hover
             t = time()

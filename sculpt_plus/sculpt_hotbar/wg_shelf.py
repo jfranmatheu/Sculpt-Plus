@@ -5,15 +5,15 @@ from typing import Set
 import bpy
 from bpy.types import Brush
 from mathutils import Vector
-from sculpt_hotbar.canvas import Canvas
-from sculpt_hotbar.prefs import SculptHotbarPreferences
-from sculpt_hotbar.utils.cursor import Cursor, CursorIcon
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
+from sculpt_plus.utils.cursor import Cursor, CursorIcon
 
-from sculpt_hotbar.utils.math import clamp, point_inside_circle
-from sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim
-from sculpt_hotbar.wg_view import ViewWidget
+from sculpt_plus.utils.math import clamp, point_inside_circle
+from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim
+from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
-from sculpt_hotbar.icons import Icon
+from sculpt_plus.lib.icons import Icon
 
 
 SLOT_SIZE = 56
@@ -62,7 +62,7 @@ class Shelf(WidgetBase):
             height = slot_size * 5.25 # int(self.cv.size.y * .65) # self.cv.size.y - self.cv.shelf.pos.y - self.cv.hotbar.size.y - r
             self.resize(y=height, animate=True, anim_change_callback=_update, anim_finish_callback=_enable)
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences):
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         self.margin = 6 * cv.scale
 
         # Calc final shelf transform.
@@ -92,7 +92,7 @@ class Shelf(WidgetBase):
     def on_hover_exit(self) -> None:
         self.cv.shelf_grid.on_hover_exit()
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if self.expand:
             DiRct(self.pos, self.size, prefs.theme_shelf)
             DiCage(self.pos, self.size, 3.2*scale, Vector(prefs.theme_shelf)*.9)
@@ -107,7 +107,7 @@ class ShelfGrid(ViewWidget):
         padding = 6 * scale
         return SLOT_SIZE * scale * 5.25 - padding * 2
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences):
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         scale = cv.scale
 
         p = self.cv.shelf.pos.copy()
@@ -151,7 +151,7 @@ class ShelfGrid(ViewWidget):
     def draw_poll(self, context, cv: Canvas) -> bool:
         return cv.shelf.expand and cv.shelf.size.y > self.slot_size
 
-    def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SculptHotbarPreferences) -> tuple:
+    def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         brushes = context.scene.sculpt_hotbar.get_brushes()
         slot_color = Vector(prefs.theme_shelf_slot)
         if not brushes:
@@ -159,7 +159,7 @@ class ShelfGrid(ViewWidget):
         brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         return brush_idx_rel, slot_color
 
-    def draw_item(self, slot_p, slot_s, brush, brush_idx_rel, slot_color, scale: float, prefs: SculptHotbarPreferences):
+    def draw_item(self, slot_p, slot_s, brush, brush_idx_rel, slot_color, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         #if brush is None or brush_idx_rel is None:
         #    return
         DiRct(slot_p, slot_s, slot_color)
@@ -187,7 +187,7 @@ class ShelfDragHandle(WidgetBase):
         self.tx_pos = Vector((0, 0))
         self.dragging = False
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         r: float = cv.hotbar.size.y * .2
         c: Vector = cv.shelf.get_pos_by_relative_point(Vector((0.5, 1.0)))
         c.y += (r*1.5)
@@ -251,7 +251,7 @@ class ShelfDragHandle(WidgetBase):
     def modal_exit(self, ctx, cv: Canvas, m: Vector, cancel: bool = False) -> None:
         self.end_drag(cv)
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         color = prefs.theme_text if self._is_on_hover else Vector(prefs.theme_text) * .75
         bg_color = (.1, .1, .1, .7) if self._is_on_hover else (.1, .1, .1, .35)
 
@@ -283,7 +283,7 @@ class ShelfSearch(WidgetBase):
     def on_hover(self, m: Vector, p: Vector = None, s: Vector = None) -> bool:
         return super().on_hover(m, p, s) and self.cv.shelf.expand
 
-    def update(self, cv: Canvas, prefs: SculptHotbarPreferences) -> None:
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         height = HEADER_HEIGHT * cv.scale
         margin = 6 * cv.scale # cv.shelf.margin
 
@@ -296,7 +296,7 @@ class ShelfSearch(WidgetBase):
         else:
             self.size.x = height
 
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SculptHotbarPreferences):
+    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if not cv.shelf.expand or cv.shelf.size.y < 60:
             return
         p = self.pos.copy()
