@@ -30,7 +30,7 @@ class ViewWidget(WidgetBase):
         self.slot_size = 0
         self.tot_scroll = 0
         self.scroll_visible_range = (0, 0)
-        
+
         self.use_smooth_scroll = False
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
@@ -124,7 +124,7 @@ class ViewWidget(WidgetBase):
             if loop_callback:
                 loop_callback(slot_p, slot_s, item)
 
-            if mouse and hovered_item is None and self.on_hover(mouse, slot_p, slot_s):
+            if mouse and hovered_item is None and WidgetBase.check_hover(None, mouse, slot_p, slot_s):
                 hovered_item = item
             n_col += 1
 
@@ -182,7 +182,7 @@ class ViewWidget(WidgetBase):
     def do_scroll(self, cv, off_y: float, anim: bool = False):
         if anim:
             target_scroll = clamp(self.scroll+off_y, 0, self.tot_scroll)
-            
+
             if self.scroll == target_scroll:
                 if target_scroll == self.tot_scroll or target_scroll == 0:
                     return
@@ -265,3 +265,127 @@ class ViewWidget(WidgetBase):
             (0.1,0.1,0.1,1.0),
             pivot=(0.2, -2.0)
         )
+
+
+class VerticalViewWidget(ViewWidget):
+    num_cols: int = 1
+    item_aspect_ratio: float = 1 / 3 # 1 width equals 3 heights.
+    interactable: bool = True
+
+    def init(self) -> None:
+        super().init()
+        self.item_margin: int = 0
+        self.scroll_axis = 'Y'
+
+    def get_view_margins_vertical(self) -> tuple:
+        ''' 0 -> Bottom margin;
+            1 -> Top margin; '''
+        return (0, 0)
+
+    def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
+        super().update(cv, prefs)
+        self.slot_width: int = int(self.size.x / self.num_cols)
+        self.slot_height: int = int(self.slot_width * self.item_aspect_ratio)
+        self.item_size = Vector((self.slot_width, self.slot_height)) * cv.scale
+
+    def draw_poll(self, context, cv: Canvas) -> bool:
+        return self.size.y > self.item_size.y # and self.size.x > self.item_size.x
+
+    def draw_scissor_apply(self, _p: Vector, _s: Vector):
+        p = _p.copy()
+        s = _s.copy()
+        vview_margins: tuple = self.get_view_margins_vertical()
+        s.y -= (vview_margins[0] + vview_margins[1])
+        p.y += vview_margins[0]
+        super().draw_scissor_apply(p, s)
+
+    def iter_slots(self, scale: float, mouse: Vector = None, loop_callback: callable = None):
+        self.update(self.cv, None)
+
+        p = self.pos.copy()
+        s = self.size.copy()
+
+        vview_margins: tuple = self.get_view_margins_vertical()
+        s.y -= (vview_margins[0] + vview_margins[1])
+        p.y += vview_margins[0]
+
+        item_margin = self.item_margin * scale
+
+        # GET DATA TO FILL THE SLOTS BELOW.
+        data = self.get_data(self.cv)
+        if not data:
+            return
+        #print(data)
+
+        # CALC SLOT SIZE, NUM ROWS/COLS.
+        slot_size = self.item_size
+
+        #if self.scroll_axis == 'Y':
+        #    s.x = self.get_max_width(self.cv, scale)
+
+        rows = floor(s.y / slot_size.y)
+        cols = max(floor(s.x / slot_size.x), 1)
+
+        #tot_margin_width = ((cols - 1) * margin)
+        #if (slot_size * cols) + tot_margin_width > s.x:
+        #    slot_size = int( (s.x - tot_margin_width) / cols )
+
+        #self.slot_size = slot_size # slot_size + margin
+
+        #slot_s = Vector((slot_size, slot_size))
+        n_row = 0
+        n_col = 0
+        hovered_item = None
+
+        visible_rows = rows
+        item_count = len(data)
+        view_rows = floor(item_count / cols) - 1
+        view_height = view_rows * slot_size.y
+        #print("rows", rows, "cols", cols)
+        self.view_size = Vector((s.x, view_height))
+        self.view_pos = p.copy()
+        self.tot_scroll = (view_rows - visible_rows) * (slot_size.y)
+
+        # Determine the visible range.
+        ## row_limit_min = -1
+        ## if self.scroll != 0:
+        if view_rows > visible_rows:
+            rows = view_rows
+
+            # How many rows the scroll can contain?
+            row_limit_min = floor(self.scroll / slot_size.y)
+            row_limit_max = row_limit_min + visible_rows + (0 if self.scroll % slot_size.y == 0 else 1)
+            #print(row_limit_min, row_limit_max)
+            _min = row_limit_min*cols
+            _max = row_limit_max*cols
+            data = data[max(0,_min):min(_max+1, item_count-1)]
+
+            n_row += row_limit_min
+
+            # Apply Scroll offset (if exist).
+            if self.scroll != 0:
+                p.y += self.scroll
+
+        #print("ROWS, COLS, COUNT", rows, cols, len(data))
+        for item in data:
+            if n_col >= cols:
+                n_row += 1
+                n_col = 0
+            if n_row >= rows:
+                break
+            slot_p = Vector((
+                int(p.x), # int(p.x + (slot_size + item_margin) * n_col),
+                # p.y + (slot_size + item_margin) * n_row # BOTTOM -> TOP
+                int(p.y + s.y - slot_size.y * (n_row+1) - item_margin * n_row) # TOP -> BOTTOM
+            ))
+            #if not self.on_hover(slot_p) or not self.on_hover(slot_p+slot_s):
+            #    continue
+
+            if loop_callback:
+                loop_callback(slot_p, slot_size, item)
+
+            if mouse and hovered_item is None and self.on_hover(mouse, slot_p, slot_size):
+                hovered_item = item
+            n_col += 1
+
+        return hovered_item

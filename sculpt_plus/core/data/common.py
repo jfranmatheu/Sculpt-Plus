@@ -6,22 +6,29 @@ from bpy.types import Context
 from bpy.props import PointerProperty, IntProperty, StringProperty, BoolProperty, CollectionProperty, EnumProperty
 
 
-class SCULPTPLUS_PG_id:
+class PG_id:
     name: StringProperty(default="")
     uid: StringProperty(default="")
-    created_at: StringProperty()
-    updated_at: StringProperty()
 
     def setup_id(self) -> None:
         self.uid = uuid4().hex
+
+class PG_date:
+    created_at: StringProperty()
+    updated_at: StringProperty()
+
+    def setup_date(self) -> None:
         self.created_at = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
         self.updated_at = self.created_at
 
     def update_date(self) -> None:
         self.updated_at = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
 
+class PG_id_date(PG_id, PG_date):
+    pass
 
-class SCULPTPLUS_PG_collection:
+
+class PG_collection:
     class DummyClass:
         pass
 
@@ -65,7 +72,7 @@ class SCULPTPLUS_PG_collection:
     def new_item(self) -> collection_type:
         collection = getattr(self, self.collection_name)
         item = collection.add()
-        if isinstance(self, SCULPTPLUS_PG_id):
+        if isinstance(self, self.collection_type):
             item.setup_id()
         self.active_index = len(collection) - 1
         return item

@@ -10,10 +10,11 @@ from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.cursor import Cursor, CursorIcon
 
 from sculpt_plus.utils.math import clamp, point_inside_circle
-from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim
+from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim, DiTriCorner, DiStar
 from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
+from sculpt_plus.props import Props
 
 
 SLOT_SIZE = 56
@@ -40,6 +41,7 @@ class Shelf(WidgetBase):
             self.cv.refresh()
             self.cv.shelf_drag.update(self.cv, None)
             self.cv.shelf_search.update(self.cv, None)
+            self.cv.shelf_sidebar.update(self.cv, None)
 
         if state == False:
             self.cv.shelf_grid.selected_item = None
@@ -92,15 +94,21 @@ class Shelf(WidgetBase):
     def on_hover_exit(self) -> None:
         self.cv.shelf_grid.on_hover_exit()
 
+    def draw_poll(self, context, cv: Canvas) -> bool:
+        return self.expand
+
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        if self.expand:
-            DiRct(self.pos, self.size, prefs.theme_shelf)
-            DiCage(self.pos, self.size, 3.2*scale, Vector(prefs.theme_shelf)*.9)
+        DiRct(self.pos, self.size, prefs.theme_shelf)
+        DiCage(self.pos, self.size, 3.2*scale, Vector(prefs.theme_shelf)*.9)
 
 
 class ShelfGrid(ViewWidget):
     use_scissor: bool = True
     grid_slot_size: int = 56
+
+    def init(self) -> None:
+        super().init()
+        self.show_all_brushes: bool = True
 
     def get_max_width(self, cv: Canvas, scale) -> float:
         return self.size.x
@@ -127,16 +135,33 @@ class ShelfGrid(ViewWidget):
         self.pos = p.copy()
         self.size = s
 
+    def on_rightmouse_press(self, ctx, cv: Canvas, m: Vector) -> int:
+        if self.hovered_item is None:
+            return 0
+        if Props.ActiveBrushCat(bpy.context) is None:
+            return 0
+        cv.ctx_shelf_item.show(cv, m, self.hovered_item)
+        self.hovered_item = None
+        return 1
+
     def get_data(self, cv: Canvas) -> list:
+        # Get brushes from source.
+        if self.show_all_brushes:
+            brushes = bpy.data.brushes
+        else:
+            brushes = Props.ActiveBrushCat(bpy.context).brushes
+
         # Apply filter (if exist).
         filt = cv.shelf_search.search
         if filt:
             filt = filt.lower()
-            br_startswith = {br for br in bpy.data.brushes if br.use_paint_sculpt and br.name.lower().startswith(filt)}
-            br_contains = [br for br in bpy.data.brushes if br not in br_startswith and br.use_paint_sculpt and filt in br.name.lower()]
+            br_startswith = {br for br in brushes if br.use_paint_sculpt and br.name.lower().startswith(filt)}
+            br_contains = [br for br in brushes if br not in br_startswith and br.use_paint_sculpt and filt in br.name.lower()]
             brushes = list(br_startswith) + br_contains
         else:
-            brushes = [br for br in bpy.data.brushes if br.use_paint_sculpt]
+            if self.show_all_brushes:
+                brushes = [br for br in brushes if br.use_paint_sculpt]
+        brushes.sort(key=lambda x: 'fav' in x and x['fav'] == 1, reverse=True) # Favs first.
         return brushes
 
     def on_numkey(self, ctx, number: int, cv: Canvas, m: Vector) -> None:
@@ -154,27 +179,49 @@ class ShelfGrid(ViewWidget):
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         brushes = context.scene.sculpt_hotbar.get_brushes()
         slot_color = Vector(prefs.theme_shelf_slot)
+        act_cat_id: str = Props.ActiveBrushCat(context).uid
         if not brushes:
             return None, slot_color
         brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
-        return brush_idx_rel, slot_color
+        return brush_idx_rel, slot_color, act_cat_id
 
-    def draw_item(self, slot_p, slot_s, brush, brush_idx_rel, slot_color, scale: float, prefs: SCULPTPLUS_AddonPreferences):
+    def draw_item(self,
+                  slot_p: Vector, slot_s: Vector,
+                  brush:Brush, brush_idx_rel: dict,
+                  slot_color: Vector,
+                  act_cat_id: str,
+                  scale: float,
+                  prefs: SCULPTPLUS_AddonPreferences):
         #if brush is None or brush_idx_rel is None:
         #    return
         DiRct(slot_p, slot_s, slot_color)
-        DiBr(slot_p, slot_s, brush)
+        if self.hovered_item == brush:
+            DiRct(slot_p, slot_s, Vector(prefs.theme_hotbar_slot)+Vector((.2, .2, .2, 0))) # (.6,.6,.6,.25))
+        DiBr(slot_p, slot_s, brush, brush==self.hovered_item)
         if brush_idx_rel is not None and brush in brush_idx_rel:
             idx: int = brush_idx_rel[brush]
             idx = idx+1 if idx!=9 else 0
             DiText(slot_p+Vector((1,3)), str(idx), 12, scale)
+
+        if 'cat_id' in brush and brush['cat_id'] == act_cat_id:
+            DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .9))
+
+        if 'fav' in brush and brush['fav'] == 1:
+            size = 16 * scale
+            margin = size/2
+            DiStar(slot_p+slot_s-Vector((margin, margin)), size)
+
         if brush == self.selected_item:
             DiCage(slot_p, slot_s, 2.4*scale, prefs.theme_active_slot_color) #(.2, .6, 1.0, 1.0))
         else:
             DiCage(slot_p, slot_s, 2.4*scale, slot_color*1.3)
 
-        if self.hovered_item == brush:
-            DiRct(slot_p, slot_s, (.6,.6,.6,.25))
+    def draw_post(self, _context, cv: Canvas, mouse: Vector, scale: float, _prefs: SCULPTPLUS_AddonPreferences):
+        if cv.active_ctx_widget:
+            DiText(self.pos, '.', 1, scale)
+            DiRct(self.pos, self.size, (.24, .24, .24, .64))
+        else:
+            super().draw_post(_context, cv, mouse, scale, _prefs)
 
 
 class ShelfDragHandle(WidgetBase):
@@ -279,7 +326,7 @@ class ShelfSearch(WidgetBase):
         self.search = u''
         self.type_index = 0
         self.modal_cancel = False
-        
+
     def on_hover(self, m: Vector, p: Vector = None, s: Vector = None) -> bool:
         return super().on_hover(m, p, s) and self.cv.shelf.expand
 

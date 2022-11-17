@@ -209,21 +209,6 @@ class SculptHotbarPG(PropertyGroup):
     def draw_brush(self, act_set: SculptHotbarBrushSet, layout, i):
         layout.prop(act_set.brushes[i], 'slot', text='', icon=self.get_brush_icon(i))
 
-'''
-def draw_ui(self, context):
-    layout = self.layout.box().column(align=True)
-    layout.label(text="Sculpt Hotbar :")
-    brushes = context.scene.sculpt_hotbar.brushes
-    for brush in brushes:
-        layout.prop(brush, 'slot', text='', icon_value=-1 if not brush.slot else brush.slot.preview.icon_id)
-'''
 
 def register():
     scn.sculpt_hotbar = PointerProperty(type=SculptHotbarPG)
-
-    #from bpy.types import VIEW3D_PT_tools_brush_select as Panel
-    #Panel.append(draw_ui)
-
-#def unregister():
-#    from bpy.types import VIEW3D_PT_tools_brush_select as Panel
-#    Panel.remove(draw_ui)

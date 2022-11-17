@@ -19,11 +19,17 @@ enum_list = [("NONE", "None", "")]
 class SCULPTPLUS_AddonPreferences(AddonPreferences):
     bl_idname: str = __package__
 
-    brush_lib_directory: StringProperty(
+    brush_lib_path: StringProperty(
         name="Brush Library Directory",
         description="Folder where to save your brush sets",
-        default=SculptPlusPaths.BRUSH_LIB,
+        default=SculptPlusPaths.BRUSH_SETS_LIB(),
         subtype='DIR_PATH'
+    )
+    num_backup_versions: IntProperty(
+        name="Backup Versions",
+        description="Number of Backup Versions to store",
+        default=2,
+        min=0, max=10
     )
 
 

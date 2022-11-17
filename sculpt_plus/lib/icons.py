@@ -31,18 +31,19 @@ class BrushIcon(Enum):
     POSE = '.Pose_icon'
     NUDGE = '.Nudge_icon'
     ROTATE = '.Rotate_icon'
-    #TOPOLOGY = '.Topology_icon'
-    #BOUNDARY = '.Boundary_icon'
+    TOPOLOGY = '.Topology_icon'
+    BOUNDARY = '.Boundary_icon'
     CLOTH = '.Cloth_icon'
     SIMPLIFY = '.Simplify_icon'
     MASK = '.Mask_icon'
-    PAINT = '.Paint_icon'
-    SMEAR = '.Paint_Smear_icon'
     DRAW_FACE_SETS = '.Draw_FaceSets_icon'
 
     # 2.91
-    BOUNDARY = '.Boundary_icon'
     DISPLACEMENT_ERASER = '.Displacement_Eraser_icon'
+    DISPLACEMENT_SMEAR = 'Displacement_Smear_icon'
+
+    PAINT = '.Paint_icon'
+    SMEAR = '.Smear_icon'
 
     def __call__(self) -> Image:
         return load_image(self.value, '.png', 'brushes')

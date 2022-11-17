@@ -4,7 +4,6 @@ sculpt_hotbar_classes = []
 
 def register():
     print("[SculptHotbar] Registering...")
-    from bpy.types import GizmoGroup as GZG, Gizmo as GZ
     from mathutils import Vector
     from sculpt_plus.prefs import get_prefs
     from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
@@ -29,6 +28,7 @@ def register():
             gzg.rdim = ctx.region.width, ctx.region.height
             p = get_prefs(ctx)
             cv.update(Vector(gzg.rdim),p.get_scale(ctx), p)
+    from bpy.types import GizmoGroup as GZG, Gizmo as GZ
     controller=type(
         "SculptHotbarGController",
         (GZG,KM),
@@ -39,7 +39,7 @@ def register():
             'bl_region_type': 'WINDOW',
             'bl_options': {'PERSISTENT', 'SHOW_MODAL_ALL'},
             'gz': "VIEW3D_GZ_sculpt_hotbar",
-            'poll': classmethod(lambda x, y: y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar),
+            'poll': classmethod(lambda x, y: y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo),
             'draw_prepare': lambda x,y: update_master(x,y,x.master.cv) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
             'setup': lambda x,y: init_master(x,y,x.gizmos.new(x.__class__.gz)),
             'refresh': lambda x,y: setattr(x.master.cv,'reg',y.region) if hasattr(x,'master') and hasattr(x.master,'cv') else None,

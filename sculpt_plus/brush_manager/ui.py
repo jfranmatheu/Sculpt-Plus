@@ -1,6 +1,6 @@
 from bpy.types import Panel, Context
 
-from .data import SCULPTPLUS_PG_brush_manager, SCULPTPLUS_PG_slot_set
+from sculpt_plus.props import Props
 
 
 class SCULPTPLUS_PT_brush_management(Panel):
@@ -13,8 +13,8 @@ class SCULPTPLUS_PT_brush_management(Panel):
     def draw(self, context: Context):
         layout = self.layout
 
-        manager = SCULPTPLUS_PG_brush_manager.get_data(context)
-        active_set: SCULPTPLUS_PG_slot_set = manager.active
+        manager = Props.BrushManager(context)
+        active_cat = Props.ActiveBrushCat(context)
 
         section = layout.column(align=True)
 
@@ -22,14 +22,18 @@ class SCULPTPLUS_PT_brush_management(Panel):
         header.box().label(text="", icon='OUTLINER_COLLECTION')
         selector = header.row(align=True)
         selector.scale_y = 1.49
-        selector.prop(manager, "enum", text="")
+        selector.prop(manager, "cats_enum", text=str(len(manager.cats_enum)))
 
-        if not active_set:
+        layout.prop(active_cat, 'icon')
+
+        '''
+        if not active_cat:
             return
 
         content = section.column(align=True)
         content.template_list(
             "SCULPTPLUS_UL_brush_slot","",
-            active_set, "slots",
-            active_set, "active_index"
+            active_cat, "cats_coll",
+            active_cat, "active_index"
         )
+        '''

@@ -225,7 +225,7 @@ class Hotbar(WidgetBase):
             if slot_pos is None:
                 continue
             if idx == self.slot_on_hover:
-                DiRct(slot_pos, isize,(.4,.4,.4,.25)) # (.8,.4,.1,.4)
+                DiRct(slot_pos, isize,Vector(prefs.theme_hotbar_slot)+Vector((.1, .1, .1, 0))) #(.4,.4,.4,.25)) # (.8,.4,.1,.4)
             else:
                 DiRct(slot_pos,isize,prefs.theme_hotbar_slot)
                 #DiCage(slot_pos, isize, 2.0*scale, Vector(prefs.theme_hotbar_slot)*.9)
@@ -234,7 +234,7 @@ class Hotbar(WidgetBase):
                 if b:
                     if (not cv.shelf.expand and act_br == b) or (replace_brush and idx == self.slot_on_hover):
                         DiRct(slot_pos+Vector((0,isize.y)),Vector((isize.x,int(5*scale))),prefs.theme_active_slot_color)
-                    DiBr(slot_pos+pad,isize-pad*2,b)
+                    DiBr(slot_pos+pad,isize-pad*2,b,idx==self.slot_on_hover)
 
             text = str(idx+1)
             DiText(slot_pos+pad, '0' if idx==9 else text, 10, scale, prefs.theme_text)
@@ -248,6 +248,9 @@ class Hotbar(WidgetBase):
             DiCage(slot_pos, isize, 2.2*scale, (.2, .6, 1.0, 1.0))
             text = str(idx+1)
             DiText(slot_pos+pad, '0' if idx==9 else text, 10, scale, prefs.theme_text)
+
+        if cv.active_ctx_widget:
+            DiRct(self.pos, self.size, (.24, .24, .24, .64))
 
     def draw_over(self, ctx, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if self.moving_slot:

@@ -2,6 +2,7 @@ import os
 from os.path import join, dirname, abspath
 import sys
 import pathlib
+from enum import Enum
 
 
 def get_datadir() -> pathlib.Path:
@@ -26,7 +27,7 @@ def get_datadir() -> pathlib.Path:
 
 addon_data_dir = get_datadir() / "addon_data"
 addon_data_dir = addon_data_dir / __package__
-brush_sets_dir = addon_data_dir / "brush_sets"
+brush_sets_dir = addon_data_dir / "brushes"
 config_file = addon_data_dir / "config.ini"
 
 # First time creation.
@@ -36,10 +37,15 @@ try:
 except FileExistsError:
     pass
 
-class SculptPlusPaths:
+class SculptPlusPaths(Enum):
     SRC = dirname(abspath(__file__))
     SRC_LIB = join(SRC, 'lib')
     SRC_LIB_IMAGES = join(SRC_LIB, 'images')
 
-    APP_DATA = addon_data_dir.name
-    BRUSH_SETS_LIB = brush_sets_dir.name
+    APP_DATA = str(addon_data_dir)
+    BRUSH_SETS_LIB = str(brush_sets_dir)
+
+    def __call__(self, *path):
+        if not path:
+            return self.value
+        return join(self.value, *path)

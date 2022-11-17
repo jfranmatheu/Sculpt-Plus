@@ -3,7 +3,7 @@ import bpy
 
 from sculpt_plus.path import SculptPlusPaths
 
-images_folder = SculptPlusPaths.SRC_LIB_IMAGES
+images_folder = SculptPlusPaths.SRC_LIB_IMAGES()
 
 def clear_image(image):
     if not image:

@@ -28,6 +28,7 @@ num_str = {
 
 class WidgetBase:
     use_scissor: bool = False
+    scissor_padding: Vector = Vector((0, 0))
     interactable: bool = True
     modal_trigger: Set[str] = set()
     cursor: CursorIcon = CursorIcon.DEFAULT
@@ -102,9 +103,14 @@ class WidgetBase:
         pass
 
     def modal(self, ctx, evt, cv: Canvas, m: Vector) -> bool:
+        # print(evt.type, evt.value)
         if evt.type in {'ESC', 'RIGHTCLICK'}:
             return False
         if evt.value == 'RELEASE':
+            if evt.type == 'RIGHTMOUSE':
+                self.on_rightmouse_release(ctx, cv, m)
+            elif evt.type == 'LEFTMOUSE':
+                self.on_leftmouse_release(ctx, cv, m)
             return False
         if evt.type == 'MOUSEMOVE':
             self.on_mousemove(ctx, cv, m)
@@ -116,7 +122,7 @@ class WidgetBase:
             return False
         ctx.region.tag_redraw()
         if self.on_hover(m):
-            #print("Hover...")
+            # print("Hover...", self)
             if not self._is_on_hover:
                 ctx.region.tag_redraw()
                 if self.msg_on_enter:
@@ -125,7 +131,8 @@ class WidgetBase:
                 self.on_hover_enter()
             if self.cursor:
                 Cursor.set_icon(ctx, self.cursor)
-            if self.on_hover_stay(m):
+            res =  self.on_hover_stay(m)
+            if res:
                 ctx.region.tag_redraw()
             return True
         else:
@@ -141,6 +148,12 @@ class WidgetBase:
 
 
     ''' OnHover Methods. '''
+    @staticmethod
+    def check_hover(widget: 'WidgetBase', m: Vector, p: Vector = None, s: Vector = None) -> bool:
+        p = p if p else widget.pos
+        s = s if s else widget.size
+        return m.x>p.x and m.x<p.x+s.x and m.y>p.y and m.y<p.y+s.y and s.x > 2 and s.y > 2
+
     def on_hover(self, m: Vector, p: Vector = None, s: Vector = None) -> bool:
         p = p if p else self.pos
         s = s if s else self.size
@@ -152,8 +165,8 @@ class WidgetBase:
     def on_hover_exit(self) -> None:
         pass
 
-    def on_hover_stay(self, m: Vector) -> None:
-        pass
+    def on_hover_stay(self, m: Vector) -> bool:
+        return False
 
 
     ''' Event Methods.'''
@@ -394,18 +407,29 @@ class WidgetBase:
             return False
         if not self.draw_poll(context, cv):
             return False
+        self.draw_pre(context, cv, mouse, scale, prefs)
         if self.use_scissor:
             #glDisable(GL_DEPTH_TEST)
             glEnable(GL_SCISSOR_TEST)
-            glScissor(int(self.pos.x)-1, int(self.pos.y)-1, int(self.size.x)+2, int(self.size.y)+2)
+            self.draw_scissor_apply(self.pos, self.size)
             DiText(Vector((0,0)), ' ', 1, scale, prefs.theme_text)
         self.draw(context, cv, mouse, scale, prefs)
         if self.use_scissor:
             glDisable(GL_SCISSOR_TEST)
             self.draw_post(context, cv, mouse, scale, prefs)
 
+    def draw_scissor_apply(self, _p: Vector, _s: Vector):
+        glScissor(
+                int(_p.x)-1+int(self.scissor_padding.x),
+                int(_p.y)-1+int(self.scissor_padding.x),
+                int(_s.x)+2-int(self.scissor_padding.x*2),
+                int(_s.y)+2-int(self.scissor_padding.x*2))
+
     def draw_poll(self, context, cv: Canvas) -> bool:
         return True
+    
+    def draw_pre(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
+        pass
 
     def draw_post(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
