@@ -43,7 +43,10 @@ class SculptPlusPaths(Enum):
     SRC_LIB_IMAGES = join(SRC_LIB, 'images')
 
     APP_DATA = str(addon_data_dir)
-    BRUSH_SETS_LIB = str(brush_sets_dir)
+    DATA_BRUSHES = str(brush_sets_dir)
+    DATA_BRUSH_ICONS = str(brush_sets_dir / "br_icons")
+    DATA_CATS = str(brush_sets_dir / "cats")
+    DATA_CAT_ICONS = str(brush_sets_dir / "cat_icons")
 
     def __call__(self, *path):
         if not path:

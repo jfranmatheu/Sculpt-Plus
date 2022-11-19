@@ -30,3 +30,6 @@ class Props:
     @classmethod
     def ActiveBrushCat(cls, context: Context):# -> SCULPTPLUS_PG_brush_category:
         return cls.BrushManager(context).active
+
+    #@classmethod
+

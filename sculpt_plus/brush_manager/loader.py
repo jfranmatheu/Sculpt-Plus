@@ -1,11 +1,66 @@
 from sculpt_plus.path import SculptPlusPaths, brush_sets_dir
 import json
 import bpy
-from typing import Dict, Union, List, Set
+from typing import Dict, Union, List, Set, Tuple
 from pathlib import Path
 from sculpt_plus.props import Props
+import pickle
 
 
+def read_cats() -> List[str]:
+    cats_filepath: str = SculptPlusPaths.DATA_BRUSHES('cats.txt')
+    with open(cats_filepath, 'r') as cats_file:
+        return cats_file.read().splitlines()
+
+def write_cats() -> None:
+    cats_filepath: str = SculptPlusPaths.DATA_BRUSHES('cats.txt')
+    with open(cats_filepath, 'w') as cats_file:
+        cat_ids: List[str] = Props.BrushManager(bpy.context).get_cat_ids()
+        cats_file.write('\n'.join(cat_ids))
+
+
+def load_cats():
+    pass
+
+
+def save_cats():
+    pass
+
+
+##############################################################################
+##############################################################################
+##############################################################################
+
+"""
+def read_cats() -> List[str]:
+    cats_filepath: str = SculptPlusPaths.DATA_BRUSHES('cats.txt')
+    with open(cats_filepath, 'r') as cats_file:
+        return cats_file.read().splitlines()
+
+def write_cats() -> None:
+    cats_filepath: str = SculptPlusPaths.DATA_BRUSHES('cats.txt')
+    with open(cats_filepath, 'w') as cats_file:
+        cat_ids: Tuple[str] = Props.BrushManager(bpy.context).get_cat_ids()
+        cats_file.write('\n'.join(cat_ids))
+
+def read_brushes(cat_id: str) -> List[str]:
+    brushes_filepath: str = SculptPlusPaths.DATA_CATS(cat_id, 'brushes.txt')
+    with open(brushes_filepath, 'r') as brushes_file:
+        return brushes_file.read().splitlines()
+
+def write_brushes(cat_id: str) -> None:
+    brushes_filepath: str = SculptPlusPaths.DATA_BRUSHES('brushes.txt')
+    with open(brushes_filepath, 'w') as brushes_file:
+        cat = Props.GetBrushCat(bpy.context, cat_id)
+        brushes_ids: Tuple[str] = cat.get_brushes_ids()
+        brushes_file.write('\n'.join(brushes_ids))
+"""
+
+##############################################################################
+##############################################################################
+##############################################################################
+
+"""
 def load_categories_and_brushes():
     context = bpy.context
     brush_manager = Props.BrushManager(context)
@@ -72,3 +127,4 @@ def load_categories_and_brushes():
         'cats': cats_dict,
         'brushes': cat_brush_relationship
     }
+"""

@@ -34,17 +34,22 @@ class SCULPTPLUS_PG_brush_category(PropertyGroup, PG_id_date):
         return [slot.brush for slot in self.slots if slot.brush]
 
     def add_brush(self, brush: Brush = None) -> SCULPTPLUS_PG_brush_slot:
+        if brush is None or not isinstance(brush, Brush) or not brush.use_paint_sculpt:
+            return
         brush_slot: SCULPTPLUS_PG_brush_slot = self.collection.add()
         brush_slot.brush = brush
         brush_slot.name = brush.name if brush else 'NULL'
         brush_slot.setup_id()
-        if brush:
-            brush.use_fake_user = False
-            if 'cat_id' in brush:
-                other_cat: SCULPTPLUS_PG_brush_category = Props.GetBrushCat(bpy.context, brush['cat_id'])
-                if other_cat:
-                    other_cat.remove_brush(brush)
-            brush['cat_id'] = self.uid
+        brush.use_fake_user = False
+        if 'cat_id' in brush:
+            other_cat: SCULPTPLUS_PG_brush_category = Props.GetBrushCat(bpy.context, brush['cat_id'])
+            if other_cat:
+                other_cat.remove_brush(brush)
+        brush['cat_id'] = self.uid
+        if 'sculpt_plus_id' in brush:
+            brush_slot.uid = brush['sculpt_plus_id']
+        else:
+            brush['sculpt_plus_id'] = brush_slot.uid
         return brush_slot
 
     def replace_brush(self, brush: Brush, slot_index: int) -> None:

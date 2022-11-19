@@ -141,3 +141,6 @@ class SCULPTPLUS_PG_brush_manager(PropertyGroup):
 
     def init(self):
         self.setup()
+
+    def get_cat_ids(self) -> List[str]:
+        return tuple(cat.uid for cat in self.collection)
