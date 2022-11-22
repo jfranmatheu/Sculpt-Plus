@@ -25,15 +25,3 @@ class SCULPTPLUS_PT_brush_management(Panel):
         selector.prop(manager, "cats_enum", text=str(len(manager.cats_enum)))
 
         layout.prop(active_cat, 'icon')
-
-        '''
-        if not active_cat:
-            return
-
-        content = section.column(align=True)
-        content.template_list(
-            "SCULPTPLUS_UL_brush_slot","",
-            active_cat, "cats_coll",
-            active_cat, "active_index"
-        )
-        '''

@@ -8,8 +8,6 @@ from .serializable import Serializable
 
 
 class CategoryItem(Serializable):
-    id: str
-    name: str
     fav: bool # Is favourite item.
     cat_id: str
     data_id: str
@@ -27,6 +25,10 @@ class CategoryItem(Serializable):
     @property
     def name(self) -> str:
         return self.data.name
+
+    @classmethod
+    def from_cat_item(cls, cat_item: 'CategoryItem') -> 'CategoryItem':
+        pass
 
 class BrushCategoryItem(CategoryItem):
     data: Brush
@@ -47,15 +49,23 @@ class Category(Serializable):
 
         self.items = []
 
+    @property
+    def item_ids(self) -> List[str]:
+        return [item.data_id for item in self.items]
+
     def add_item(self, data: Union[Brush, Image, str]) -> CategoryItem:
         item = CategoryItem(data, self.id)
-        self._items.append(item)
+        self.items.append(item)
         return item
 
 class BrushCategory(Category):
     items: List[BrushCategoryItem]
 
-    def add_item(self, data: Union[Brush, Image, str]) -> BrushCategoryItem:
+    def add_item(self, data: Union[Brush, Image, str, BrushCategoryItem]) -> BrushCategoryItem:
+        if isinstance(data, BrushCategoryItem):
+            self.items.append(data)
+            return data
+
         item = BrushCategoryItem(data, self.id)
         self._items.append(item)
         return item
@@ -69,7 +79,8 @@ class TextureCategory(Category):
         return item
 
 
-
 # Alias.
 TexCat = TextureCategory
 BruCat = BrushCategory
+TexCatItem = TextureCategoryItem
+BruCatItem = BrushCategoryItem

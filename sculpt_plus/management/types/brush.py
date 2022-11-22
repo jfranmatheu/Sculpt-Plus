@@ -26,6 +26,8 @@ brush_properties: Dict[str, Property] = lambda : bpy.types.Brush.bl_rna.properti
 
 
 class Brush(BlBrush):
+    id: str
+
     def __init__(self, brush: BlBrush):
         self.id: str = uuid4().hex
         brush['id'] = self.id

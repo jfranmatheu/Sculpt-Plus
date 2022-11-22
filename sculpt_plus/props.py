@@ -25,15 +25,12 @@ class Props:
 
     @classmethod
     def BrushManager(cls, context: Context):# -> SCULPTPLUS_PG_brush_manager:
-        return cls.Temporal(context).brush_manager
+        # return cls.Temporal(context).brush_manager
 
     @classmethod
     def GetBrushCat(cls, context: Context, cat_idname: Union[str, int]):# -> SCULPTPLUS_PG_brush_category:
-        return cls.BrushManager(context).get_cat(cat_idname)
+        # return cls.BrushManager(context).get_cat(cat_idname)
 
     @classmethod
     def ActiveBrushCat(cls, context: Context):# -> SCULPTPLUS_PG_brush_category:
-        return cls.BrushManager(context).active
-
-    #@classmethod
-
+        # return cls.BrushManager(context).active
