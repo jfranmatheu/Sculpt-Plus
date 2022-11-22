@@ -22,6 +22,9 @@ if __package__ == 'sculpt_plus':
     ordered_classes = None
 
     def init():
+        from . import install_deps
+        install_deps.install()
+
         global modules
         global ordered_classes
         global classes

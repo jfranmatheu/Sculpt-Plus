@@ -19,6 +19,8 @@ enum_list = [("NONE", "None", "")]
 class SCULPTPLUS_AddonPreferences(AddonPreferences):
     bl_idname: str = __package__
 
+    first_time: BoolProperty(default=False)
+
     brush_lib_path: StringProperty(
         name="Brush Library Directory",
         description="Folder where to save your brush sets",
@@ -93,6 +95,10 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
+
+        if self.first_time:
+
+            return
 
         def section(title: str, icon: str = 'NONE', *props):
             section = layout.column(align=True)

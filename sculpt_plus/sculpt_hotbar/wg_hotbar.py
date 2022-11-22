@@ -35,6 +35,7 @@ class Hotbar(WidgetBase):
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         # Size.
+        cv_pos: Vector = cv.pos
         isize = SLOT_SIZE*cv.scale
         self.size = s = Vector((
             isize*10,
@@ -44,8 +45,8 @@ class Hotbar(WidgetBase):
         # Position.
         cv_width = cv.size.x
         self.pos = p = Vector((
-            cv_width/2 - s.x/2,
-            prefs.margin_bottom*cv.scale
+            cv_pos.x + cv_width/2 - s.x/2,
+            cv_pos.y + prefs.margin_bottom*cv.scale
         ))
         # Slot Size.
         self.slot_size = slot_size = Vector((s.x/10, s.x/10))
@@ -322,11 +323,11 @@ class Hotbar(WidgetBase):
                 text = "[ Empty Slot ]"
             pos = slot_pos + Vector((self.slot_size.x/2.0, self.slot_size.y))
 
-        elif cv.group_t.get_hovered_item_data():
+        elif cv.group_t and cv.group_t.get_hovered_item_data():
             text = cv.group_t.get_hovered_item_data()['label']
             pos = cv.group_t.get_pos_by_relative_point(Vector(alignment))
 
-        elif cv.group_mask.get_hovered_item_data():
+        elif cv.group_mask and cv.group_mask.get_hovered_item_data():
             text = cv.group_mask.get_hovered_item_data()['label']
             pos = cv.group_mask.hovered_group.get_pos_by_relative_point(Vector(alignment))
 

@@ -11,7 +11,7 @@ from sculpt_plus.path import brush_sets_dir, SculptPlusPaths
 from sculpt_plus.lib import BrushIcon, Icon
 import numpy as np
 
-cache_text: Dict[str, GPUTexture] = {}
+cache_tex: Dict[str, GPUTexture] = {}
 
 def load_image_and_scale(filepath: str, size: Tuple[int, int] = (128, 128)) -> Image:
     image: Image = bpy.data.images.load(filepath, check_existing=True)
@@ -65,7 +65,7 @@ def get_brush_tex(brush: Brush) -> GPUTexture:
     width, height = get_image_size(icon_path)
     if width > 128 or height > 128:
         resize_and_save_brush_icon(brush)
-    return gputex_from_image_file(icon_path, idname=brush['id'])
+    return gputex_from_image_file(icon_path, idname=brush['sculpt_plus_id'])
 
 def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), idname: Union[str, None] = None) -> GPUTexture:
     """
@@ -77,10 +77,10 @@ def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), id
     if idname is None:
         idname: str = filepath
 
-    gputex: GPUTexture = cache_text.get(idname, None)
+    gputex: GPUTexture = cache_tex.get(idname, None)
     if gputex is not None:
         return gputex
-
+ 
     img: Image = load_image_and_scale(filepath, size)
     px: np.ndarray = get_nparray_from_image(img)
 
@@ -98,5 +98,8 @@ def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), id
         data=buff
     )
 
-    cache_text[idname] = gputex
+    bpy.data.images.remove(img)
+    del img
+
+    cache_tex[idname] = gputex
     return gputex

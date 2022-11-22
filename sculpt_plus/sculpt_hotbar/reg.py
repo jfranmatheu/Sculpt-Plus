@@ -9,7 +9,8 @@ def register():
     from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
     from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
     def init_master(gzg,ctx,gmaster):
-        gzg.rdim = (ctx.region.width, ctx.region.height)
+        gzg.roff = (0, 0)
+        gzg.rdim = (ctx.region.width, ctx.region.height) # get_reg_off_dim(ctx)
         gmaster.reg=ctx.region
         gmaster.init(ctx)
         gmaster.use_event_handle_all = True
@@ -23,11 +24,25 @@ def register():
             # ctx.scene.sculpt_hotbar.init_brushes()
         gzg.master = gmaster
     def update_master(gzg,ctx,cv):
-        if cv.reg != ctx.region or gzg.rdim[0] != ctx.region.width or gzg.rdim[1] != ctx.region.height:
+        off_left = 0
+        off_bot = 0
+        off_top = 0
+        off_right = 0
+        for reg in ctx.area.regions:
+            if reg.type == 'TOOLS':
+                off_left += reg.width
+            elif reg.type == 'UI':
+                off_right += reg.width
+        width = ctx.region.width - off_right - off_left
+        height = ctx.region.height - off_top - off_bot
+        if cv.reg != ctx.region or gzg.rdim[0] != width or gzg.rdim[1] != height or off_left != gzg.roff[0] or off_bot != gzg.roff[1]:
             cv.reg = ctx.region
-            gzg.rdim = ctx.region.width, ctx.region.height
+            ctx.region.tag_redraw()
+            # update_off_dim(gzg,ctx)
+            gzg.roff = (off_left, off_bot)
+            gzg.rdim = (width, height)
             p = get_prefs(ctx)
-            cv.update(Vector(gzg.rdim),p.get_scale(ctx), p)
+            cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
     from bpy.types import GizmoGroup as GZG, Gizmo as GZ
     controller=type(
         "SculptHotbarGController",
@@ -52,7 +67,7 @@ def register():
             'bl_idname':"VIEW3D_GZ_sculpt_hotbar",
             '_cv_instance':None,
             'get':classmethod(lambda x,r: x._cv_instance if x._cv_instance is not None else CV(r)),
-            'init':lambda x, c: x.cv.update(Vector((c.region.width, c.region.height)), get_prefs(c).get_scale(c), get_prefs(c)),
+            'init':lambda x, c: x.cv.update((0,0), (c.region.width, c.region.height), get_prefs(c).get_scale(c), get_prefs(c)),
             'setup':lambda x: setattr(x, 'cv', x.__class__.get(bpy.context.region)),
             'test_select':lambda x,c,_: x.cv.test(c,_) if hasattr(x,'cv') else -1,
             'invoke':lambda x,c,e: x.cv.invoke(c,e) if hasattr(x,'cv') else {'FINISHED'},

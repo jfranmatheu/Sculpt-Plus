@@ -1,13 +1,15 @@
 from bpy.types import PropertyGroup, Context, WindowManager as WM
-from bpy.props import PointerProperty
+from bpy.props import PointerProperty, BoolProperty
 
-from sculpt_plus.brush_manager.data_brush_manager import SCULPTPLUS_PG_brush_manager as PG_BrushManager
-'''
-try:
-    from sculpt_plus.brush_manager.data_brush_manager import SCULPTPLUS_PG_brush_manager as PG_BrushManager
-except:
-    PG_BrushManager = type("DummyPG", (PropertyGroup,), {})
-'''
+from sculpt_plus.management.data_brush_manager import SCULPTPLUS_PG_brush_manager as PG_BrushManager
+
+
+class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
+    show_brush_settings: BoolProperty(default=True)
+    show_brush_settings_advanced: BoolProperty(default=False)
+    show_brush_settings_stroke: BoolProperty(default=False)
+    show_brush_settings_falloff: BoolProperty(default=False)
+    show_brush_settings_texture: BoolProperty(default=False)
 
 class SCULPTPLUS_PG_wm(PropertyGroup):
     @staticmethod
@@ -16,6 +18,7 @@ class SCULPTPLUS_PG_wm(PropertyGroup):
 
     brush_manager: PointerProperty(type=PG_BrushManager)
     #hotbar: PointerProperty(type=PG_SculptHotbar)
+    ui: PointerProperty(type=SCULPTPLUS_PG_ui_toggles)
 
 
 # -------------------------------------------------------------------

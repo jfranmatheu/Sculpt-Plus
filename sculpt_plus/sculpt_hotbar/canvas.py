@@ -52,10 +52,10 @@ class Canvas:
         self.shelf_drag: ShelfDragHandle = ShelfDragHandle(self)
         self.shelf_search: ShelfSearch = ShelfSearch(self)
         self.shelf_grid: ShelfGrid = ShelfGrid(self)
-        self.group_mask: MaskMultiGroup = MaskMultiGroup(self)
-        self.group_t: TransformGroup = TransformGroup(self)
-        self.sidebar: Sidebar = Sidebar(self)
-        self.sidebar_grid: SidebarGrid = SidebarGrid(self)
+        self.group_mask: MaskMultiGroup = None # MaskMultiGroup(self)
+        self.group_t: TransformGroup = None # TransformGroup(self)
+        #self.sidebar: Sidebar = Sidebar(self)
+        #self.sidebar_grid: SidebarGrid = SidebarGrid(self)
         self.shelf_sidebar: ShelfSidebar = ShelfSidebar(self)
         self.ctx_shelf_item: ShelfGridItemCtxPie = ShelfGridItemCtxPie(self)
 
@@ -63,15 +63,17 @@ class Canvas:
                          self.shelf,
                          self.shelf_drag, self.shelf_search, self.shelf_grid,
                          self.shelf_sidebar,
-                         self.group_mask, self.group_t,
+                         #self.group_mask, self.group_t,
                          self.ctx_shelf_item
                          )
         global start_time
         start_time = time()
 
-    def update(self, dimensions: Vector, scale: float, prefs) -> 'Canvas': # SCULPTPLUS_AddonPreferences
+    def update(self, off: tuple, dimensions: tuple, scale: float, prefs) -> 'Canvas': # SCULPTPLUS_AddonPreferences
         if dimensions:
-            self.size = dimensions
+            self.size = Vector(dimensions)
+        if off:
+            self.pos = Vector(off)
         self.scale = scale
         for child in self.children: child.update(self, prefs)
         #self.hotbar.update(self, prefs)
@@ -79,7 +81,7 @@ class Canvas:
         #self.shelf_drag.update(self, prefs)
         return self
     def refresh(self): self.reg.tag_redraw()
-    def test(self, ctx, m):return 1 if self._on_hover(ctx, m) else -1
+    def test(self, ctx, m):return 1 if not get_prefs(ctx).first_time and self._on_hover(ctx, m) else -1
     @staticmethod
     def set_cursor(_state=True):
         import bpy
@@ -182,6 +184,10 @@ class Canvas:
         self.active_ctx_widget = widget
 
     def draw(self, ctx):
+        if get_prefs(ctx).first_time:
+            DiText(Vector((10, 10)), "Please, restart Blender to complete Sculpt+ installation!", 32, 1.0, (1.0, 0.2, 0.1, 1.0))
+            return
+
         global counter
         global fps_count
         global start_time

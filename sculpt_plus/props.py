@@ -18,6 +18,10 @@ class Props:
     @staticmethod
     def Temporal(context: Context):# -> SCULPTPLUS_PG_wm:
         return context.window_manager.sculpt_plus
+        
+    @classmethod
+    def UI(cls, context: Context):# -> SCULPTPLUS_PG_wm:
+        return cls.Temporal(context).ui
 
     @classmethod
     def BrushManager(cls, context: Context):# -> SCULPTPLUS_PG_brush_manager:

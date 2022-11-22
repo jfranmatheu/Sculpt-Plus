@@ -41,7 +41,8 @@ class Shelf(WidgetBase):
             self.cv.refresh()
             self.cv.shelf_drag.update(self.cv, None)
             self.cv.shelf_search.update(self.cv, None)
-            self.cv.shelf_sidebar.update(self.cv, None)
+            if self.cv.shelf_sidebar:
+                self.cv.shelf_sidebar.update(self.cv, None)
 
         if state == False:
             self.cv.shelf_grid.selected_item = None
