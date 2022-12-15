@@ -1,13 +1,12 @@
-
 import bpy
 sculpt_hotbar_classes = []
-
 def register():
     print("[SculptHotbar] Registering...")
     from mathutils import Vector
     from sculpt_plus.prefs import get_prefs
     from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
     from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
+    from sculpt_plus.utils.gpu import LiveView
     def init_master(gzg,ctx,gmaster):
         gzg.roff = (0, 0)
         gzg.rdim = (ctx.region.width, ctx.region.height) # get_reg_off_dim(ctx)
@@ -18,11 +17,18 @@ def register():
         gmaster.scale_basis = 1.0
         if not bpy.sculpt_hotbar._cv_instance:
             bpy.sculpt_hotbar._cv_instance = gmaster.cv
-            # Now Blender says: 
+            # Now Blender says:
             # "AttributeError: Writing to ID classes in this context is not allowed:
             # Scene, Scene datablock, error setting SculptHotbarPG.<UNKNOWN>"
             # ctx.scene.sculpt_hotbar.init_brushes()
         gzg.master = gmaster
+        #LiveView.get().start_handler(ctx)
+    def dummy_poll_view(ctx):
+        #if ctx.mode != 'SCULPT':
+        #    LiveView.get().stop_handler()
+        #else:
+        #    LiveView.get().start_handler(ctx)
+        return True
     def update_master(gzg,ctx,cv):
         off_left = 0
         off_bot = 0
@@ -37,13 +43,14 @@ def register():
         height = ctx.region.height - off_top - off_bot
         if cv.reg != ctx.region or gzg.rdim[0] != width or gzg.rdim[1] != height or off_left != gzg.roff[0] or off_bot != gzg.roff[1]:
             cv.reg = ctx.region
-            ctx.region.tag_redraw()
+            cv.refresh()
             # update_off_dim(gzg,ctx)
             gzg.roff = (off_left, off_bot)
             gzg.rdim = (width, height)
             p = get_prefs(ctx)
             cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
     from bpy.types import GizmoGroup as GZG, Gizmo as GZ
+    from ..utils.gpu import OffscreenBuffer
     controller=type(
         "SculptHotbarGController",
         (GZG,KM),
@@ -54,7 +61,7 @@ def register():
             'bl_region_type': 'WINDOW',
             'bl_options': {'PERSISTENT', 'SHOW_MODAL_ALL'},
             'gz': "VIEW3D_GZ_sculpt_hotbar",
-            'poll': classmethod(lambda x, y: y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo),
+            'poll': classmethod(lambda x, y: dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo),
             'draw_prepare': lambda x,y: update_master(x,y,x.master.cv) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
             'setup': lambda x,y: init_master(x,y,x.gizmos.new(x.__class__.gz)),
             'refresh': lambda x,y: setattr(x.master.cv,'reg',y.region) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
@@ -73,7 +80,7 @@ def register():
             'invoke':lambda x,c,e: x.cv.invoke(c,e) if hasattr(x,'cv') else {'FINISHED'},
             'modal':lambda x,c,e,_: x.cv.modal(c,e,_) if hasattr(x,'cv') else {'FINISHED'},
             'exit':lambda x,c,_: x.cv.exit(c,_) if hasattr(x,'cv') else None,
-            'draw':lambda x,c: x.cv.draw(c) if hasattr(x,'cv') else None,
+            'draw':lambda x,c: OffscreenBuffer.draw(c), # x.cv.draw(c) if hasattr(x,'cv') else None,
         }
     )
     global sculpt_hotbar_classes
@@ -81,8 +88,6 @@ def register():
     for cls in sculpt_hotbar_classes:
         bpy.utils.register_class(cls)
     bpy.sculpt_hotbar = master
-
-
 def unregister():
     print("[SculptHotbar] Unregistering...")
     for cls in sculpt_hotbar_classes:

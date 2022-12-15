@@ -1,25 +1,29 @@
 from .wg_base import WidgetBase
-from typing import Tuple
-from sculpt_plus.props import Props
+from typing import Tuple, Union
 import bpy
-from math import radians
+from bpy import ops as OPS
+from math import radians, cos, sin
 from mathutils import Vector
-from sculpt_plus.sculpt_hotbar.di import DiRct, DiText, DiCircle, DiTri
+from sculpt_plus.sculpt_hotbar.di import DiRct, DiText, DiCircle, DiTri, get_text_dim
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.math import rotate_point_around_point, point_inside_circle, distance_between
+from sculpt_plus.props import Props, Brush, Texture, BrushCategory, TextureCategory
 
+
+item_types = Union[Brush, Texture, BrushCategory, TextureCategory]
 
 class CtxPie(WidgetBase):
     interactable: bool = True
+    target_item: item_types
 
-    def get_options(self, item) -> Tuple[Tuple[str, str, str]]:
+    def get_options(self, item: item_types) -> Tuple[Tuple[str, str, str]]:
         return ()
 
     def init(self):
         self.enabled = False
-        self.safety_radius: int = 16 * self.cv.scale
-        self.radius: int = self.safety_radius * 4
-        self.target_item = None
+        self.safety_radius: int = 20 * self.cv.scale
+        self.radius: int = self.safety_radius * 3.5
+        # self.target_item = None
         self.hovered_option = None
         '''
         super().init()
@@ -36,21 +40,28 @@ class CtxPie(WidgetBase):
             })
         '''
 
-    def show(self, cv, m: Vector, item) -> None:
+    def show(self, cv, m: Vector, item: item_types) -> None:
         self.origin = m
         self.options = self.get_options(item)
-        self.angle_between = 360 / len(self.options)
+        if not self.options:
+            return
+        angle_between = 360 / len(self.options)
         self.options_pos =  []
         # Rotate points for every option based on angle.
         top_point: Vector = self.origin + Vector((0, self.radius))
-        for i in range(len(self.options)):
-            self.options_pos.append(
-                rotate_point_around_point(m, top_point, radians(self.angle_between * i))
-            )
-            #top_point = rotate_point_around_point(self.origin, top_point, self.angle_between)
-        self.target_item = item
-        print(self.options_pos)
+        for i, option in enumerate(self.options):
+            label_dim = Vector(get_text_dim(option[1], 14, cv.scale)) / 2.0
+            angle = radians(angle_between * i)
+            p = rotate_point_around_point(self.origin, top_point, angle)
+            displacement = p - self.origin
+            displacement_factor = displacement / self.radius
+            if displacement_factor.x != 0:
+                p.x += (label_dim.x * displacement_factor.x)
+            if displacement_factor.y != 0:
+                p.y += (label_dim.y * displacement_factor.y)
+            self.options_pos.append(p)
 
+        self.target_item = item
         self.enabled = True
         cv.inject_ctx_widget(self)
 
@@ -88,7 +99,7 @@ class CtxPie(WidgetBase):
         pass
 
     def draw(self, context, cv, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        DiCircle(self.origin, 1.5, self.safety_radius, 16, (.92, .92, .92, .92))
+        DiCircle(self.origin, 2.0, self.safety_radius, 16, (.92, .92, .92, .92) if self.hovered_option else (.9, .3, .2, .92))
         for option, option_pos in zip(self.options, self.options_pos):
             #DiCircle(option_pos, 1.5, self.safety_radius, 12, (0, 0, 0, .9))
             DiText(option_pos, option[1], 14,
@@ -102,30 +113,100 @@ class CtxPie(WidgetBase):
                 })
 
 class ShelfGridItemCtxPie(CtxPie):
-    def get_options(self, brush: bpy.types.Brush) -> Tuple[Tuple[str, str, str]]:
-        act_cat_id: str = Props.ActiveBrushCat(bpy.context).uid
-        return (
-            ('REMOVE', "Remove", "Remove brush from active category")
-            if 'cat_id' in brush and brush['cat_id'] == act_cat_id else
-            ('ADD', "Add", "Add brush to active category"),
-            ('FAV', "Mark Favourite", "Mark brush as favourite")
-            if 'fav' not in brush or ('fav' in brush and brush['fav'] == 0) else #brush.fav == False else
-            ('UNFAV', "Unmark Favourite", "Unmark brush as favourite"),
-            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush")
+    def get_options(self, item: Union[Brush, Texture]) -> Tuple[Tuple[str, str, str]]:
+        type: str = self.cv.shelf_grid.type
+        if type == 'BRUSH':
+            act_cat_id: str = Props.ActiveBrushCat().id
+            cat_count: int = Props.BrushCatsCount()
+        elif type == 'TEXTURE':
+            act_cat_id: str = Props.ActiveTextureCat().id
+            cat_count: int = Props.TextureCatsCount()
+        else:
+            return ()
+        options = (
+            ('MOVE', "Move", "Move item to another category") if cat_count > 1 else None,
+            # if item.cat_id == act_cat_id else
+            ('UNFAV', "Unmark Favourite", "Unmark item as favourite")
+            if item.fav else
+            ('FAV', "Mark Favourite", "Mark brush as favourite"),
+            ('REMOVE', "Remove", "Remove item"),
+            ('SAVE', "Save Default", "Save default state"),
+            ('RESET', "Reset to Default", "Reset to default state"),
+            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush"),
+            ('RENAME', "Rename", "Change item name"),
         )
+        return tuple(op for op in options if op is not None)
 
     def execute_pie_option(self, ctx, option_id: str) -> None:
-        print(option_id)
+        # print(option_id)
+        type: str = self.cv.shelf_grid.type
         if option_id == 'REMOVE':
-            Props.ActiveBrushCat(ctx).remove_brush(self.target_item)
-        elif option_id == 'ADD':
-            Props.ActiveBrushCat(ctx).add_brush(self.target_item)
+            if type == 'BRUSH':
+                Props.BrushManager().remove_brush_item(self.target_item)
+                # Props.ActiveBrushCat().unlink_item(self.target_item)
+            elif type == 'TEXTURE':
+                Props.BrushManager().remove_texture_item(self.target_item)
+                # Props.ActiveTextureCat().unlink_item(self.target_item)
+        elif option_id == 'MOVE':
+            OPS.sculpt_plus.move_item_to_another_cat('INVOKE_DEFAULT', False, cat_type=type, item_id=self.target_item.id)
+            # Props.ActiveBrushCat(ctx).add_brush(self.target_item)
         elif option_id == 'ASSIGN_ICON':
             # brush: bpy.types.Brush = self.target_item
             # brush.use_custom_icon = True
             # TODO: operator should open browser window to select custom icon.
-            pass
+            OPS.sculpt_plus.assign_icon_to_brush('INVOKE_DEFAULT', False, brush_id=self.target_item.id)
         elif option_id == 'FAV':
-            self.target_item['fav'] = 1
+            self.target_item.fav = True
         elif option_id == 'UNFAV':
-            self.target_item['fav'] = 0
+            self.target_item.fav = False
+        elif option_id == 'RENAME':
+            OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, item_type=type, item_id=self.target_item.id, item_name=self.target_item.name)
+            #def _rename_item(**kwargs):
+            #    OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, **kwargs)
+            #self.cv.refresh(ctx)
+            #self.time_fun(_rename_item, .2, item_type=type, item_id=self.target_item.id, item_name=self.target_item.name)
+
+
+class ShelfSidebarCatCtxPie(CtxPie):
+    def get_options(self, item: Union[BrushCategory, TextureCategory]) -> Tuple[Tuple[str, str, str]]:
+        type: str = self.cv.shelf_grid.type
+        if type == 'BRUSH':
+            act_cat: str = Props.ActiveBrushCat()
+            max_index: int = Props.BrushCatsCount() -1 
+        elif type == 'TEXTURE':
+            act_cat: str = Props.ActiveTextureCat()
+            max_index: int = Props.TextureCatsCount() -1
+        else:
+            return ()
+        item_is_active = item == act_cat
+        options = (
+            #('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index < max_index else None,
+            #('MOVE_DOWN', "Move Down", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
+            # ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
+            ('REMOVE', "Remove", "Remove category"),
+            ('SAVE', "Save Brushes Defaults", "Save default state for every brush") if type=='BRUSH' else None,
+            ('RESET', "Reset Brushes to Defaults", "Reset to default state for every brush") if type=='BRUSH' else None,
+            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the category"),
+            ('RENAME', "Rename", "Change item name"),
+        )
+        return tuple(op for op in options if op is not None)
+
+    def execute_pie_option(self, ctx, option_id: str) -> None:
+        type: str = self.cv.shelf_grid.type
+        if option_id == 'REMOVE':
+            if type == 'BRUSH':
+                Props.BrushManager().remove_brush_cat(self.target_item)
+            elif type == 'TEXTURE':
+                Props.BrushManager().remove_texture_cat(self.target_item)
+        elif option_id == 'MOVE_UP':
+            pass
+        elif option_id == 'MOVE_DOWN':
+            pass
+        elif option_id == 'ASSIGN_ICON':
+            OPS.sculpt_plus.assign_icon_to_cat('INVOKE_DEFAULT', False, cat_type=type, cat_id=self.target_item.id)
+        elif option_id == 'SAVE':
+            pass
+        elif option_id == 'RESET':
+            Props.BrushManager().reset_brush_cat(self.hovered_option)
+        elif option_id == 'RENAME':
+            OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, item_type='CAT_'+type, item_id=self.target_item.id, item_name=self.target_item.name)

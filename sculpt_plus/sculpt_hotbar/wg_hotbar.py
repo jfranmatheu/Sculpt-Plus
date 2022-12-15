@@ -7,8 +7,9 @@ from mathutils import Vector
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiText
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
-from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth
+from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth, map_value
 from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
+from sculpt_plus.props import Props
 
 
 SLOT_SIZE = 48
@@ -22,16 +23,32 @@ class Hotbar(WidgetBase):
         self.slot_size = Vector((0, 0))
         self._press_time = 0
         self._press_slot = Vector((0, 0))
-        self.moving_slot = False
+        self._moving_slot = False
         self.item_size = Vector((SLOT_SIZE, SLOT_SIZE))
         self.tooltip_data_pool = []
         self.curr_tooltip_data = None
-        self.curr_tooltip_opacity = 0.0
+        self.curr_tooltip_opacity = 0.8
         self.prev_tooltip_opacity = 0.8
         self.prev_tooltip_data = None
+        self.tooltip_timer = 0.0
         self.use_secondary = False
         self.brush_rolling = False
         self.brush_scrolling_m = Vector((0, 0))
+
+    @property
+    def moving_slot(self) -> bool:
+        return self._moving_slot
+
+    @moving_slot.setter
+    def moving_slot(self, value: bool) -> None:
+        self._moving_slot = value
+        if value:
+            def _update():
+                if not self.moving_slot:
+                    return None
+                self.cv.refresh()
+                return 0.1
+            self.time_fun(_update)
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         # Size.
@@ -91,25 +108,28 @@ class Hotbar(WidgetBase):
             if self.on_hover_slot(m, pos, self.slot_size):
                 return idx
         return None
-    
+
     def update_active_brush(self, ctx) -> None:
-        br = ctx.scene.sculpt_hotbar.get_brush(self.slot_on_hover)
+        # br = ctx.scene.sculpt_hotbar.get_brush(self.slot_on_hover)
+        br = Props.GetHotbarBrushAtIndex(self.slot_on_hover)
         if not br:
             return
-        OP.wm.tool_set_by_id(name="builtin_brush.Draw")
-        ctx.tool_settings.sculpt.brush = br
+        OP.wm.tool_set_by_id(name="builtin_brush." + br.sculpt_tool.replace('_', ' ').title())
+        Props.SetHotbarSelected(ctx, br)
 
     def on_leftmouse_press(self, ctx, cv: Canvas, m: Vector) -> bool:
-        if self.slot_on_hover is None:
+        if self.slot_on_hover is None or Props.GetHotbarBrushAtIndex(self.slot_on_hover) is None:
             self.moving_slot = False
             self._press_time = None
             return
         if cv.shelf.expand:
+            ''' Assign brush from grid to hotbar. '''
             if cv.shelf_grid.selected_item:
-                ctx.scene.sculpt_hotbar.set_brush(self.slot_on_hover, cv.shelf_grid.selected_item)
+                # ctx.scene.sculpt_hotbar.set_brush(self.slot_on_hover, cv.shelf_grid.selected_item)
+                Props.SetHotbarBrush(self.slot_on_hover, cv.shelf_grid.selected_item)
                 cv.shelf_grid.selected_item = None
             return
-        
+
         self.update_active_brush(ctx)
 
         def _check_time(reg):
@@ -118,7 +138,7 @@ class Hotbar(WidgetBase):
             if (time() - self._press_time) >= .3:
                 self.moving_slot = True
                 self._press_slot = self.slot_pos[self.slot_on_hover].copy()
-                reg.tag_redraw()
+                cv.refresh()
                 return None
             return 0.05
         self._press_time = time()
@@ -181,9 +201,10 @@ class Hotbar(WidgetBase):
             curr_slot = self.get_slot_at_pos(m)
             if prev_slot == curr_slot or curr_slot == None:
                 return True
-            brushes = ctx.scene.sculpt_hotbar.active_brushes
+            # brushes = ctx.scene.sculpt_hotbar.active_brushes
             #print(brushes[prev_slot], brushes[curr_slot])
-            brushes[prev_slot].slot, brushes[curr_slot].slot = brushes[curr_slot].slot, brushes[prev_slot].slot
+            #brushes[prev_slot].slot, brushes[curr_slot].slot = brushes[curr_slot].slot, brushes[prev_slot].slot
+            Props.SwitchHotbarBrushIndices(prev_slot, curr_slot)
             self._press_slot.x = self.slot_pos[curr_slot].x
             self.slot_on_hover = curr_slot
         #cv.refresh()
@@ -198,6 +219,9 @@ class Hotbar(WidgetBase):
         self._press_time = None
 
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
+        def draw_preview_fallback(p, s, act) -> None:
+            DiBr(p, s, b.sculpt_tool, act)
+
         p = self.pos.copy()
         s = self.size.copy()
 
@@ -207,14 +231,15 @@ class Hotbar(WidgetBase):
         pad = Vector((sep,sep))
         isize = self.item_size
 
-        hotbar = context.scene.sculpt_hotbar
+        # hotbar = context.scene.sculpt_hotbar
         max_idx = 10 # len(hotbar.brushes)
 
         DiRct(p,s,prefs.theme_hotbar)
         DiCage(p, s, 3.2*scale, Vector(prefs.theme_hotbar)*.9)
         DiCage(p, s, 2.0*scale, Vector(prefs.theme_hotbar_slot)*.9)
 
-        act_br = context.tool_settings.sculpt.brush
+        act_br = context.tool_settings.sculpt.brush # Props.GetHotbarSelectedId() # context.tool_settings.sculpt.brush
+        act_br_id = act_br['id'] if 'id' in act_br else None
 
         if self.moving_slot:
             slots = self.slot_pos.copy()
@@ -231,21 +256,35 @@ class Hotbar(WidgetBase):
                 DiRct(slot_pos,isize,prefs.theme_hotbar_slot)
                 #DiCage(slot_pos, isize, 2.0*scale, Vector(prefs.theme_hotbar_slot)*.9)
             if idx < max_idx:
-                b=hotbar.get_brush(idx)
+                # b=hotbar.get_brush(idx)
+                b = Props.GetHotbarBrushAtIndex(idx)
                 if b:
-                    if (not cv.shelf.expand and act_br == b) or (replace_brush and idx == self.slot_on_hover):
+                    if (not cv.shelf.expand and act_br_id == b.id) or (replace_brush and idx == self.slot_on_hover):
                         DiRct(slot_pos+Vector((0,isize.y)),Vector((isize.x,int(5*scale))),prefs.theme_active_slot_color)
-                    DiBr(slot_pos+pad,isize-pad*2,b,idx==self.slot_on_hover)
+                    #DiBr(slot_pos+pad,isize-pad*2,b,idx==self.slot_on_hover)
+                    b.draw_preview(
+                        slot_pos+pad,
+                        isize-pad*2,
+                        idx==self.slot_on_hover,
+                        fallback=draw_preview_fallback
+                    )
 
             text = str(idx+1)
             DiText(slot_pos+pad, '0' if idx==9 else text, 10, scale, prefs.theme_text)
 
         if self.moving_slot:
             idx = self.slot_on_hover
-            b=hotbar.get_brush(idx)
+            b = Props.GetHotbarBrushAtIndex(idx)
+            # b=hotbar.get_brush(idx)
             slot_pos = self._press_slot
             DiRct(slot_pos, isize,(.4,.4,.4,.25))
-            DiBr(slot_pos+pad,isize-pad*2,b)
+            # DiBr(slot_pos+pad,isize-pad*2,b)
+            b.draw_preview(
+                slot_pos+pad,
+                isize-pad*2,
+                True,
+                fallback=draw_preview_fallback
+            )
             DiCage(slot_pos, isize, 2.2*scale, (.2, .6, 1.0, 1.0))
             text = str(idx+1)
             DiText(slot_pos+pad, '0' if idx==9 else text, 10, scale, prefs.theme_text)
@@ -300,9 +339,9 @@ class Hotbar(WidgetBase):
 
         replace_brush = cv.shelf.expand and self.slot_on_hover is not None and cv.shelf_grid.selected_item
         if replace_brush:
-            hotbar = ctx.scene.sculpt_hotbar
+            # hotbar = ctx.scene.sculpt_hotbar
             idx = self.slot_on_hover
-            b_bar = hotbar.get_brush(idx)
+            b_bar = Props.GetHotbarBrushAtIndex(idx) # hotbar.get_brush(idx)
             b_shelf = cv.shelf_grid.selected_item
             if not b_bar:
                 slot_numkey = 0 if idx==9 else idx+1
@@ -313,14 +352,14 @@ class Hotbar(WidgetBase):
             pos = self.get_pos_by_relative_point(Vector(alignment))
 
         elif self.slot_on_hover is not None:
-            hotbar = ctx.scene.sculpt_hotbar
+            # hotbar = ctx.scene.sculpt_hotbar
             idx = self.slot_on_hover
             slot_pos = self.slot_pos[idx]
-            b_bar = hotbar.get_brush(idx)
+            b_bar = Props.GetHotbarBrushAtIndex(idx) # hotbar.get_brush(idx)
             if b_bar:
                 text = b_bar.name
             else:
-                text = "[ Empty Slot ]"
+                text = "[ Empty Slot ] - %i" % (0 if idx==9 else idx+1)
             pos = slot_pos + Vector((self.slot_size.x/2.0, self.slot_size.y))
 
         elif cv.group_t and cv.group_t.get_hovered_item_data():
@@ -332,6 +371,43 @@ class Hotbar(WidgetBase):
             pos = cv.group_mask.hovered_group.get_pos_by_relative_point(Vector(alignment))
 
         if not text:
+            self.curr_tooltip_data = None
+            self.prev_tooltip_data = None
+            return None
+
+        self.curr_tooltip_data = pos, text
+
+        """ NEW FADE IN OUT
+        if self.curr_tooltip_data is None:
+            self.curr_tooltip_opacity = 0.8
+            self.curr_tooltip_data = pos, text
+            self.prev_tooltip_opacity = 0.0
+
+        elif self.curr_tooltip_data[1] != text:
+            ''' New tooltip. Reset states. '''
+            self.prev_tooltip_data = deepcopy(self.curr_tooltip_data)
+            self.prev_tooltip_opacity = 0.8
+
+            self.curr_tooltip_opacity = 0.0
+            self.curr_tooltip_data = pos, text
+
+            self.tooltip_timer = time()
+
+        elif self.prev_tooltip_opacity != 0:
+            ''' Anim opacity. '''
+            passed_time = time() - self.tooltip_timer
+            if passed_time > 0.2:
+                self.curr_tooltip_opacity = 0.8
+                self.prev_tooltip_opacity = 0.0
+                self.prev_tooltip_data = None
+                return
+
+            self.curr_tooltip_opacity = map_value(passed_time, (0.0, 0.2), (0.0, 0.8))
+            self.prev_tooltip_opacity = map_value(passed_time, (0.0, 0.2), (0.8, 0.0))
+        """
+
+        ''' OLD FADE-IN-OUT
+        if not text and not self.brush_rolling:
             if self.curr_tooltip_data:
                 self.prev_tooltip_opacity = 0.8
                 self.prev_tooltip_data = deepcopy(self.curr_tooltip_data)
@@ -342,7 +418,7 @@ class Hotbar(WidgetBase):
                 self.curr_tooltip_data = None
             return None
 
-        if self.curr_tooltip_data:
+        if self.curr_tooltip_data and not self.brush_rolling:
             if self.curr_tooltip_data[1] == text:
                 return
 
@@ -352,12 +428,23 @@ class Hotbar(WidgetBase):
                       self, 'prev_tooltip_opacity', target_value=0.0,
                       duration=0.15, smooth=True, delay=0.0,
                       finish_callback=self.disable_tooltip)
+        '''
 
-        self.curr_tooltip_opacity = 0.0
+
+        ''' OLD FADE-IN-OUT
         self.curr_tooltip_data = pos, text
-        self.anim('tooltip__curr',
-                  self, 'curr_tooltip_opacity', target_value=0.8,
-                  duration=0.2, smooth=True, delay=0.0)
+
+        if self.brush_rolling:
+            self.prev_tooltip_data = None
+            self.prev_tooltip_opacity = 0.0
+            self.curr_tooltip_opacity = 0.8
+        else:
+            self.curr_tooltip_opacity = 0.0
+            self.anim('tooltip__curr',
+                    self, 'curr_tooltip_opacity', target_value=0.8,
+                    duration=0.2, smooth=True, delay=0.0)
+        '''
+
 
     def disable_tooltip(self):
         #self.curr_tooltip_data = None

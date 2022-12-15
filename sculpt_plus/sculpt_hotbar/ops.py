@@ -1,8 +1,147 @@
-from typing import Tuple
+from typing import Tuple, Set, List
+from pathlib import Path
+
 import bpy
 from bpy.types import Operator
-from bpy.props import IntProperty, EnumProperty, BoolProperty
+from bpy_extras.io_utils import ImportHelper
+from bpy.props import IntProperty, EnumProperty, BoolProperty, StringProperty
+
 from sculpt_plus.prefs import get_prefs
+from sculpt_plus.props import Props
+
+
+enum_items = [('NONE', 'NONE', '')]
+op_pointer = None
+class SCULPTPLUS_OT_move_item_to_another_cat(Operator):
+    """Move an item to another category"""
+    bl_idname = "sculpt_plus.move_item_to_another_cat"
+    bl_label = "Move Item To Another Category"
+    bl_description = "Move an item to another category"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    item_id: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+    cat_type: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+
+    def get_enum_items(self, context) -> List[Tuple[str, str, str]]:
+        global op_pointer
+        if op_pointer is not None and op_pointer == self.as_pointer():
+            return enum_items
+        enum_items.clear()
+        if self.cat_type == 'BRUSH':
+            cats = Props.GetAllBrushCats()
+            act_cat = Props.ActiveBrushCat()
+        elif self.cat_type == 'TEXTURE':
+            cats = Props.GetAllTextureCats()
+            act_cat = Props.ActiveTextureCat()
+        else:
+            return [('NONE', 'NONE', '')]
+
+        for cat in cats:
+            if act_cat == cat:
+                continue
+            enum_items.append((cat.id, cat.name, ""))
+        op_pointer = self.as_pointer()
+        return enum_items
+
+    bl_property = 'enum'
+    enum: EnumProperty(
+        name="Category List",
+        items=get_enum_items,
+        options={'SKIP_SAVE'}
+    )
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None and context.mode == 'SCULPT'
+
+    #def draw(self, context):
+    #    layout = self.layout
+    #    layout.prop()
+
+    def invoke(self, context, event) -> Set[str]:
+        global op_pointer
+        op_pointer = None
+        if not self.item_id or not self.cat_type:
+            return {'CANCELLED'}
+        if self.cat_type == 'BRUSH':
+            if Props.BrushCatsCount() <= 1:
+                return {'CANCELLED'}
+            act_cat = Props.ActiveBrushCat()
+        elif self.cat_type == 'TEXTURE':
+            if Props.TextureCatsCount() <= 1:
+                return {'CANCELLED'}
+            act_cat = Props.ActiveTextureCat()
+        else:
+            return {'CANCELLED'}
+        if self.item_id not in act_cat.item_ids:
+            return {'CANCELLED'}
+        context.window_manager.invoke_search_popup(self)
+        return {'INTERFACE'}
+
+    def execute(self, context) -> Set[str]:
+        global op_pointer
+        op_pointer = None
+        if self.cat_type == 'BRUSH':
+            Props.BrushManager().move_brush(self.item_id, from_cat=None, to_cat=self.enum)
+        elif self.cat_type == 'TEXTURE':
+            Props.BrushManager().move_texture(self.item_id, from_cat=None, to_cat=self.enum)
+        return {'FINISHED'}
+
+
+class SCULPTPLUST_OT_assign_icon_to_brush(Operator, ImportHelper):
+    """Assign an icon to a brush"""
+    bl_idname = "sculpt_plus.assign_icon_to_brush"
+    bl_label = "Assign Icon To Brush"
+    bl_description = "Assign an icon to a brush"
+
+    brush_id: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+    # item_id: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+    # item_type: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+
+    def execute(self, context):
+        # print(self.filepath, " ######## ", self.properties.filepath)
+        if not self.filepath:
+            return {'CANCELLED'}
+        image_path: Path = Path(self.filepath)
+        if not image_path.exists() or not image_path.is_file():
+            return {'CANCELLED'}
+        if image_path.suffix not in {'.png', '.jpg', 'jpeg'}:
+            return {'CANCELLED'}
+        # OK is an image file...
+        #if self.item_type == 'BRUSH':
+        #    item = Props.GetBrush(self.item_id)
+        #elif self.item_type == 'TEXTURE':
+        #    item = Props.GetTexture(self.item_id)
+        item = Props.GetBrush(self.brush_id)
+        if item is not None:
+            item.load_icon(image_path)
+        return{'FINISHED'}
+
+
+class SCULPTPLUS_OT_assign_icon_to_cat(Operator, ImportHelper):
+    """Assign an icon to a brush"""
+    bl_idname = "sculpt_plus.assign_icon_to_cat"
+    bl_label = "Assign Icon To Category"
+    bl_description = "Assign an icon to a category"
+
+    cat_id: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+    cat_type: StringProperty(options={'SKIP_SAVE', 'HIDDEN'})
+
+    def execute(self, context):
+        if not self.filepath:
+            return {'CANCELLED'}
+        image_path: Path = Path(self.filepath)
+        if not image_path.exists() or not image_path.is_file():
+            return {'CANCELLED'}
+        if image_path.suffix not in {'.png', '.jpg', 'jpeg'}:
+            return {'CANCELLED'}
+        if self.cat_type == 'BRUSH':
+            item = Props.GetBrushCat(self.cat_id)
+        elif self.cat_type == 'TEXTURE':
+            item = Props.GetTextureCat(self.cat_id)
+        if item is not None:
+            item.load_icon(image_path)
+        return{'FINISHED'}
 
 
 class SCULPTHOTBAR_OT_set_brush(Operator):
@@ -14,15 +153,17 @@ class SCULPTHOTBAR_OT_set_brush(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.mode == 'SCULPT' and context.tool_settings.sculpt.brush and context.scene.sculpt_hotbar.active_set
+        return context.mode == 'SCULPT' and context.tool_settings.sculpt.brush # and context.scene.sculpt_hotbar.active_set
 
     def execute(self, context):
         if self.index == -1:
             return {'CANCELLED'}
-        act_set = context.scene.sculpt_hotbar.active_set
-        if self.index >= len(act_set.brushes):
-            return {'CANCELLED'}
-        act_set.brushes[self.index].slot = context.tool_settings.sculpt.brush
+        # act_set = context.scene.sculpt_hotbar.active_set
+        # if self.index >= len(act_set.brushes):
+        #     return {'CANCELLED'}
+        # act_set.brushes[self.index].slot = context.tool_settings.sculpt.brush
+        br_index: int = 9 if self.index==0 else self.index - 1
+        Props.SetHotbarSelected(context, br_index)
         return {'FINISHED'}
 
 

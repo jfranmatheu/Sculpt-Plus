@@ -162,7 +162,7 @@ class ButtonGroup(WidgetBase):
         if 'toggle' in item:
             self.item_toggle = item
 
-    def draw_poll(self, context, cv: Canvas) -> bool:
+    def poll(self, context, cv: Canvas) -> bool:
         return cv.shelf.anim_running() and not cv.shelf.expand and not cv.shelf_drag.dragging
 
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
@@ -321,7 +321,7 @@ class MultiButtonGroup(WidgetBase):
         if self.hovered_group:
             self.hovered_group.on_left_click(ctx, cv, m)
 
-    def draw_poll(self, context, cv: Canvas) -> bool:
+    def poll(self, context, cv: Canvas) -> bool:
         return cv.shelf.anim_running() and not cv.shelf.expand and not cv.shelf_drag.dragging
 
     def draw(self, *args):

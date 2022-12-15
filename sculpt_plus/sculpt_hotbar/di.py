@@ -69,6 +69,43 @@ void main()
   fragColor = vec4(pow(col, vec3(2.2)),opa);
 }
 """)
+sh_silueta=CreateShader();sh_silueta=SH("""
+uniform mat4 ModelViewProjectionMatrix;in vec2 texCoord;in vec2 pos;out vec2 texCoord_interp;void main(){gl_Position=ModelViewProjectionMatrix * vec4(pos.xy, 0.0f, 1.0f); gl_Position.z=1.0; texCoord_interp=texCoord;}
+""","""
+in vec2 texCoord_interp;
+out vec4 fragColor;
+
+uniform sampler2D i;
+uniform float alpha;
+uniform vec3 co;
+uniform vec3 bco;
+uniform float use_transp;
+
+void main()
+{
+    fragColor = texture(i, texCoord_interp);
+
+    if (use_transp == 1.0) {
+        if (fragColor.a < .1) {
+            discard;
+        }
+    }
+
+    //float f = (fragColor.r + fragColor.g + fragColor.b) / 3.0;
+    if (fragColor.a > 0.6) {
+        fragColor.rgb = co;
+    }
+    else if (fragColor.a < 0.4) {
+        fragColor.rgb = bco;
+    }
+    else {
+        
+        fragColor.rgb = mix(bco, co, fragColor.a);
+    } 
+    
+    fragColor.a = alpha;
+}
+""")
 font_info = {
     'id': 0
 }
@@ -80,7 +117,27 @@ def DiCircle(_p,_lt,_r,_seg,_co):
     draw_circle_2d(_p,_co,_r,segments=_seg)
     state.line_width_set(1.0)
     state.blend_set('NONE')
+def DiSilueta(_p,_s,_i,_co,_bco,_op,_use_alpha: float = 1.0, s=sh_silueta):
+    if _i is None:
+        return
+    t=get_tex(_i) if not isinstance(_i,TEX) else _i
+    b=bat(s, TF,{p:(
+    _p,(_p.x+_s.x,_p.y),
+    _p+_s,(_p.x,_p.y+_s.y)),
+    texidx:((0,0),(1,0),(1,1),(0,1)),},)
+    s.bind()
+    s.uniform_float('co',_co)
+    s.uniform_float('bco',_bco)
+    s.uniform_float('alpha',_op)
+    s.uniform_float('use_transp',_use_alpha)
+    s.uniform_sampler(i,t)
+    state.blend_set(A);b.draw(s);state.blend_set('NONE')
+def DiLiveSilueta(_ctx,_p,_s,_co,_bco,_op):
+    i=_ctx
+    DiSilueta(_p,_s,i,_co,_bco,_op,1.0)
 def DiIma(_p,_s,_i,s=sh_img):
+    if _i is None:
+        return
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
     b=bat(s, TF,{p:(
     _p,(_p.x+_s.x,_p.y),
@@ -91,6 +148,8 @@ def DiIma(_p,_s,_i,s=sh_img):
     s.uniform_sampler(i,t)
     state.blend_set(A);b.draw(s);state.blend_set('NONE')
 def DiImagl(_p,_s,_i,s=sh_img):
+    if _i is None:
+        return
     b=bat(s, TF,{p:(
     _p,(_p.x+_s.x,_p.y),
     _p+_s,(_p.x,_p.y+_s.y)),
@@ -101,6 +160,8 @@ def DiImagl(_p,_s,_i,s=sh_img):
     s.uniform_int(i, 0)
     b.draw(s)
 def DiImaco(_p,_s,_i,_co,s=sh_img_co):
+    if _i is None:
+        return
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
     b=bat(s, TF,{p:(
     _p,(_p.x+_s.x,_p.y),
@@ -111,6 +172,8 @@ def DiImaco(_p,_s,_i,_co,s=sh_img_co):
     s.uniform_sampler(i,t)
     state.blend_set(A);b.draw(s);state.blend_set('NONE')
 def DiImaOpGamHl(_p,_s,_i,_op:float=1.0,_hl:int=0,s=sh_img_a_op_gam_hl):
+    if _i is None:
+        return
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
     b=bat(s, TF,{p:(
     _p,(_p.x+_s.x,_p.y),
@@ -121,12 +184,16 @@ def DiImaOpGamHl(_p,_s,_i,_op:float=1.0,_hl:int=0,s=sh_img_a_op_gam_hl):
     s.uniform_float(hl,_hl)
     s.uniform_sampler(i,t)
     state.blend_set(A);b.draw(s);state.blend_set('NONE')
-def DiBr(_p,_s,_b,_act=False):
-    DiImaOpGamHl(_p,_s,get_brush_tex(_b),_hl=int(_act))
+def DiBr(_p,_s,_b,_act=False,_op=1):
+    DiImaOpGamHl(_p,_s,get_brush_tex(_b),_op=_op,_hl=int(_act))
     #ico=BrushIcon.from_brush(_b)
     #if ico:DiIma(_p,_s,ico)#;DiIma(_p,_s,ico)
 def DiIco(_p,_s,_i):
     DiIma(_p,_s,get_ui_image_tex(_i))
+def DiIcoCol(_p,_s,_i,_co):
+    DiImaco(_p,_s,get_ui_image_tex(_i),_co)
+def DiIcoOpGamHl(_p,_s,_i,_op=1.0,_hl=0):
+    DiImaOpGamHl(_p,_s,get_ui_image_tex(_i),_op,_hl)
 def DiLine(_a,_b,_lt,_co,s=sh_unif):
     state.blend_set(A)
     b=bat(s,L,{p:(_a,_b)})
@@ -267,3 +334,5 @@ def get_text_dim(_text, _size, _scale):
     id=font_info['id']
     text_size(id, _size, int(72*_scale))
     return text_dim(id, _text)
+def get_rect_center(p,s):
+    return p+s*.5

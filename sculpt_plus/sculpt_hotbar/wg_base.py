@@ -34,6 +34,9 @@ class WidgetBase:
     cursor: CursorIcon = CursorIcon.DEFAULT
     msg_on_enter: str = None
 
+    parent: 'WidgetBase' or Canvas
+    closes_itself: bool
+
     def __init__(self,
                  canvas: Canvas,
                  pos: Vector = Vector((0, 0)),
@@ -47,6 +50,8 @@ class WidgetBase:
         self.size = size
         self.anim_pool: Dict[str, dict] = {} # Dict[str, List] = defaultdict(list) # ID: animations_data
         self.scroll_prev_time = time()
+        self.parent = None
+        self.closes_itself = False
         self.init()
 
     def anim_running(self) -> bool:
@@ -58,7 +63,12 @@ class WidgetBase:
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         pass
 
+    def poll(self, _context, cv: Canvas) -> bool:
+        return True
+
     def invoke(self, ctx, evt, cv: Canvas, m: Vector) -> bool:
+        if not self.enabled:
+            return False
         if not self.enabled:
             return False
         ret = None
@@ -71,6 +81,8 @@ class WidgetBase:
                 ret = self.on_left_click(ctx, cv, m)
             elif evt.value == 'CLICK_DRAG':
                 ret = self.on_left_click_drag(ctx, cv, m)
+            elif evt.value == 'DOUBLE_CLICK':
+                ret = self.on_double_click(ctx, cv, m)
         elif evt.type == 'RIGHTMOUSE':
             if evt.value == 'PRESS':
                 ret = self.on_rightmouse_press(ctx, cv, m)
@@ -120,11 +132,13 @@ class WidgetBase:
     def _on_hover(self, ctx, m) -> bool:
         if not self.enabled:
             return False
-        ctx.region.tag_redraw()
+        if not self.poll(ctx, self.cv):
+            return False
         if self.on_hover(m):
+            self.cv.refresh(ctx)
             # print("Hover...", self)
             if not self._is_on_hover:
-                ctx.region.tag_redraw()
+                self.cv.refresh(ctx)
                 if self.msg_on_enter:
                     ctx.area.header_text_set(self.msg_on_enter)
                 self._is_on_hover = True
@@ -133,7 +147,7 @@ class WidgetBase:
                 Cursor.set_icon(ctx, self.cursor)
             res =  self.on_hover_stay(m)
             if res:
-                ctx.region.tag_redraw()
+                self.cv.refresh(ctx)
             return True
         else:
             if self._is_on_hover:
@@ -143,7 +157,7 @@ class WidgetBase:
                     ctx.area.header_text_set(None)
                 self._is_on_hover = False
                 self.on_hover_exit()
-                ctx.region.tag_redraw()
+                self.cv.refresh(ctx)
             return False
 
 
@@ -180,6 +194,9 @@ class WidgetBase:
         pass
 
     def on_left_click_drag(self, ctx, cv: Canvas, m: Vector) -> None:
+        pass
+
+    def on_double_click(self, ctx, cv: Canvas, m: Vector) -> None:
         pass
 
     def on_rightmouse_press(self, ctx, cv: Canvas, m: Vector) -> None:
@@ -295,7 +312,9 @@ class WidgetBase:
         '''
 
     def get_pos_size_by_anchor(self, anchor: Vector) -> Tuple[Vector, Vector]:
-        return self.pos + self.size * anchor.xz, self.pos + self.size * anchor.yw
+        p_min = self.pos + self.size * anchor.xz
+        p_max = self.pos + self.size * anchor.yw
+        return p_min, p_max - p_min
         '''
         Vector((
             self.pos.x + self.size.x * anchor.x,
@@ -395,15 +414,17 @@ class WidgetBase:
                 start_time=time(),
             )
 
-    def time_fun(self, fun, time=0.1, *args):
+    def time_fun(self, fun, time=0.1, *args, **kwargs):
         if timers.is_registered(fun):
             return
-        timers.register(functools.partial(fun, *args), first_interval=time)
+        timers.register(functools.partial(fun, *args, **kwargs), first_interval=time)
 
     def _draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if not self.enabled:
             return False
         if self.size.x == 0 or self.size.y == 0:
+            return False
+        if not self.poll(context, cv):
             return False
         if not self.draw_poll(context, cv):
             return False

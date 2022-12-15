@@ -1,6 +1,6 @@
 from bpy.types import UIList
 
-
+'''
 class SCULPTHOTBAR_UL_brush_set_slots(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row(align=True)
@@ -19,3 +19,4 @@ class SCULPTHOTBAR_UL_brush_set_slots(UIList):
             
         #_row.prop(item, "_remove", text="", icon='X')
         #_row.operator('sculpt_hotbar.remove_set', text="", icon='X')
+'''

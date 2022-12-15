@@ -1,6 +1,6 @@
 from bpy.types import Panel, UILayout
 
-
+'''
 class VIEW3D_PT_sculpt_hotbar(Panel):
     #bl_parent_id = "VIEW3D_PT_tools_brush_select"
     bl_label = "Sculpt Hotbar"
@@ -60,3 +60,4 @@ class VIEW3D_PT_sculpt_hotbar(Panel):
             op = row.row(align=True)
             op.ui_units_x = 1
             op.operator('sculpt_hotbar.set_brush', text='', icon='BACK').index=idx
+'''

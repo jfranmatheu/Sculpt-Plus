@@ -24,7 +24,7 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     brush_lib_path: StringProperty(
         name="Brush Library Directory",
         description="Folder where to save your brush sets",
-        default=SculptPlusPaths.DATA_BRUSHES(),
+        default=SculptPlusPaths.APP__DATA(),
         subtype='DIR_PATH'
     )
     num_backup_versions: IntProperty(

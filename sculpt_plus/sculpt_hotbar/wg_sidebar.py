@@ -164,7 +164,7 @@ class SidebarGrid(ViewWidget):
         slot_color = Vector(prefs.theme_sidebar_slot)
         return (slot_color,)
 
-    def draw_item(self, slot_p, slot_s, tex, slot_color, scale: float, prefs: SCULPTPLUS_AddonPreferences):
+    def draw_item(self, slot_p, slot_s, tex, is_hovered: bool, slot_color, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         #print(tex.name, slot_p, slot_s)
         DiRct(slot_p, slot_s, slot_color)
         DiIma(slot_p, slot_s, tex)
@@ -172,5 +172,5 @@ class SidebarGrid(ViewWidget):
             DiCage(slot_p, slot_s, 2.4*scale, prefs.theme_active_slot_color) #(.2, .6, 1.0, 1.0))
         else:
             DiCage(slot_p, slot_s, 2.4*scale, slot_color*1.3)
-        if self.hovered_item == tex:
+        if is_hovered:
             DiRct(slot_p, slot_s, (.6,.6,.6,.25))

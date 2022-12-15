@@ -1,6 +1,10 @@
-from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
-from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
+from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active, _defs_sculpt, _defs_transform, _defs_annotate
+from bl_ui.space_toolsystem_common import ToolSelectPanelHelper, ToolDef
 from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel
+from bl_ui.space_view3d import _draw_tool_settings_context_mode
+from bpy.app.translations import pgettext_tip as tip_
+from bpy.app.translations import pgettext_iface as iface_
+from time import time
 
 from sculpt_plus.props import Props
 
@@ -26,6 +30,8 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     # Since we probably want:
     # - tool-tips that include multiple key shortcuts.
     # - ability to click and hold to expose sub-tools.
+    using_multires: bool = [True for mod in context.sculpt_object.modifiers if mod.type == 'MULTIRES'] != []
+    using_dyntopo : bool = context.sculpt_object.use_dynamic_topology_sculpting
 
     space_type = context.space_data.type
     tool_active_id = getattr(
@@ -45,8 +51,11 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     # Start iteration
     ui_gen.send(None)
 
-    skip_draw_mask = True
-    skip_draw_face_sets = True
+    dyntopo_tools = {'SIMPLIFY'}
+    anti_dyntopo_tools = {'DRAW_FACE_SETS', 'BOX_FACE_SET', 'LASSO_FACE_SET', 'FACE_SET_EDIT', 'COLOR_FILTER', 'PAINT', 'SMEAR', 'MASK_BY_COLOR'}
+    multires_tools = {'MULTIRES_DISPLACEMENT_ERASER', 'MULTIRES_DISPLACEMENT_SMEAR'}
+    skip_first_brush = {'MASK', 'DRAW_FACE_SETS', 'MULTIRES_DISPLACEMENT_ERASER', 'MULTIRES_DISPLACEMENT_SMEAR', 'SIMPLIFY'}
+    skipped_brushes = set()
 
     for item in cls.tools_from_context(context):
         if item is None:
@@ -78,20 +87,25 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
             index = -1
             use_menu = False
 
+        tool_idname: str = item.idname.split('.')[1].replace(' ', '_').upper()
         # SKIP first mask and face sets draw brushes.
         if 'builtin_brush' in item.idname:
-            
-            brush_name: str = item.idname.split('.')[1].replace(' ', '_').upper()
-            if brush_name == 'MASK':
-                if skip_draw_mask:
-                    skip_draw_mask = False
-                    continue
-            elif brush_name == 'DRAW_FACE_SETS':
-                if skip_draw_face_sets:
-                    skip_draw_face_sets = False
-                    continue
+            # Check if object has multires modifier.
+            if tool_idname in skipped_brushes:
+                pass
+            elif tool_idname in skip_first_brush:
+                skipped_brushes.add(tool_idname)
+                continue
             else:
                 continue
+
+            if tool_idname in multires_tools and not using_multires:
+                continue
+            if tool_idname in dyntopo_tools and not using_dyntopo:
+                continue
+
+        if using_dyntopo and tool_idname in anti_dyntopo_tools:
+            continue
 
         is_active = (item.idname == tool_active_id)
         icon_value = ToolSelectPanelHelper._icon_value_from_icon_handle(item.icon)
@@ -116,6 +130,8 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     # Signal to finish any remaining layout edits.
     ui_gen.send(None)
 
+
+timer = time()
 def draw_toolbar(self, context):
     if context.mode != 'SCULPT':
         self.draw_cls(self.layout, context)
@@ -126,12 +142,26 @@ def draw_toolbar(self, context):
         draw_cls(VIEW3D_PT_tools_active, self.layout, context, spacing=0.1)
         return
 
-    from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
-    ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
+    layout = self.layout
+    '''
+    global timer
+    if (preview := context.sculpt_object.id_data.preview) is None:
+        preview = context.sculpt_object.id_data.preview_ensure()
+        timer = time()
+    elif not preview.is_icon_custom:
+        if (time() - timer) > 1.0:
+            preview.reload()
+            timer = time()
+    layout.box().template_icon(preview.icon_id, scale=10)
+    '''
 
-    sculpt = context.tool_settings.sculpt
-    act_brush = sculpt.brush
+    space_type = context.space_data.type
+    tool_active = VIEW3D_PT_tools_active._tool_active_from_context(context, space_type)
+    tool_active_id: str = getattr(tool_active, "idname", None,)
+    tool_active_type, tool_active_id = tool_active_id.split('.')
+    tool_active_id = tool_active_id.replace(' ', '_').upper()
 
+    # TOOLBAR LAYOUT.
     layout = self.layout
     factor = 1.0 - (context.region.width - 96/2) / context.region.width
     row = layout.split(align=False, factor=factor)
@@ -153,8 +183,119 @@ def draw_toolbar(self, context):
     toolbar = col_1.column(align=True)
     draw_cls(VIEW3D_PT_tools_active, toolbar, context, spacing=1.0) # row, context, detect_layout=False, default_layout='ROW', scale_y=1.35
 
+    if tool_active is None:
+        return
+
+    # brush settings sections.
+    if tool_active_type == 'builtin_brush':
+        draw_brush_settings_tabs(row, context)
+    else:
+        draw_tool_settings(row, context, tool_active, tool_active_id)
+
+
+def draw_tool_settings(layout, context, active_tool, active_tool_id: str):
+    '''
+    print(active_tool)
+    print(dir(active_tool))
+    print(dir(_defs_sculpt))
+    print(dir(_defs_sculpt.cloth_filter))
+    print(type(_defs_sculpt.cloth_filter))
+    '''
+    tool_type, tool_idname = active_tool.idname.split('.')
+    if tool_type == 'builtin':
+        if 'annotate' in tool_idname:
+            defs_type = _defs_annotate
+        elif tool_idname in {'move', 'scale', 'rotate', 'transform'}:
+            defs_type = _defs_transform
+        else:
+            defs_type = _defs_sculpt
+    else:
+        defs_type = _defs_sculpt
+
+    draw_settings = None
+    for attr in dir(defs_type):
+        if attr.startswith('_'):
+            continue
+        item = getattr(defs_type, attr)
+        if type(item) != ToolDef:
+            continue
+        if item.idname != active_tool.idname:
+            continue
+        draw_settings = getattr(item, 'draw_settings', None)
+        break
+
+    if draw_settings is None:
+        print("nope")
+        return
+
+    section = layout.column(align=True)
+    header = section.row(align=True)
+    header.use_property_split = False
+    header.box().label(text='', icon='SETTINGS')
+    header_toggle = header.box().row(align=True)
+    header_toggle.emboss = 'NONE'
+    header_toggle.label(text="Tool Settings")
+    content = section.box().column()
+    draw_settings(context, content, active_tool)
+
+
+class DummyPanel(StrokePanel):
+    def __init__(self, layout):
+        self.layout = layout
+
+
+def draw_brush_settings_tabs(layout, context):
     # BRUSH SETTINGS.
-    col_2 = row.column()
+    from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
+    ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
+    ui_section: str = ui_props.toolbar_brush_sections
+
+    sculpt = context.tool_settings.sculpt
+    act_brush = sculpt.brush
+
+    col_2 = layout.column(align=True)
+    col_2.use_property_split = True
+
+    header = col_2.box().row(align=True)
+    header.scale_y = 1.5
+    space_type, mode = ToolSelectPanelHelper._tool_key_from_context(context)
+    cls = ToolSelectPanelHelper._tool_class_from_space_type(space_type)
+    item, tool, icon_value = cls._tool_get_active(context, space_type, mode, with_icon=True)
+    if item is None:
+        return None
+    label_text = act_brush.name # iface_(item.label, "Operator")
+    header.label(text="    " + label_text, icon_value=icon_value)
+
+    selector = col_2.grid_flow(align=True, columns=0)
+    selector.use_property_split = False
+    selector.scale_y = 1.5
+    selector.prop(ui_props, 'toolbar_brush_sections', text="", expand=True)
+
+    content = col_2.box().column(align=False if ui_section in {'BRUSH_SETTINGS', 'BRUSH_SETTINGS_FALLOFF'} else True)
+    content.separator()
+
+    if ui_section == 'BRUSH_SETTINGS':
+        brush_settings(content, context, act_brush)
+    elif ui_section == 'BRUSH_SETTINGS_ADVANCED':
+        brush_settings_advanced(content, context, act_brush)
+    elif ui_section == 'BRUSH_SETTINGS_STROKE':
+        StrokePanel.draw(DummyPanel(content), context)
+    elif ui_section == 'BRUSH_SETTINGS_FALLOFF':
+        FalloffPanel.draw(DummyPanel(content), context)
+    elif ui_section == 'BRUSH_SETTINGS_TEXTURE':
+        brush_texture_settings(content, act_brush, sculpt=True)
+
+    content.separator()
+
+def draw_brush_settings(layout, context):
+    # BRUSH SETTINGS.
+    from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
+    ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
+
+    sculpt = context.tool_settings.sculpt
+    act_brush = sculpt.brush
+
+    col_2 = layout.column()
     col_2.use_property_split = True
 
     section = col_2.column(align=True)
@@ -171,17 +312,13 @@ def draw_toolbar(self, context):
         icon = 'TRIA_DOWN' if ui_props.show_brush_settings_advanced else 'TRIA_RIGHT'
         header = section.row(align=True)
         header.use_property_split = False
-        header.box().label(text='', icon='PROP_CON')
+        header.box().label(text='', icon='GHOST_ENABLED') # PROP_CON')
         header_toggle = header.box().row(align=True)
         header_toggle.emboss = 'NONE'
         header_toggle.prop(ui_props, 'show_brush_settings_advanced', text="Advanced", toggle=False)
         header_toggle.prop(ui_props, 'show_brush_settings_advanced', text="", icon=icon, toggle=False)
         if ui_props.show_brush_settings_advanced:
             brush_settings_advanced(section.box(), context, act_brush)
-
-    class DummyPanel(StrokePanel):
-        def __init__(self, layout):
-            self.layout = layout
 
     col_2.separator()
 
@@ -210,6 +347,8 @@ def draw_toolbar(self, context):
     header_toggle.prop(ui_props, 'show_brush_settings_falloff', text="", icon=icon, toggle=False)
     if ui_props.show_brush_settings_falloff:
         FalloffPanel.draw(DummyPanel(section.box()), context)
+    if act_brush.texture is None:
+        return
 
     col_2.separator()
 

@@ -21,7 +21,8 @@ def generate_from_brushes(dummy=None):
     for enum in type.bl_rna.properties[attr].enum_items_static:
         name = enum.name
         idname = enum.identifier
-        if idname not in {'MASK', 'DRAW_FACE_SETS'}:
+        # print(idname)
+        if idname not in {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}:
             continue
         tool_defs[idname] = ToolDef.from_dict(
             dict(
@@ -83,6 +84,10 @@ def set_sculpt_tools():
         _defs_sculpt.mesh_filter,
         _defs_sculpt.cloth_filter,
         _defs_sculpt.color_filter,
+        None,
+        tools['SIMPLIFY'],
+        tools['DISPLACEMENT_SMEAR'],
+        tools['DISPLACEMENT_ERASER'],
         None,
         _defs_transform.translate,
         _defs_transform.rotate,

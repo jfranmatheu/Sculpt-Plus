@@ -2,7 +2,7 @@ from bpy.types import Panel, Context
 
 from sculpt_plus.props import Props
 
-
+'''
 class SCULPTPLUS_PT_brush_management(Panel):
     bl_category: str = "Sculpt"
     bl_idname: str = "SCULPTPLUS_PT_brush_management"
@@ -12,9 +12,10 @@ class SCULPTPLUS_PT_brush_management(Panel):
 
     def draw(self, context: Context):
         layout = self.layout
+        return
 
-        manager = Props.BrushManager(context)
-        active_cat = Props.ActiveBrushCat(context)
+        manager = Props.BrushManager()
+        active_cat = Props.ActiveBrushCat()
 
         section = layout.column(align=True)
 
@@ -25,3 +26,4 @@ class SCULPTPLUS_PT_brush_management(Panel):
         selector.prop(manager, "cats_enum", text=str(len(manager.cats_enum)))
 
         layout.prop(active_cat, 'icon')
+'''
