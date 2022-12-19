@@ -59,7 +59,7 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
         default=join(app_data_path, 'sculpt_hotbar') if app_data_path else join(dirname(abspath(__file__)), 'data'),
         subtype='DIR_PATH'
     )
-    
+
     use_smooth_scroll : BoolProperty(default=True, name="Smooth Scroll", update=update_ui)
 
     padding : IntProperty(default=1, min=0, max=6, name="Hotbar Brush-Icon Padding", update=update_ui)
@@ -77,7 +77,11 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     theme_sidebar : FloatVectorProperty(size=4, default=(.1,.1,.1,.9), min=0.0, max=1.0, name="Background Color", subtype='COLOR')
     theme_sidebar_slot : FloatVectorProperty(size=4, default=(.16,.16,.16,.5), min=0.0, max=1.0, name="Slot Background Color", subtype='COLOR')
 
-    theme_active_slot_color : FloatVectorProperty(size=4, default=(.2, .5, .9, 1.0), min=0.0, max=1.0, name="Active/Selected Slot Color", subtype='COLOR')
+    theme_selected_slot_color : FloatVectorProperty(size=4, default=(.2, .5, .9, 1.0), min=0.0, max=1.0, name="Selected Slot Color", subtype='COLOR')
+    theme_active_slot_color : FloatVectorProperty(size=4, default=(.9, .5, .2, 1.0), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
+    theme_slot_outline_color : FloatVectorProperty(size=4, default=(.1, .1, .1, .9), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
+    theme_slot_color : FloatVectorProperty(size=4, default=(.1, .1, .1, .9), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
+
     theme_text : FloatVectorProperty(size=4, default=(.92,.92,.92,1), min=0.0, max=1.0, name="Text Color (0-9)", subtype='COLOR')
 
     def get_camera_list(self, context):

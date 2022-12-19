@@ -139,10 +139,11 @@ def DiIma(_p,_s,_i,s=sh_img):
     if _i is None:
         return
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
-    b=bat(s, TF,{p:(
-    _p,(_p.x+_s.x,_p.y),
-    _p+_s,(_p.x,_p.y+_s.y)),
-    texidx:((0,0),(1,0),(1,1),(0,1)),},)
+    b=bat(s, T,{p:(
+    (_p.x,_p.y+_s.y),_p,
+    (_p.x+_s.x,_p.y),_p+_s),
+    texidx:((0,1),(0,0),(1,0),(1,1)),},
+    indices=((0,1,2),(2,3,0)))
     s.bind()
     #s.uniform_float(co,(.9,.9,.9,1))
     s.uniform_sampler(i,t)
@@ -163,10 +164,11 @@ def DiImaco(_p,_s,_i,_co,s=sh_img_co):
     if _i is None:
         return
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
-    b=bat(s, TF,{p:(
-    _p,(_p.x+_s.x,_p.y),
-    _p+_s,(_p.x,_p.y+_s.y)),
-    texidx:((0,0),(1,0),(1,1),(0,1)),},)
+    b=bat(s, T,{p:(
+    (_p.x,_p.y+_s.y),_p,
+    (_p.x+_s.x,_p.y),_p+_s),
+    texidx:((0,1),(0,0),(1,0),(1,1)),},
+    indices=((0,1,2),(2,3,0)))
     s.bind()
     s.uniform_float(co,_co)
     s.uniform_sampler(i,t)
@@ -175,10 +177,11 @@ def DiImaOpGamHl(_p,_s,_i,_op:float=1.0,_hl:int=0,s=sh_img_a_op_gam_hl):
     if _i is None:
         return
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
-    b=bat(s, TF,{p:(
-    _p,(_p.x+_s.x,_p.y),
-    _p+_s,(_p.x,_p.y+_s.y)),
-    texidx:((0,0),(1,0),(1,1),(0,1)),},)
+    b=bat(s, T,{p:(
+    (_p.x,_p.y+_s.y),_p,
+    (_p.x+_s.x,_p.y),_p+_s),
+    texidx:((0,1),(0,0),(1,0),(1,1)),},
+    indices=((0,1,2),(2,3,0)))
     s.bind()
     s.uniform_float(op,_op)
     s.uniform_float(hl,_hl)

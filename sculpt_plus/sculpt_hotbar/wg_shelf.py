@@ -49,16 +49,18 @@ class Shelf(WidgetBase):
         if state == False:
             self.cv.shelf_grid.selected_item = None
 
+            self.cv.shelf_grid_item_info.enabled = False
+
             def _disable():
                 self._expand = False
                 self.cv.shelf_drag.interactable = True
-                # self.cv.shelf_grid_item_info.enabled = False
 
             self.resize(y=0, animate=True, anim_change_callback=_update, anim_finish_callback=_disable)
 
         else:
             self._expand = True
-            # self.cv.shelf_grid_item_info.enabled = True
+            self.cv.shelf_grid_item_info.enabled = True
+            self.cv.shelf_grid_item_info.update(self.cv, None)
             if self.cv.shelf_grid.type == 'TEXTURE':
                 self.cv.shelf_grid_item_info.expand = True
 
@@ -232,7 +234,8 @@ class ShelfGrid(ViewWidget):
         #     return slot_color, None
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
-        return slot_color, act_cat_id.id
+        act_item = Props.GetActiveBrush() if self.type == 'BRUSH' else Props.GetActiveTexture()
+        return slot_color, act_cat_id.id, act_item, Props.GetHotbarBrushIds()
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,
@@ -240,8 +243,14 @@ class ShelfGrid(ViewWidget):
                   is_hovered: bool,
                   slot_color: Vector,
                   act_cat_id: str,
+                  act_item: str,
+                  hotbar_ids: List[str],
                   scale: float,
                   prefs: SCULPTPLUS_AddonPreferences):
+        
+        is_active = item.id == act_item
+        is_selected = item == self.selected_item
+
         #if brush is None or brush_idx_rel is None:
         #    return
         DiRct(slot_p, slot_s, slot_color)
@@ -265,6 +274,9 @@ class ShelfGrid(ViewWidget):
         #    idx: int = brush_idx_rel[brush]
         #    idx = idx+1 if idx!=9 else 0
         #    DiText(slot_p+Vector((1,3)), str(idx), 12, scale)
+        if self.type == 'BRUSH':
+            if item.id in hotbar_ids:
+                DiText(slot_p+Vector((1,3)), str(hotbar_ids.index(item.id)), 12, scale)
 
         cat_id = item.cat_id
         if cat_id == act_cat_id:
@@ -275,9 +287,11 @@ class ShelfGrid(ViewWidget):
             margin = size/2
             DiStar(slot_p+slot_s-Vector((margin, margin)), size)
 
-        if item == self.selected_item:
-            DiCage(slot_p, slot_s, 2.4*scale, prefs.theme_active_slot_color) #(.2, .6, 1.0, 1.0))
-        else:
+        if is_active:
+            DiCage(slot_p, slot_s, 2.4*scale, prefs.theme_active_slot_color)
+        if is_selected:
+            DiCage(slot_p, slot_s, 2.4*scale, prefs.theme_selected_slot_color) #(.2, .6, 1.0, 1.0))
+        if not is_active and not is_selected:
             DiCage(slot_p, slot_s, 2.4*scale, slot_color*1.3)
 
     def draw_post(self, _context, cv: Canvas, mouse: Vector, scale: float, _prefs: SCULPTPLUS_AddonPreferences):
@@ -581,8 +595,8 @@ class ShelfGridItemInfo(WidgetBase):
 
         opacity = min(max(self.size.x / self.max_width, 0), 1)
         opacity = ease_quad_in_out(-.25, 1, opacity)
-        print("opacity:", opacity)
-        print(self.size.x, self.max_width)
+        #print("opacity:", opacity)
+        #print(self.size.x, self.max_width)
         mar = 6 * scale * 2
         pad = 5 * scale
         inner_pos = self.pos.copy()

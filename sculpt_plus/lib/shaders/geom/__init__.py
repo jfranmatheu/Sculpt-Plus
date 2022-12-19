@@ -19,8 +19,8 @@ class ShaderGeom(Enum):
     RCT_CENT = RctCent_Geo
     RCT_TOPLEFT = RctTopLeft_Geo
     
-    RCT_BOTLEFT_RND = RctBotLeft_Rnd_Geo
-    RCT_RND = Rct_Rnd_Geo
+    # RCT_BOTLEFT_RND = RctBotLeft_Rdn_Geo
+    # RCT_RND = Rct_Rnd_Geo
 
     POINT = Point_Geo
     CIR_CENT = Point_Geo
