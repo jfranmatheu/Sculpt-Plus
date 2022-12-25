@@ -275,3 +275,7 @@ class Props:
         cls.Hotbar().selected = selected
         brush = cls.GetHotbarSelectedBrush()
         cls.SelectBrush(ctx, brush)
+
+    @classmethod
+    def ToggleHotbarAlt(cls):
+        cls.Hotbar().toggle_alt()

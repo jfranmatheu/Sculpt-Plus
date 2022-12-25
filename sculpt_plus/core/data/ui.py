@@ -18,6 +18,28 @@ def get_toolbar_brush_sections_items(self, context):
     return items
 
 
+def get_toolbar_sculpt_sections_items(self, context):
+    if context.sculpt_object.use_dynamic_topology_sculpting:
+        return (
+            ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 1),
+        )
+    ob = context.sculpt_object
+    md = None
+    for mod in ob.modifiers:
+        if mod.type == 'MULTIRES':
+            md = mod
+            break
+    if md is not None and md.total_levels > 0:
+        return (
+            ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 2),
+        )
+
+    return (
+        ('VOXEL_REMESH', "Voxel Remesh", "Voxel Remesh Options", 'MOD_REMESH', 0),
+        ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 1),
+        ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 2)
+    )
+
 class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
     show_brush_settings: BoolProperty(default=True)
     show_brush_settings_advanced: BoolProperty(default=False)
@@ -29,4 +51,10 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
         name="Brush Settings Sections",
         description="Brush Settings Sections",
         items=get_toolbar_brush_sections_items
+    )
+    
+    toolbar_sculpt_sections: EnumProperty(
+        name="Sculpt Sections",
+        items=get_toolbar_sculpt_sections_items,
+        #default='VOXEL_REMESH'
     )

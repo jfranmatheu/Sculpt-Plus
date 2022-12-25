@@ -354,7 +354,7 @@ class VerticalViewWidget(ViewWidget):
 
         item_width: int = width
         item_height: int = int(item_width * self.item_aspect_ratio)
-        self.item_size = Vector((item_width, item_height)) * cv.scale
+        self.item_size = Vector((item_width, item_height)) # * cv.scale
 
         data = self.get_data(cv)
         # print(data)

@@ -162,16 +162,14 @@ class Canvas:
     def invoke(self, ctx, evt):
         print("Canvas::invoke - Event:", evt.type, evt.value)
         # print(evt.alt)
-        if evt.type == 'LEFT_ALT' and evt.alt and evt.value == 'PRESS':
-            if not self.hotbar.use_secondary:
-                self.hotbar.use_secondary = True
-                self.refresh(ctx)
-                return Return.FINISH()
-        elif evt.type == 'LEFT_ALT' and not evt.alt and evt.value == 'RELEASE':
-            if self.hotbar.use_secondary:
-                self.hotbar.use_secondary = False
-                self.refresh(ctx)
-                return Return.FINISH()
+        if evt.type == 'LEFT_ALT':
+            from sculpt_plus.props import Props
+            if evt.alt and evt.value == 'PRESS':
+                Props.Hotbar().use_alt = True 
+            elif not evt.alt and evt.value == 'RELEASE':
+                Props.Hotbar().use_alt = False
+            self.refresh(ctx)
+            return Return.FINISH()
         if not self.wg_on_hover:
             if self.shelf.expand and not self.shelf.anim_pool:
                 self.shelf.expand = False

@@ -41,10 +41,10 @@ class Shelf(WidgetBase):
             self.cv.refresh()
             self.cv.shelf_drag.update(self.cv, None)
             self.cv.shelf_search.update(self.cv, None)
+            self.cv.shelf_sidebar_actions.update(self.cv, None)
             self.cv.shelf_sidebar.update(self.cv, None)
             self.cv.shelf_ctx_switcher.update(self.cv, None)
             self.cv.shelf_grid_item_info.update(self.cv, None)
-            self.cv.shelf_sidebar_actions.update(self.cv, None)
 
         if state == False:
             self.cv.shelf_grid.selected_item = None
@@ -352,8 +352,13 @@ class ShelfDragHandle(WidgetBase):
             height = min(max(self.end_mouse.y - self.start_mouse.y, 0), 25*cv.scale)
         cv.shelf.pos = p.copy()
         cv.shelf.size = Vector((cv.hotbar.size.x, height))
-        self.update(cv, None)
+
+        cv.shelf_drag.update(cv, None)
         cv.shelf_search.update(cv, None)
+        cv.shelf_sidebar_actions.update(cv, None)
+        cv.shelf_sidebar.update(cv, None)
+        cv.shelf_ctx_switcher.update(cv, None)
+        cv.shelf_grid_item_info.update(cv, None)
 
     def end_drag(self, cv: Canvas):
         self.dragging = False

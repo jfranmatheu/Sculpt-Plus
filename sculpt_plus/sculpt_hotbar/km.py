@@ -21,7 +21,8 @@ hotkeys=(
 )
 op = 'gizmogroup.gizmo_tweak'
 def register():
-    from . ops import SCULPTHOTBAR_OT_select_brush#, SCULPTHOTBAR_OT_swap_set
+    from . ops import SCULPTHOTBAR_OT_select_brush
+    from sculpt_plus.management.operators import SCULPTPLUS_OT_set_hotbar_alt
     from bpy import context as C
     cfg = C.window_manager.keyconfigs.addon
     opid = SCULPTHOTBAR_OT_select_brush.bl_idname
@@ -31,13 +32,14 @@ def register():
         kmi = cfg.keymaps['Sculpt'].keymap_items
         kmi.new(opid, key, 'PRESS').properties.index = idx
         kmi.new(opid, key, 'PRESS', alt=True).properties.index = idx
-    # kmi.new(SCULPTHOTBAR_OT_swap_set.bl_idname, 'LEFT_ALT', 'PRESS', alt=True).properties.enabled = True
-    # kmi.new(SCULPTHOTBAR_OT_swap_set.bl_idname, 'LEFT_ALT', 'RELEASE', alt=False).properties.enabled = False
+    kmi.new(SCULPTPLUS_OT_set_hotbar_alt.bl_idname, 'LEFT_ALT', 'PRESS', alt=True).properties.enabled = True
+    kmi.new(SCULPTPLUS_OT_set_hotbar_alt.bl_idname, 'LEFT_ALT', 'RELEASE', alt=False).properties.enabled = False
 def unregister():
-    from . ops import SCULPTHOTBAR_OT_select_brush#, SCULPTHOTBAR_OT_swap_set
+    from . ops import SCULPTHOTBAR_OT_select_brush
+    from sculpt_plus.management.operators import SCULPTPLUS_OT_set_hotbar_alt
     from bpy import context as C
     cfg = C.window_manager.keyconfigs.addon
-    opid = SCULPTHOTBAR_OT_select_brush.bl_idname#, SCULPTHOTBAR_OT_swap_set.bl_idname}
+    opid = {SCULPTHOTBAR_OT_select_brush.bl_idname, SCULPTPLUS_OT_set_hotbar_alt.bl_idname}
     if cfg.keymaps.__contains__('Sculpt'):
         for kmi in cfg.keymaps['Sculpt'].keymap_items:
             if kmi.idname == opid: # in opid:

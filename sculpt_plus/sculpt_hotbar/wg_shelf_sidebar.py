@@ -41,7 +41,7 @@ class ShelfSidebar(VerticalViewWidget):
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         #super().update(cv, prefs)
-        width = cv.hotbar.slot_size.x * 3 # item_size.x * 3 # * cv.scale
+        width = cv.hotbar.slot_size.x * 3 * cv.scale # item_size.x * 3 # * cv.scale
         # higher point - lower point
         footer_height = 24 * cv.scale
         slot_height: int = int(width * self.item_aspect_ratio)
@@ -110,8 +110,8 @@ class ShelfSidebar(VerticalViewWidget):
     def get_data(self, _cv: Canvas) -> list:
         return Props.GetAllCats(self.type, skip_active=True)
 
-    def draw_poll(self, _context, _cv: Canvas) -> bool:
-        return self.expand and self.size.y > self.item_size.y
+    def poll(self, _context, cv: Canvas) -> bool:
+        return cv.shelf.expand and self.size.y > self.item_size.y
 
     def draw_item(self,
                   slot_p,
@@ -269,5 +269,5 @@ class ShelfSidebarActions(ButtonGroup):
 
         super().update(cv, prefs)
 
-    def draw_poll(self, context, cv: Canvas) -> bool:
-        return cv.shelf_sidebar.expand
+    def poll(self, _context, cv: Canvas) -> bool:
+        return cv.shelf.expand

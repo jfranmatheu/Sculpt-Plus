@@ -2,6 +2,8 @@ from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active, _defs_sculpt,
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper, ToolDef
 from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel
 from bl_ui.space_view3d import _draw_tool_settings_context_mode
+from bl_ui.properties_data_modifier import DATA_PT_modifiers
+from bpy.types import UILayout, Modifier, VIEW3D_PT_sculpt_voxel_remesh, VIEW3D_PT_sculpt_dyntopo
 from bpy.app.translations import pgettext_tip as tip_
 from bpy.app.translations import pgettext_iface as iface_
 from time import time
@@ -136,9 +138,12 @@ def draw_toolbar(self, context):
     if context.mode != 'SCULPT':
         self.draw_cls(self.layout, context)
         return
+    
+    prefs = context.preferences
+    ui_scale = prefs.system.ui_scale # prefs.view.ui_scale
 
     # toolbar_is_wide_open
-    if context.region.width <= 96:
+    if context.region.width <= (96 * ui_scale):
         draw_cls(VIEW3D_PT_tools_active, self.layout, context, spacing=0.1)
         return
 
@@ -163,16 +168,16 @@ def draw_toolbar(self, context):
 
     # TOOLBAR LAYOUT.
     layout = self.layout
-    factor = 1.0 - (context.region.width - 96/2) / context.region.width
+    factor = 1.0 - (context.region.width - (96*ui_scale)/2) / context.region.width
     row = layout.split(align=False, factor=factor)
 
     col_1 = row.column(align=False)
 
     # DYN-SEP.
-    prefs = context.preferences
+    # prefs = context.preferences
     reg = context.region
     view_scroll_y = -reg.view2d.region_to_view(0, reg.height-1)[1]
-    ui_scale = prefs.view.ui_scale
+    # ui_scale = prefs.system.ui_scale # prefs.view.ui_scale
     line_height_px = 40 * ui_scale
     offset_factor_y = view_scroll_y / line_height_px
     sep = col_1.column(align=True)
@@ -185,12 +190,18 @@ def draw_toolbar(self, context):
 
     if tool_active is None:
         return
+    
+    col_2 = row.column(align=False)
 
     # brush settings sections.
     if tool_active_type == 'builtin_brush':
-        draw_brush_settings_tabs(row, context)
+        draw_brush_settings_tabs(col_2, context)
     else:
-        draw_tool_settings(row, context, tool_active, tool_active_id)
+        draw_tool_settings(col_2, context, tool_active, tool_active_id)
+    
+    col_2.separator()
+ 
+    draw_sculpt_sections(col_2, context)
 
 
 def draw_tool_settings(layout, context, active_tool, active_tool_id: str):
@@ -363,6 +374,79 @@ def draw_brush_settings(layout, context):
     header_toggle.prop(ui_props, 'show_brush_settings_texture', text="", icon=icon, toggle=False)
     if ui_props.show_brush_settings_texture:
         brush_texture_settings(section.box(), act_brush, sculpt=True)
+
+
+def draw_sculpt_sections(layout: UILayout, context):
+    ui = Props.UI(context)
+    active_section: str = ui.toolbar_sculpt_sections
+    header_label: str = UILayout.enum_item_description(ui, 'toolbar_sculpt_sections', active_section)
+    header_icon: int = UILayout.enum_item_icon(ui, 'toolbar_sculpt_sections', active_section)
+
+    section = layout.column(align=True)
+
+    header = section.box().row(align=True)
+    header.scale_y = 1.5
+    header.label(text=header_label, icon_value=header_icon)
+
+    selector = section.row(align=True)
+    selector.use_property_split = False
+    selector.scale_y = 1.5
+    selector.prop(ui, 'toolbar_sculpt_sections', expand=True)
+
+    content = section.box().column(align=False)
+    content.separator()
+    content.use_property_split = True
+    content_args = (DummyPanel(content), context)
+
+    if active_section == 'VOXEL_REMESH':
+        VIEW3D_PT_sculpt_voxel_remesh.draw(*content_args)
+    elif active_section == 'DYNTOPO':
+        if not context.sculpt_object.use_dynamic_topology_sculpting:
+            msg = content.box()
+            msg.scale_y = 1.5
+            msg.label(text="You should enable Dyntopo!", icon='INFO')
+            msg.operator("sculpt.dynamic_topology_toggle", text="Enable Dyntopo")
+            return
+        else:
+            VIEW3D_PT_sculpt_dyntopo.draw(*content_args)
+            content.separator()
+            op = content.row()
+            op.scale_y = 1.5
+            op.alert = True
+            op.operator("sculpt.dynamic_topology_toggle", text="Disable Dyntopo")
+    else:
+        # content.template_modifiers()
+        ob = context.sculpt_object
+        # print([m.type for m in ob.modifiers])
+        md: Modifier = None
+        for mod in ob.modifiers:
+            if mod.type == 'MULTIRES':
+                md: Modifier = mod
+                break
+
+        if md is None:
+            msg = content.box()
+            msg.scale_y = 1.5
+            msg.label(text="No Multires Modifier", icon='INFO')
+            msg.operator('object.modifier_add', text="Add Multires Modifier").type = 'MULTIRES'
+            return
+        
+        mod: Modifier = mod
+        
+        levels_col = content.column(align=True)
+        levels_col.prop(mod, 'levels')
+        levels_col.prop(mod, 'sculpt_levels')
+        levels_col.prop(mod, 'render_levels')
+        
+        content.prop(mod, 'use_sculpt_base_mesh')
+        content.separator()
+        content.prop(mod, 'show_only_control_edges')
+
+        # DATA_PT_modifiers.draw(*content_args)
+        
+
+
+    content.separator()
 
 
 def register():

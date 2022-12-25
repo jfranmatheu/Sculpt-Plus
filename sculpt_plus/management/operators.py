@@ -2,7 +2,7 @@ import bpy
 from bpy.types import Operator
 from pathlib import Path
 from bpy.path import abspath
-from bpy.props import StringProperty, EnumProperty
+from bpy.props import StringProperty, EnumProperty, BoolProperty
 from sculpt_plus.props import Props
 from bpy_extras.io_utils import ImportHelper
 from tempfile import TemporaryDirectory
@@ -40,6 +40,26 @@ class SCULPTPLUS_OT_debug_fill_brush_categories(Operator):
 '''
 
 # TODO: Operator to handle the import of brush library and texture library and textures from path.
+
+class SCULPTPLUS_OT_toggle_hotbar_alt(Operator):
+    bl_idname: str = 'sculpt_plus.toggle_hotbar_plus'
+    bl_label: str = "Toggle Hotbar Alt Brush-Set"
+
+    def execute(self, context):
+        Props.ToggleHotbarAlt()
+        return {'FINISHED'}
+
+
+class SCULPTPLUS_OT_set_hotbar_alt(Operator):
+    bl_idname: str = 'sculpt_plus.set_hotbar_plus'
+    bl_label: str = "Enable/Disable Hotbar Alt Brush-Set"
+
+    enabled: BoolProperty()
+
+    def execute(self, context):
+        Props.Hotbar().use_alt = self.enabled
+        return {'FINISHED'}
+
 
 class SCULPTPLUS_OT_new_cat(Operator):
     bl_idname: str = 'sculpt_plus.new_cat'

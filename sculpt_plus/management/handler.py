@@ -20,6 +20,7 @@ def on_load_post(dummy):
     from sculpt_plus.props import Props
     if Props.BrushManagerExists():
         # print("on_load_post:", Props.BrushManager())
+        print("[Sculpt +] Skipping database load. Brush Manager already exists!")
         return
     print("[Sculpt+] Loading database...")
     # print("on_load_post:", Props.BrushManager())

@@ -22,14 +22,37 @@ filtered_builtin_brush_names = tuple(b for b in builtin_brush_names if b not in 
 class HotbarManager:
     brushes: List[str]
     selected: str
+    
+    alt_brushes: List[str]
+    alt_selected: str
+    
+    use_alt: bool
 
     def __init__(self):
-        self.brushes: List[str] = [None] * 10
+        self._brushes: List[str] = [None] * 10
         self._selected: str = None
+        self.alt_selected: str = None
+        self.alt_brushes: List[str] = [None] * 10
+        self.use_alt: bool = False
+
+    @property
+    def brushes(self) -> List[str]:
+        if self.use_alt:
+            return self.alt_brushes
+        return self._brushes
+
+    @brushes.setter
+    def brushes(self, brushes: List[str]):
+        self._brushes = brushes
 
     @property
     def selected(self) -> str:
+        if self.use_alt:
+            return self.alt_selected
         return self._selected
+
+    def toggle_alt(self) -> None:
+        self.use_alt = not self.use_alt
 
     @selected.setter
     def selected(self, item):
@@ -43,13 +66,18 @@ class HotbarManager:
             item = None
             print(f'WARN! Invalid selected hotbar item: {item}')
             # raise ValueError(f'Invalid selected item: {item}')
-        self._selected = item
+        if self.use_alt:
+            self.alt_selected = item
+        else:
+            self._selected = item
 
     def serialize(self) -> dict:
         ''' Serialize hotbar data to a dictionary. '''
         return {
-            'brushes': self.brushes,
-            'selected': self.selected,
+            '_brushes': self._brushes,
+            '_selected': self._selected,
+            'alt_brushes': self.alt_brushes,
+            'alt_selected': self.alt_selected
         }
 
     def deserialize(self, data: dict) -> None:
@@ -137,7 +165,7 @@ class Manager:
     def active_texture_cat(self, value: Union[TextureCategory, str]):
         if isinstance(value, str):
             self._active_texture_cat = value
-        elif isinstance(value, BrushCategory):
+        elif isinstance(value, TextureCategory):
             self._active_texture_cat = value.id
 
     @property
@@ -344,10 +372,11 @@ class Manager:
             return
 
         print("[SCULPT+] Loading config file...")
-        config_data = {}
+        config_data: dict = {}
         with open(config_filepath, 'r') as f:
             config_data = json.load(f)
-            self.hotbar.deserialize(config_data.pop('hotbar'))
+            hotbar_config = config_data.pop('hotbar')
+            self.hotbar.deserialize(hotbar_config)
 
         print("[SCULPT+] Loading brushes from database...")
         with shelve.open(brush_cats_db_filepath) as db__brush_cats:

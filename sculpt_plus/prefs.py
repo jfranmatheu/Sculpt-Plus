@@ -36,7 +36,7 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
 
     def get_scale(self, context) -> float:
-        ui_scale = context.preferences.view.ui_scale
+        ui_scale = context.preferences.system.ui_scale # context.preferences.view.ui_scale
         return ui_scale * self.scale
 
     def update_ui(self, context):
@@ -49,7 +49,7 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
             return
         scale = self.get_scale(context)
         #dimensions = Vector((context.region.width, context.region.height))
-        cv.update(None, scale, self)
+        cv.update(None, None, scale, self)
 
     data_path_local = StringProperty(
         default=join(dirname(abspath(__file__)), 'data'),
@@ -119,17 +119,17 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
         layout.separator()
         
-        hotbar_styles = ('theme_hotbar', 'theme_hotbar_slot')
-        hotbar = section("Hotbar Style", 'STATUSBAR', *hotbar_styles)
-        hotbar.separator()
+        #hotbar_styles = ('theme_hotbar', 'theme_hotbar_slot')
+        hotbar = section("Hotbar Style", 'STATUSBAR')# *hotbar_styles)
+        #hotbar.separator()
         hotbar.prop(self, 'margin_bottom', slider=True)
         hotbar.prop(self, 'padding', slider=True)
 
-        shelf_styles = ('theme_shelf', 'theme_shelf_slot')
-        section("Brush-Shelf Style", 'DESKTOP', *shelf_styles)
+        #shelf_styles = ('theme_shelf', 'theme_shelf_slot')
+        #section("Brush-Shelf Style", 'DESKTOP', *shelf_styles)
         
-        sidebar_styles = ('theme_sidebar', 'theme_sidebar_slot')
-        section("Texture-Sidebar Style", 'MENU_PANEL', *sidebar_styles)
+        #sidebar_styles = ('theme_sidebar', 'theme_sidebar_slot')
+        #section("Texture-Sidebar Style", 'MENU_PANEL', *sidebar_styles)
 
 
         #col.label(text="Slot size: "+str(int(self.scale*SLOT_SIZE))+'px')

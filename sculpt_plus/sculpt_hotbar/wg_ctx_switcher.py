@@ -63,8 +63,7 @@ class SidebarContextSwitcher(ButtonGroup):
         self.but_ctx_brush.size  = self.but_ctx_texture.size = but_size
 
     def poll(self, _context, cv: Canvas) -> bool:
-        shelf = cv.shelf
-        return shelf.expand and shelf.size.y > self.size.y
+        return cv.shelf.expand and cv.shelf.size.y > self.size.y
 
     def draw_pre(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
