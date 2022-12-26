@@ -93,6 +93,11 @@ class Image(object):
             # print("-> Output thumnail image path:", out_filepath)
             input_image = bpy.data.images.load(str(input_image), check_existing=True)
 
+        if not input_image.pixels:
+            if self.use_optimize:
+                bpy.data.images.remove(input_image)
+            return None
+
         if isinstance(input_image, BlImage):
             # METHOD 1: Using Blender API.
             filepath: str = input_image.filepath_from_user()

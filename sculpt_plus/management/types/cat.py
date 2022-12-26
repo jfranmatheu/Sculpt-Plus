@@ -27,7 +27,7 @@ class Category(object):
         self.icon: Thumbnail = None
         self.item_ids: List[str] = []
         print(f"New Category {self.id} with name {self.name}")
-        self.save()
+        ## self.save()
 
     @property
     def items_count(self) -> int:

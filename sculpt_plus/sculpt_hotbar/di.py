@@ -295,7 +295,7 @@ def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shad
     if rotation is not None:
         text_enable(id, ROTATION)
         text_rotation(id, rotation)
-    if shadow_props:
+    if shadow_props is not None:
         offset = shadow_props.get('offset', (1, -1))
         color = shadow_props.get('color', (.1, .1, .1, .8))
         blur = shadow_props.get('blur', 3)
@@ -319,7 +319,7 @@ def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shad
         DiRct(_p, s, color)
         DiCage(_p, s, 2.2, draw_rect_props.get('outline_color', Vector(color)*.9))
     text_draw(id, _text)
-    if shadow_props:
+    if shadow_props is not None:
         text_disable(id, SHADOW)
     if rotation is not None:
         text_disable(id, ROTATION)

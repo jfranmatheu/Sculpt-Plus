@@ -40,6 +40,18 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
                 self.input_textures.append(self.output_textures.pop(self.output_textures.index(item)))
             elif move_to == 'OUTPUT':
                 self.output_textures.append(self.input_textures.pop(self.input_textures.index(item)))
+    
+    def pass_all_items(self, move_to: str) -> None:
+        if self.ctx_type == 'BRUSH':
+            if move_to == 'INPUT':
+                self.input_brushes, self.output_brushes = self.output_brushes, self.input_brushes
+            elif move_to == 'OUTPUT':
+                self.output_brushes, self.input_brushes = self.input_brushes, self.output_brushes
+        elif self.ctx_type == 'TEXTURE':
+            if move_to == 'INPUT':
+                self.input_textures, self.output_textures = self.output_textures, self.input_textures
+            elif move_to == 'OUTPUT':
+                self.output_textures, self.input_brushes = self.input_brushes, self.output_textures
 
     def show(self, lib_path: str, type: str, data: dict[str, str]) -> None:
         if not data:
@@ -59,8 +71,8 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
                 FakeViewItem_Brush(
                     item['name'],
                     item['icon_filepath'],
-                    item['texture'].get('name', None),
-                    item['texture'].get('icon_filepath', None)
+                    item['texture'].get('name', None) if 'texture' in item else None,
+                    item['texture'].get('icon_filepath', None) if 'texture' in item else None
                 ) for item in data['brushes']
             ]
 
@@ -99,7 +111,7 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
         self.output_textures = None
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
-        print(self.enabled)
+        # print(self.enabled)
         self.pos = Vector((
             cv.reg.width * .25, # cv.shelf_sidebar.pos.x,
             cv.reg.height * .25
@@ -117,6 +129,7 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
     def draw(self, ctx, cv: Canvas, m, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         DiRct(self.pos, self.size, prefs.theme_shelf)
         DiCage(self.pos, self.size, 6, Vector(prefs.theme_shelf) * 1.25)
+        DiText(self.pos, "Press 'A' to swap all items.", 12, scale, pivot=(0, 1))
 
 
 class AssetImporterWidget:
@@ -154,10 +167,10 @@ class AssetImporterCatSelector(WidgetSelector, AssetImporterWidget):
 
     def on_enable(self):
         self.items = self.load_items()
-        print(self.items)
+        # print(self.items)
 
     def load_items(self):
-        print(self.cv.mod_asset_importer.ctx_type, "Holaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        # print(self.cv.mod_asset_importer.ctx_type, "Holaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         parent = self.cv.mod_asset_importer
         if parent.ctx_type == 'BRUSH':
             cats = Props.GetAllBrushCats()
@@ -219,12 +232,20 @@ class AssetImporterGrid(ViewWidget, AssetImporterWidget):
         self.pos = pos + padding
         self.size = size - padding * 2
 
+    def event(self, ctx, evt, cv: Canvas, m: Vector) -> bool:
+        if evt.type == 'A' and evt.value == 'CLICK':
+            self.pass_all_items(cv)
+        return False
+
     def on_left_click(self, ctx, cv: Canvas, m: Vector) -> None:
         if self.hovered_item:
             self.pass_item(cv)
             cv.refresh(ctx)
 
     def pass_item(self, cv: Canvas) -> None:
+        pass
+
+    def pass_all_items(self, cv: Canvas) -> None:
         pass
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
@@ -277,6 +298,10 @@ class AssetImporterGrid_Inputs(AssetImporterGrid):
         parent = cv.mod_asset_importer
         parent.pass_item(self.hovered_item, move_to='OUTPUT')
 
+    def pass_all_items(self, cv: Canvas) -> None:
+        parent = cv.mod_asset_importer
+        parent.pass_all_items(move_to='OUTPUT')
+
 
 class AssetImporterGrid_Outputs(AssetImporterGrid):
     header_label: str = 'To Import Assets'
@@ -293,3 +318,7 @@ class AssetImporterGrid_Outputs(AssetImporterGrid):
     def pass_item(self, cv: Canvas):
         parent = cv.mod_asset_importer
         parent.pass_item(self.hovered_item, move_to='INPUT')
+
+    def pass_all_items(self, cv: Canvas) -> None:
+        parent = cv.mod_asset_importer
+        parent.pass_all_items(move_to='INPUT')

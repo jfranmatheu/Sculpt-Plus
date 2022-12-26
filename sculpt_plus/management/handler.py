@@ -1,6 +1,6 @@
 import atexit
-
 from bpy.app.handlers import load_post, persistent
+
 
 goodbye_check = False
 
@@ -9,11 +9,15 @@ def goodbye():
     global goodbye_check
     if goodbye_check:
         return
-    print("Goodbye!")
-    from sculpt_plus.props import Props
-    # print("atexit:", Props.BrushManager())
-    Props.BrushManager().save_all()
     goodbye_check = True
+    
+    from sculpt_plus.props import Props
+    if Props.BrushManagerExists():
+        # print("atexit:", Props.BrushManager())
+        Props.BrushManager().save_all()
+        Props.BrushManagerDestroy()
+        print("Goodbye!")
+
 
 @persistent
 def on_load_post(dummy):
@@ -24,7 +28,7 @@ def on_load_post(dummy):
         return
     print("[Sculpt+] Loading database...")
     # print("on_load_post:", Props.BrushManager())
-    Props.BrushManager().load_brushes_from_db()
+    Props.BrushManager().load_data()
 
 def register():
     load_post.append(on_load_post)

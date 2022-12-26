@@ -23,8 +23,9 @@ class CategoryItem(object):
         self.cat_id = cat
         self.thumbnail: Thumbnail = None
 
-        if _save:
-            self._save()
+        #if _save:
+        #    self._save()
+        self.save_default()
 
         self.init()
 
@@ -39,7 +40,7 @@ class CategoryItem(object):
         item_copy = deepcopy(self)
         item_copy.name = self.name + ' copy'
         item_copy.id = uuid4().hex
-        item_copy.save()
+        ## item_copy.save()
         item_copy.save_default()
         self.cat.link_item(item_copy)
         return item_copy
@@ -54,7 +55,7 @@ class CategoryItem(object):
             return Manager.get().get_texture_cat(self)
 
     def _save(self) -> None:
-        self.save()
+        ## self.save()
         self.save_default()
 
     def save(self) -> None:

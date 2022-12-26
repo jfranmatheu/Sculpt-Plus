@@ -36,6 +36,23 @@ class Canvas:
         self.modal_override_all = False
         self.init_ui()
         set_font(Fonts.NUNITO)
+        self.draw_progress = False
+        self.progress = 0
+        self.progress_label = ''
+
+    def progress_start(self, label: str = ''):
+        self.progress = 0
+        self.draw_progress = True
+        self.progress_label = label
+
+    def progress_stop(self):
+        self.draw_progress = False
+        self.progress_label = ''
+    
+    def progress_update(self, progress: float, label: str = ''):
+        self.progress = progress
+        if label:
+            self.progress_label = label
 
     def init_ui(self):
         from .wg_base import WidgetBase
@@ -255,6 +272,27 @@ class Canvas:
 
         for child in self.children:
             child.draw_over(ctx, self, self.mouse, self.scale, prefs)
+
+        if self.draw_progress:
+            center = Vector((ctx.region.width, ctx.region.height)) * .5
+            pbar_size = Vector((ctx.region.width * .6, 32 * self.scale))
+            pbar_pos = center - pbar_size * .5
+            DiRct(
+                pbar_pos,
+                pbar_size,
+                (.05, .05, .05, 1.0))
+            DiRct(
+                pbar_pos + Vector((3, 3)) * self.scale,
+                Vector((pbar_size.x * self.progress, pbar_size.y)) - Vector((6, 6)) * self.scale,
+                (.3, .5, .95, 1.0))
+            DiCage(
+                pbar_pos,
+                pbar_size,
+                3.0,
+                (.1, .1, .1, 1.0))
+            DiText(center, str(int(self.progress*100)) + '%', 16, self.scale, pivot=(.5, .5), shadow_props={})
+            if self.progress_label:
+                DiText(center + Vector((0, (16+8)*self.scale)), self.progress_label, 20, self.scale, pivot=(.5, 0), draw_rect_props={}, shadow_props={})
 
         #print("[DEBUG] FPS: ", fps_count / (time() - start_time)) # FPS = 1 / time to process loop
         DiText(Vector((10, 10)), "FPS: " + str(fps_count), 16, 1.0, (1.0, 0.2, 0.1, 1.0))

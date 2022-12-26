@@ -3,6 +3,7 @@ from typing import Union, List
 import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture
 
+from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager
 
 #from sculpt_plus.core.data.scn import SCULPTPLUS_PG_scn
@@ -14,6 +15,12 @@ from sculpt_plus.management.manager import Manager, TextureCategory, BrushCatego
 
 ''' Helper to get properties paths (with typing). '''
 class Props:
+    @staticmethod
+    def Canvas() -> Union[Canvas, None]:
+        if not hasattr(bpy, 'sculpt_hotbar'):
+            return None
+        return bpy.sculpt_hotbar._cv_instance
+
     @staticmethod
     def Scene(context: Context):# -> SCULPTPLUS_PG_scn:
         return context.scene.sculpt_plus
@@ -50,6 +57,11 @@ class Props:
     @staticmethod
     def BrushManagerExists() -> bool:
         return Manager._instance is not None
+
+    @staticmethod
+    def BrushManagerDestroy() -> None:
+        del Manager._instance
+        Manager._instance = None
 
     @classmethod
     def UpdateBrushProp(cls, brush_id: str, attr: str, value) -> None:
@@ -120,7 +132,7 @@ class Props:
     @classmethod
     def GetTextureCat(cls, cat_idname: Union[str, int], ensure_create: bool = False) -> TextureCategory:# -> SCULPTPLUS_PG_brush_category:
         # return cls.BrushManager(context).get_cat(cat_idname)
-        cat = cls.BrushManager().get_texture_cat(cat_idname, ensure_create=ensure_create)
+        cat = cls.BrushManager().get_texture_cat(cat_idname)
         if cat is None and ensure_create:
             return cls.BrushManager().new_texture_cat(cat_id=cat_idname)
         return cat

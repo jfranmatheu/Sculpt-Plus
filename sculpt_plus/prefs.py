@@ -77,8 +77,8 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     theme_sidebar : FloatVectorProperty(size=4, default=(.1,.1,.1,.9), min=0.0, max=1.0, name="Background Color", subtype='COLOR')
     theme_sidebar_slot : FloatVectorProperty(size=4, default=(.16,.16,.16,.5), min=0.0, max=1.0, name="Slot Background Color", subtype='COLOR')
 
-    theme_selected_slot_color : FloatVectorProperty(size=4, default=(.2, .5, .9, 1.0), min=0.0, max=1.0, name="Selected Slot Color", subtype='COLOR')
-    theme_active_slot_color : FloatVectorProperty(size=4, default=(.9, .5, .2, 1.0), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
+    theme_selected_slot_color : FloatVectorProperty(size=4, default=(.9, .5, .4, 1.0), min=0.0, max=1.0, name="Selected Slot Color", subtype='COLOR')
+    theme_active_slot_color : FloatVectorProperty(size=4, default=(.2, .5, .9, 1.0), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
     theme_slot_outline_color : FloatVectorProperty(size=4, default=(.1, .1, .1, .9), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
     theme_slot_color : FloatVectorProperty(size=4, default=(.1, .1, .1, .9), min=0.0, max=1.0, name="Active Slot Color", subtype='COLOR')
 

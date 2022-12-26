@@ -22,10 +22,10 @@ filtered_builtin_brush_names = tuple(b for b in builtin_brush_names if b not in 
 class HotbarManager:
     brushes: List[str]
     selected: str
-    
+
     alt_brushes: List[str]
     alt_selected: str
-    
+
     use_alt: bool
 
     def __init__(self):
@@ -341,7 +341,7 @@ class Manager:
         self.active_brush_cat = brush_cat.id
 
         ## DBShelf.BRUSH_CAT.write(brush_cat)
-        brush_cat.save()
+        ## brush_cat.save()
         return brush_cat
 
     def new_texture_cat(self, cat_name: str = 'Untitled', cat_id: str = None, *texture_ids: List[str]) -> TextureCategory:
@@ -353,60 +353,8 @@ class Manager:
         self.active_texture_cat = texture_cat.id
 
         ## DBShelf.TEXTURE_CAT.write(texture_cat)
-        texture_cat.save()
+        ## texture_cat.save()
         return texture_cat
-
-    def load_brushes_from_db(self) -> None:
-        brushes_db_filepath: str = DBShelfPaths.BRUSH_SETTINGS
-        brush_cats_db_filepath: str = DBShelfPaths.BRUSH_CAT
-        config_filepath: str = SculptPlusPaths.CONFIG_FILE()
-        if not path.exists(brush_cats_db_filepath + '.dat') or not path.isfile(brush_cats_db_filepath + '.dat'):
-            print("WARN! BrushCategory Database not found: " + brush_cats_db_filepath)
-            self.load_default_brushes()
-            return
-        if not path.exists(brushes_db_filepath + '.dat') or not path.isfile(brushes_db_filepath + '.dat'):
-            print("WARN! Brush Database not found: " + brushes_db_filepath)
-            return
-        if not path.exists(config_filepath) or not path.isfile(config_filepath):
-            print("WARN! Config file not found: " + config_filepath)
-            return
-
-        print("[SCULPT+] Loading config file...")
-        config_data: dict = {}
-        with open(config_filepath, 'r') as f:
-            config_data = json.load(f)
-            hotbar_config = config_data.pop('hotbar')
-            self.hotbar.deserialize(hotbar_config)
-
-        print("[SCULPT+] Loading brushes from database...")
-        with shelve.open(brush_cats_db_filepath) as db__brush_cats:
-            # print("Brush cats ids:", db__brush_cats.keys())
-            for brush_cat_id, brush_cat_item in db__brush_cats.items():
-                self.brush_cats[brush_cat_id] = brush_cat_item
-        with shelve.open(brushes_db_filepath) as db__brushes:
-            # print("Brushes ids:", db__brushes.keys())
-            for brush_id, brush_item in db__brushes.items():
-                self.brushes[brush_id] = brush_item
-
-            # Resolve hotbar brushes.
-            for i, brush_id in enumerate(list(self.hotbar.brushes)):
-                if brush:= self.get_brush(brush_id):
-                    # Make sure some Sculpt+ brush is selected.
-                    if self.hotbar.selected is None:
-                        brush.to_brush(bpy.context)
-                        self.hotbar.selected = brush_id
-                    break
-                else:
-                    self.hotbar.brushes[i] = None
-
-        # Set Active Categories if cats exist.
-        active_brush_cat: str = config_data['active_brush_cat']
-        if active_brush_cat in self.brush_cats:
-            self.active_brush_cat = active_brush_cat
-
-        active_texture_cat: str = config_data['active_texture_cat']
-        if active_texture_cat in self.texture_cats:
-            self.active_texture_cat = active_texture_cat
 
     def load_brushes_from_datablock(self, cat_name: str, cat_id: str, brush_names: List[Union[str, BlBrush]], remove_brush_datablocks: bool = True) -> None:
         if remove_brush_datablocks:
@@ -431,7 +379,7 @@ class Manager:
                 bl_texture = bl_brush.texture
                 if bl_texture:
                     if bl_texture.type == 'IMAGE' and (bl_image := bl_texture.image):
-                        if bl_image.source in {'FILE', 'SEQUENCE'}:
+                        if bl_image.source in {'FILE', 'SEQUENCE'} and bl_image.pixels:
                             image_path: Path = Path(bl_image.filepath_from_user())
                             if image_path.exists() and image_path.is_file():
                                 texture: Texture = Texture(bl_texture)
@@ -546,12 +494,107 @@ class Manager:
 
 
     ''' Generic methods, load and save. '''
+    def load_data(self) -> None:
+        brushes_db_filepath: str = DBShelfPaths.BRUSH_SETTINGS
+        brush_cats_db_filepath: str = DBShelfPaths.BRUSH_CAT
+        config_filepath: str = SculptPlusPaths.CONFIG_FILE()
+        if not path.exists(brush_cats_db_filepath + '.dat') or not path.isfile(brush_cats_db_filepath + '.dat'):
+            print("WARN! BrushCategory Database not found: " + brush_cats_db_filepath)
+            self.load_default_brushes()
+            return
+        if not path.exists(brushes_db_filepath + '.dat') or not path.isfile(brushes_db_filepath + '.dat'):
+            print("WARN! Brush Database not found: " + brushes_db_filepath)
+            return
+        if not path.exists(config_filepath) or not path.isfile(config_filepath):
+            print("WARN! Config file not found: " + config_filepath)
+            return
+
+        print("[SCULPT+] Loading brushes from database...")
+        with DBShelfManager.BRUSH_SETTINGS() as shelf_manager__brushes:
+            for brush_id, brush_data in shelf_manager__brushes.get_items():
+                print("\t> ", brush_data.name)
+                self.brushes[brush_id] = brush_data
+
+        print("[SCULPT+] Loading brush categories from database...")
+        with DBShelfManager.BRUSH_CAT() as shelf_manager__brush_cats:
+            for brush_cat_id, brush_cat_data in shelf_manager__brush_cats.get_items():
+                print("\t> ", brush_cat_data.name)
+                self.brush_cats[brush_cat_id] = brush_cat_data
+
+        print("[SCULPT+] Loading textures from database...")
+        with DBShelfManager.TEXTURE() as shelf_manager__textures:
+            for texture_id, texture_data in shelf_manager__textures.get_items():
+                print("\t> ", texture_data.name)
+                self.textures[texture_id] = texture_data
+
+        print("[SCULPT+] Loading texture categories from database...")
+        with DBShelfManager.TEXTURE_CAT() as shelf_manager__texture_cats:
+            for texture_cat_id, texture_cat_data in shelf_manager__texture_cats.get_items():
+                print("\t> ", texture_cat_data.name)
+                self.texture_cats[texture_cat_id] = texture_cat_data
+
+        # TODO: Make a brush initializer handler timer.
+        # That checks for active brush / active texture. Hotbar selected etc.
+        # Ensure that the named brush/texture exist, and select it '.to_brush'.
+        # If not, put null values into those fields.
+        # Exit condition: enters in sculpt mode and above process done.
+        # Continue condition: not in sculpt mode, wait for 1 second or so.
+        # Note: Maybe can use a msgbus trigger instead.
+
+        '''
+        with shelve.open(brush_cats_db_filepath) as db__brush_cats:
+            # print("Brush cats ids:", db__brush_cats.keys())
+            for brush_cat_id, brush_cat_item in db__brush_cats.items():
+                self.brush_cats[brush_cat_id] = brush_cat_item
+        with shelve.open(brushes_db_filepath) as db__brushes:
+            # print("Brushes ids:", db__brushes.keys())
+            for brush_id, brush_item in db__brushes.items():
+                self.brushes[brush_id] = brush_item
+
+            # Resolve hotbar brushes.
+            for i, brush_id in enumerate(list(self.hotbar.brushes)):
+                if brush:= self.get_brush(brush_id):
+                    # Make sure some Sculpt+ brush is selected.
+                    if self.hotbar.selected is None:
+                        brush.to_brush(bpy.context)
+                        self.hotbar.selected = brush_id
+                    break
+                else:
+                    self.hotbar.brushes[i] = None
+        '''
+
+        print("[SCULPT+] Loading config file...")
+        config_data: dict = {}
+        with open(config_filepath, 'r') as f:
+            config_data = json.load(f)
+            print("[SCULPT+] Loading hotbar config...")
+            hotbar_config = config_data.pop('hotbar')
+            self.hotbar.deserialize(hotbar_config)
+
+        # Set Active Categories if cats exist.
+        active_brush_cat: str = config_data['active_brush_cat']
+        if active_brush_cat in self.brush_cats:
+            self.active_brush_cat = active_brush_cat
+
+        active_texture_cat: str = config_data['active_texture_cat']
+        if active_texture_cat in self.texture_cats:
+            self.active_texture_cat = active_texture_cat
+
+        active_brush: str = config_data['active_brush']
+        if active_brush in self.brushes:
+            self.active_brush = active_brush
+
+        active_texture: str = config_data['active_texture']
+        if active_texture in self.textures:
+            self.active_texture = active_texture
+
     def save_all(self) -> None:
-        if not self.textures and not self.brushes:
+        if not self.brushes and not self.textures and not self.brush_cats and not self.texture_cats:
             return
-        if not self.texture_cats and self.brush_cats:
-            return
+        print("[Sculpt+] Saving UI config...")
         config_data = {
+            'active_brush': self.active_brush if self.active_brush else None,
+            'active_texture': self.active_texture if self.active_texture else None,
             'active_brush_cat'  : self.active_brush_cat.id   if self.active_brush_cat   else None,
             'active_texture_cat': self.active_texture_cat.id if self.active_texture_cat else None,
             'hotbar': self.hotbar.serialize(),
@@ -559,14 +602,29 @@ class Manager:
         with open(SculptPlusPaths.CONFIG_FILE(), 'w') as f:
             json.dump(config_data, f, indent=4, ensure_ascii=True)
 
-        for brush in self.brushes.values():
-            brush.save()
-        for brush_cat in self.brush_cats.values():
-            brush_cat.save()
-        for tex_cat in self.texture_cats.values():
-            tex_cat.save()
-        return
-        for texture in self.textures.values():
-            texture.save()
-        for image in self.images.values():
-            image.save()
+        if self.brushes != {}:
+            print("[Sculpt+] Saving brushes..")
+            with DBShelfManager.BRUSH_DEFAULTS() as shelf_manager__brushes:
+                for brush in self.brushes.values():
+                    shelf_manager__brushes.write(brush)
+                    # brush.save()
+        if self.textures != {}:
+            print("[Sculpt+] Saving textures..")
+            with DBShelfManager.TEXTURE() as shelf_manager__textures:
+                for texture in self.textures.values():
+                    shelf_manager__textures.write(texture)
+                    # texture.save()
+        if self.brush_cats != {}:
+            print("[Sculpt+] Saving brush_cats..")
+            with DBShelfManager.BRUSH_CAT() as shelf_manager__brush_cats:
+                for brush_cat in self.brush_cats.values():
+                    shelf_manager__brush_cats.write(brush_cat)
+                    print("\t> ", brush_cat.name)
+                    # brush_cat.save()
+        if self.texture_cats != {}:
+            print("[Sculpt+] Saving texture_cats..")
+            with DBShelfManager.TEXTURE_CAT() as shelf_manager__texture_cats:
+                for tex_cat in self.texture_cats.values():
+                    shelf_manager__texture_cats.write(tex_cat)
+                    print("\t> ", tex_cat.name)
+                    # tex_cat.save()

@@ -146,27 +146,27 @@ class DBPickle(Enum):
 
     def load(self, item):
         item_id: str = item if isinstance(item, str) else item.id
-        path: str = self.value(item_id + '.db')
+        path: str = self.value(item_id)
         with open(path, 'rb') as f:
             return pickle.load(f)
     
     def write(self, item):
-        path: str = self.value(item.id + '.db')
+        path: str = self.value(item.id)
         with open(path, 'wb') as f:
             pickle.dump(item, f)
 
     def remove(self, item):
         item_id: str = item if isinstance(item, str) else item.id
-        path: str = self.value(item_id + '.db')
+        path: str = self.value(item_id)
         os.remove(path)
 
 
 class DBShelfPaths:
-    BRUSH_SETTINGS = SculptPlusPaths.APP__DATA('brush_settings.db')
-    BRUSH_DEFAULTS = SculptPlusPaths.APP__DATA('brush_defaults.db')
-    BRUSH_CAT = SculptPlusPaths.APP__DATA('brush_cats.db')
-    TEXTURE_CAT = SculptPlusPaths.APP__DATA('texture_cats.db')
-    TEXTURES = SculptPlusPaths.APP__DATA('textures.db')
+    BRUSH_SETTINGS = SculptPlusPaths.APP__DATA('brush_settings')
+    BRUSH_DEFAULTS = SculptPlusPaths.APP__DATA('brush_defaults')
+    BRUSH_CAT = SculptPlusPaths.APP__DATA('brush_cats')
+    TEXTURE_CAT = SculptPlusPaths.APP__DATA('texture_cats')
+    TEXTURES = SculptPlusPaths.APP__DATA('textures')
 
 
 class DBShelf(Enum):
@@ -176,14 +176,19 @@ class DBShelf(Enum):
     TEXTURE_CAT = DBShelfPaths.TEXTURE_CAT
     TEXTURES = DBShelfPaths.TEXTURES
 
+    def items(self) -> dict:
+        path: str = self.value # item.id
+        with shelve.open(path) as db:
+            return db.items()
+
     def write(self, *items: tuple):
-        path: str = self.value#(item.id + '.db')
+        path: str = self.value# item.id
         with shelve.open(path) as db:
             for item in items:
                 db[item.id] = item
 
     def remove(self, *items: tuple[str]):
-        path: str = self.value#(item_id + '.db')
+        path: str = self.value# item_id
         with shelve.open(path) as db:
             for item in items:
                 item_id: str = item if isinstance(item, str) else item.id
@@ -208,7 +213,7 @@ class DBShelfManager:
         return cls(DBShelfPaths.TEXTURE_CAT)
 
     @classmethod
-    def TEXTURE_CAT(cls) -> 'DBShelfManager':
+    def TEXTURE(cls) -> 'DBShelfManager':
         return cls(DBShelfPaths.TEXTURES)
 
     def __init__(self, path: str):
@@ -227,6 +232,9 @@ class DBShelfManager:
     def remove(self, component):
         item_id: str = component if isinstance(component, str) else component.id
         del self.db[item_id]
+
+    def get_items(self) -> dict:
+        return self.db.items()
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.db.close()

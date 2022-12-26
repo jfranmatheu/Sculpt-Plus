@@ -129,7 +129,9 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
     filename_ext = ".blend"
     filter_glob: StringProperty(default=("*.blend;*" + ";*.".join(['png', 'jpg', 'jpeg'])), options={'HIDDEN'}) # bpy.path.extensions_image
 
-    cat_type: StringProperty()
+    cat_type: StringProperty(options={'HIDDEN'})
+    source_type: StringProperty(options={'HIDDEN'})
+    cat_name: StringProperty(default="Blend-Lib Category")
 
     #def invoke(self, context, event):
     #    return context.window_manager.invoke_props_popup(self, event)
@@ -142,43 +144,31 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             return {'CANCELLED'}
 
         if filepath.suffix == ".blend":
+            self.source_type = 'LIBRARY'
             return {self.load_blendlib(context)}
 
         elif filepath.suffix in {'.png', '.jpg', '.jpeg'}:
+            self.source_type = 'SINGLE IMAGE'
             self.load_image(context)
 
         elif filepath.is_dir():
+            self.source_type = 'FOLDER'
             self.load_imagelib(context)
 
         return {'FINISHED'}
 
 
     def load_blendlib(self, context):
-        brushes = None
-        images = None
-        with bpy.data.libraries.load(self.filepath) as (data_from, data_to):
-            if self.cat_type == 'BRUSH':
-                brushes = list(data_from.brushes)
-                # images = list(data_from.images)
-            elif self.cat_type == 'TEXTURE':
-                images = list(data_from.images)
+        self.cv = Props.Canvas()
+        self.mod_asset_importer = self.cv.mod_asset_importer
 
-        if brushes:
-            from sculpt_plus.management.manager import builtin_brush_names
-            brushes_set = set(brushes)
-            for brush_name in builtin_brush_names:
-                if brush_name in brushes_set:
-                    brushes_set.remove(brush_name)
-            brushes = list(brushes_set)
+        from sculpt_plus.core.sockets.pbar_server import PBarServer
+        pbar = PBarServer()
+        pbar.set_update_callback(self.on_progress_update)
+        pbar.start()
+        self.pbar = pbar
 
-        elif images:
-            images_set = set(images)
-            builtin_images_names = ('Render Result', 'Viewer Node')
-            for image_name in builtin_images_names:
-                if image_name in images_set:
-                    images_set.remove(image_name)
-            images = list(images_set)
-
+        self.region = context.region
 
         # RUN ANOTHER BLENDER INSTANCE IN BACKGROUND,
         # EXECUTE AN SCRIPT THAT SAVES THE BRUSH ICONS AND TEXTURES
@@ -186,11 +176,13 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         temporal_dir = SculptPlusPaths.APP__TEMP() # TemporaryDirectory(prefix="sculpt_plus_")
         args = (
             str(temporal_dir),
-            '#$#'.join(brushes) if brushes else 'NONE',
-            '#$#'.join(images) if images else 'NONE',
+            self.cat_type,
+            str(pbar.port)
+            #'#$#'.join(brushes) if brushes else 'NONE',
+            #'#$#'.join(images) if images else 'NONE',
         )
 
-        process = subprocess.Popen(
+        self.process = subprocess.Popen(
             [
                 bpy.app.binary_path,
                 abspath(self.filepath),
@@ -205,12 +197,47 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             shell=True
         )
 
+        #print(out)
+        self.cv.progress_start(label=f"Loading {self.cat_type.capitalize()} data from {self.source_type.capitalize()}")
+
+        context.window_manager.modal_handler_add(self)
+        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
+        return 'RUNNING_MODAL' # 'FINISHED'
+
+    def modal(self, context, event):
+        res = self.pbar.run_in_modal()
+        if res == 'FINISHED':
+            self.done(context)
+        elif res == 'CANCELLED': # in {'FINISHED', 'CANCELLED'}:
+            self.error(context)
+        print(res)
+        return {res}
+
+    def on_progress_update(self, progress: float) -> None:
+        print("[MODAL] Progress:", progress)
+        self.region.tag_redraw()
+        self.cv.progress_update(progress, None)
+
+    def cleanup(self, context):
+        context.window_manager.event_timer_remove(self._timer)
+        del self._timer
+        self.cv.progress_stop()
+        self.pbar.stop()
+        del self.pbar
+
+    def error(self, context) -> None:
+        self.cleanup(context)
+
+    def done(self, context) -> str:
+        self.cleanup(context)
+
         #out, err = process.communicate()
-        return_code = process.wait()
+        return_code = self.process.wait()
         if return_code != 0:
             #print(err)
             return 'CANCELLED'
-
+        
+        temporal_dir = SculptPlusPaths.APP__TEMP()
         temporal_dir: Path = Path(temporal_dir)
         assets_importer_json_file = temporal_dir / 'asset_importer_data.json'
         if not assets_importer_json_file.exists() or not assets_importer_json_file.is_file():
@@ -220,16 +247,14 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         with assets_importer_json_file.open('r') as json_file:
             data = json.load(json_file)
 
-        print(data)
+        # print(data)
 
         if not data:
             return 'CANCELLED'
 
-        bpy.sculpt_hotbar._cv_instance.mod_asset_importer.show(
+        self.mod_asset_importer.show(
             self.filepath,
             type=self.cat_type,
             data=data,
         )
-
-        #print(out)
         return 'FINISHED'
