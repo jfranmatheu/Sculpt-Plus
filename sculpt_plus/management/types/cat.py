@@ -105,6 +105,7 @@ class BrushCategory(Category):
                 Props.BrushManager().brushes[b.id] = def_brush
 
     def __del__(self) -> None:
+        return
         if path:= ThumbnailPaths.BRUSH_CAT(self, check_exists=True):
             path.unlink()
         DBShelf.BRUSH_CAT.remove(self)
@@ -132,6 +133,7 @@ class TextureCategory(Category):
         pass
 
     def __del__(self) -> None:
+        return
         if path:= ThumbnailPaths.TEXTURE_CAT(self, check_exists=True):
             path.unlink()
         ## DBShelf.TEXTURE_CAT.remove(self)

@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Dict, Set, Tuple
 
 import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture
@@ -11,6 +11,28 @@ from sculpt_plus.management.manager import Manager, TextureCategory, BrushCatego
 #from sculpt_plus.brush_manager.data_brush_manager import SCULPTPLUS_PG_brush_manager
 #from sculpt_plus.brush_manager.data_brush_category import SCULPTPLUS_PG_brush_category
 #from sculpt_plus.brush_manager.data_brush_slot import SCULPTPLUS_PG_brush_slot
+
+
+# SOME NICE SCULPT TOOL - BRUSH NAME CONSTANTS:
+sculpt_tool_brush_name: Dict[str, str] = {'BLOB': 'Blob', 'BOUNDARY': 'Boundary', 'CLAY': 'Clay', 'CLAY_STRIPS': 'Clay Strips', 'CLAY_THUMB': 'Clay Thumb', 'CLOTH': 'Cloth', 'CREASE': 'Crease', 'DRAW_FACE_SETS': 'Draw Face Sets', 'DRAW_SHARP': 'Draw Sharp', 'ELASTIC_DEFORM': 'Elastic Deform', 'FILL': 'Fill/Deepen', 'FLATTEN': 'Flatten/Contrast', 'GRAB': 'Grab', 'INFLATE': 'Inflate/Deflate', 'LAYER': 'Layer', 'MASK': 'Mask', 'MULTIPLANE_SCRAPE': 'Multi-plane Scrape', 'DISPLACEMENT_ERASER': 'Multires Displacement Eraser', 'DISPLACEMENT_SMEAR': 'Multires Displacement Smear', 'NUDGE': 'Nudge', 'PAINT': 'Paint', 'PINCH': 'Pinch/Magnify', 'POSE': 'Pose', 'ROTATE': 'Rotate', 'SCRAPE': 'Scrape/Peaks', 'DRAW': 'SculptDraw', 'SIMPLIFY': 'Simplify', 'TOPOLOGY': 'Slide Relax', 'SMOOTH': 'Smooth', 'SNAKE_HOOK': 'Snake Hook', 'THUMB': 'Thumb'}
+builtin_brush_names: Tuple[str] = tuple(sculpt_tool_brush_name.values())
+manager_exclude_brush_tools: Set[str] = {'MASK', 'DRAW_FACE_SETS', 'SIMPLIFY', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR'}
+toolbar_hidden_brush_tools: Set[str] = {sculpt_tool for sculpt_tool in sculpt_tool_brush_name.keys() if sculpt_tool not in manager_exclude_brush_tools}
+exclude_brush_names: Set[str] = {sculpt_tool_brush_name[sculpt_tool] for sculpt_tool in manager_exclude_brush_tools}
+filtered_builtin_brush_names = tuple(b for b in builtin_brush_names if b not in exclude_brush_names)
+
+
+class SculptToolUtils:
+    @staticmethod
+    def select_brush_tool(ctx: Context, brush: Brush):
+        ori_brush_name = sculpt_tool_brush_name[brush.sculpt_tool]
+        tmp_brush_name: str = 'S+ | ' + ori_brush_name
+        tmp_brush = bpy.data.brushes.get(tmp_brush_name, None)
+        if tmp_brush is None:
+            tmp_brush = bpy.data.brushes.new(tmp_brush_name, mode='SCULPT')
+            tmp_brush.sculpt_tool = brush.sculpt_tool
+        brush.to_brush(tmp_brush)
+        ctx.tool_settings.sculpt.brush = tmp_brush
 
 
 ''' Helper to get properties paths (with typing). '''
@@ -58,10 +80,11 @@ class Props:
     def BrushManagerExists() -> bool:
         return Manager._instance is not None
 
-    @staticmethod
-    def BrushManagerDestroy() -> None:
-        del Manager._instance
-        Manager._instance = None
+    @classmethod
+    def BrushManagerDestroy(cls) -> None:
+        if cls.BrushManagerExists():
+            del Manager._instance
+            Manager._instance = None
 
     @classmethod
     def UpdateBrushProp(cls, brush_id: str, attr: str, value) -> None:
@@ -210,11 +233,11 @@ class Props:
 
     @classmethod
     def GetActiveBrush(cls) -> Brush:
-        return cls.BrushManager().active_brush
+        return cls.GetBrush(cls.BrushManager().active_brush)
     
     @classmethod
     def GetActiveTexture(cls) -> Texture:
-        return cls.BrushManager().active_texture
+        return cls.GetTexture(cls.BrushManager().active_texture)
 
     @classmethod
     def SetActiveBrush(cls, brush: Union[Brush, str]) -> Brush:
@@ -276,8 +299,11 @@ class Props:
             brush = cls.GetBrush(brush)
         if brush is None:
             return
+        # print("--------------------------------------------------------------------------------------")
+        # print("Selecting brush..", brush.name)
         cls.SetActiveBrush(brush.id)
-        brush.to_brush(ctx)
+        SculptToolUtils.select_brush_tool(ctx, brush)
+        # brush.to_brush(ctx)
         if brush.texture_id is not None:
             if texture := cls.GetTexture(brush.texture_id):
                 texture.to_brush(ctx)

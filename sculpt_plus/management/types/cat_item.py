@@ -16,9 +16,9 @@ class CategoryItem(object):
     db_idname: str = 'undefined'
     thumbnail: Thumbnail
 
-    def __init__(self, cat=None, _save=False):
+    def __init__(self, cat=None, _save=False, custom_id: str = None):
         super(CategoryItem, self).__init__()
-        self.id = uuid4().hex
+        self.id = uuid4().hex if custom_id is None else custom_id
         self.fav = False
         self.cat_id = cat
         self.thumbnail: Thumbnail = None

@@ -1,5 +1,8 @@
 import bpy
+import functools
+from bpy.app.timers import register as register_timer, is_registered as is_timer_registered
 sculpt_hotbar_classes = []
+exclude_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}
 def register():
     print("[SculptHotbar] Registering...")
     from mathutils import Vector
@@ -7,6 +10,9 @@ def register():
     from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
     from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
     from sculpt_plus.utils.gpu import LiveView
+    from sculpt_plus.props import Props
+    from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
+    from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
     def init_master(gzg,ctx,gmaster):
         gzg.roff = (0, 0)
         gzg.rdim = (ctx.region.width, ctx.region.height) # get_reg_off_dim(ctx)
@@ -23,11 +29,60 @@ def register():
             # ctx.scene.sculpt_hotbar.init_brushes()
         gzg.master = gmaster
         #LiveView.get().start_handler(ctx)
+    def initialize_brush():
+        ctx = bpy.context
+        if active_br := Props.GetActiveBrush():
+            Props.SelectBrush(ctx, active_br)
+        elif brushes := list(Props.BrushManager().brushes.values()):
+            Props.SelectBrush(ctx, brushes[0])
+        else:
+            bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+            curr_active_tool = ToolSelectPanelHelper.tool_active_from_context(ctx)
+            if curr_active_tool is None:
+                return True
+            type, curr_active_tool = curr_active_tool.idname.split('.')
+            curr_active_tool = curr_active_tool.replace(' ', '_').upper()
+            if curr_active_tool in exclude_brush_tools or type != 'builtin_brush':
+                return True
+            Props.BrushManager().active_sculpt_tool = curr_active_tool
     def dummy_poll_view(ctx):
+        if ctx.mode != 'SCULPT':
+            return False
         #if ctx.mode != 'SCULPT':
         #    LiveView.get().stop_handler()
         #else:
         #    LiveView.get().start_handler(ctx)
+        #print(Props.BrushManager().active_sculpt_tool)
+        manager = Props.BrushManager()
+        if not manager.initilized or not manager.active_sculpt_tool:
+            # HACK. lol.
+            # print("NOT ACTIVE BRUSH, LET'S CHANGE THAT!")
+            if is_timer_registered(initialize_brush):
+                return True
+            manager.initilized = True
+            register_timer(initialize_brush, first_interval=.1)
+        '''
+        prev_active_tool = Props.BrushManager().active_sculpt_tool
+        curr_active_tool = ToolSelectPanelHelper.tool_active_from_context(ctx)
+        if curr_active_tool is None:
+            return
+        type, curr_active_tool = curr_active_tool.idname.split('.')
+        curr_active_tool = curr_active_tool.replace(' ', '_').upper()
+        if prev_active_tool != curr_active_tool:
+            if curr_active_tool in exclude_brush_tools or type != 'builtin_brush':
+                return True
+            Props.BrushManager().active_sculpt_tool = curr_active_tool
+            print(f"Info! Changed tool from {prev_active_tool} to {curr_active_tool}.")
+            if curr_active_tool == 'ALL_BRUSH':
+                if active_br := Props.GetActiveBrush():
+                    Props.SelectBrush(ctx, active_br)
+                elif brushes := list(Props.BrushManager().brushes.values()):
+                    Props.SelectBrush(ctx, brushes[0])
+                else:
+                    bpy.ops.wm.tool_set_by_id(name='builtin_brush.draw')
+        '''
+        return True
+    def on_refresh(gzg,ctx):
         return True
     def update_master(gzg,ctx,cv):
         off_left = 0
@@ -64,7 +119,7 @@ def register():
             'poll': classmethod(lambda x, y: dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo),
             'draw_prepare': lambda x,y: update_master(x,y,x.master.cv) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
             'setup': lambda x,y: init_master(x,y,x.gizmos.new(x.__class__.gz)),
-            'refresh': lambda x,y: setattr(x.master.cv,'reg',y.region) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
+            'refresh': lambda x,y: setattr(x.master.cv,'reg',y.region) if on_refresh(x,y) and hasattr(x,'master') and hasattr(x.master,'cv') else None,
         }
     )
     master=type(

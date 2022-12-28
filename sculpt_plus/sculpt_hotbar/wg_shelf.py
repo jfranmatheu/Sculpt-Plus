@@ -226,7 +226,7 @@ class ShelfGrid(ViewWidget):
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         # brushes = context.scene.sculpt_hotbar.get_brushes()
-        act_cat_id: str = Props.GetActiveCat(self.type)
+        act_cat_id = Props.GetActiveCat(self.type)
         if act_cat_id is None:
             return None
         slot_color = Vector(prefs.theme_shelf_slot)
@@ -235,7 +235,7 @@ class ShelfGrid(ViewWidget):
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
         act_item = Props.GetActiveBrush() if self.type == 'BRUSH' else Props.GetActiveTexture()
-        return slot_color, act_cat_id.id, act_item, Props.GetHotbarBrushIds()
+        return slot_color, act_cat_id.id, act_item.id if act_item else None, Props.GetHotbarBrushIds()
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,
@@ -626,7 +626,7 @@ class ShelfGridItemInfo(WidgetBase):
             (.1, .1, .1, .64 * opacity)
         )
 
-        act_item = Props.GetHotbarSelectedBrush()
+        act_brush = Props.GetActiveBrush()
         # if act_item is None:
         #     return
 
@@ -643,17 +643,17 @@ class ShelfGridItemInfo(WidgetBase):
 
         # DRAW BRUSH PREVIEW.
         def draw_preview_fallback(p, s, act):
-            DiBr(p, s, act_item.sculpt_tool, act, opacity)
+            DiBr(p, s, act_brush.sculpt_tool, act, opacity)
 
-        if act_item:
-            act_item.draw_preview(
+        if act_brush:
+            act_brush.draw_preview(
                 item_pos,
                 item_size,
                 False,
                 fallback=draw_preview_fallback,
                 opacity=opacity
             )
-            label = act_item.name
+            label = act_brush.name
 
         else:
             DiRct(item_pos, item_size, (.05, .05, .05, .4 * opacity))
@@ -671,9 +671,10 @@ class ShelfGridItemInfo(WidgetBase):
             DiIcoOpGamHl(p, s, Icon.TEXTURE, opacity)
 
         # item_pos = inner_pos
-        if act_item and act_item.texture_id and (tex_item := Props.GetTexture(act_item.texture_id)):
-            label = tex_item.name
-            tex_item.draw_preview(item_pos, item_size, False, fallback=draw_preview_fallback, opacity=opacity)
+        act_texture = Props.GetActiveTexture()
+        if act_texture: # act_brush and act_brush.texture_id and (act_texture := Props.GetTexture(act_brush.texture_id)):
+            label = act_texture.name
+            act_texture.draw_preview(item_pos, item_size, False, fallback=draw_preview_fallback, opacity=opacity)
         else:
             label = "No Texture"
             draw_preview_fallback(item_pos, item_size, False)

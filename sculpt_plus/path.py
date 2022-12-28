@@ -36,25 +36,41 @@ data_texture_dir = data_dir / "texture"
 version_file = app_dir / "version.ini"
 management_config_file = data_dir / "config.json"
 
-# First time creation.
-try:
-    app_dir.mkdir(parents=True)
-    version_file.touch()
+def ensure_paths():
+    # First time creation.
+    try:
+        app_dir.mkdir(parents=True, exist_ok=True)
 
-    data_dir.mkdir(parents=False)
-    # data_brush_dir.mkdir()
-    # data_texture_dir.mkdir()
-    temp_dir.mkdir()
-    (data_brush_dir / "settings" / "defaults").mkdir(parents=True)
-    (data_brush_dir / "cats").mkdir()
-    (data_brush_dir / "previews").mkdir()
-    (data_texture_dir / "settings" / "defaults").mkdir(parents=True)
-    (data_texture_dir / "cats").mkdir()
-    (data_texture_dir / "previews").mkdir()
-    (data_texture_dir / "images").mkdir()
-    management_config_file.touch()
-except FileExistsError:
-    pass
+        if not version_file.exists():
+            version_file.touch()
+
+        # TODO: Check version changes.
+        # Do versioning code if needed.
+
+        # Update the registered version.
+        with version_file.open('w', encoding='ascii') as file:
+            from . import bl_info
+            file.write(f"{bl_info['version']}\n")
+
+        data_dir.mkdir(parents=False)
+        # data_brush_dir.mkdir()
+        # data_texture_dir.mkdir()
+        temp_dir.mkdir()
+        (data_brush_dir / "settings" / "defaults").mkdir(parents=True)
+        (data_brush_dir / "cats").mkdir()
+        (data_brush_dir / "previews").mkdir()
+        (data_texture_dir / "settings" / "defaults").mkdir(parents=True)
+        (data_texture_dir / "cats").mkdir()
+        (data_texture_dir / "previews").mkdir()
+        (data_texture_dir / "images").mkdir()
+        if not management_config_file.exists():
+            management_config_file.touch()
+            with management_config_file.open('w', encoding='ascii') as file:
+                file.write('{ }')
+    except FileExistsError:
+        pass
+
+ensure_paths()
 
 class SculptPlusPaths(Enum):
     SRC = dirname(abspath(__file__))
@@ -233,8 +249,8 @@ class DBShelfManager:
         item_id: str = component if isinstance(component, str) else component.id
         del self.db[item_id]
 
-    def get_items(self) -> dict:
-        return self.db.items()
+    def get_items(self) -> list:
+        return list(self.db.items())
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.db.close()

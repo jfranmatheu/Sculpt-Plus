@@ -127,7 +127,7 @@ class ShelfSidebar(VerticalViewWidget):
 
         def draw_preview_fallback(p, s, act):
             # DiRct(p, s, Vector(prefs.theme_shelf_slot)*.8)
-            DiIcoCol(p, s, Icon.PENCIL_CASE_1, (.9, .9, .9, .92))
+            DiIcoCol(p, s, Icon.PENCIL_CASE_1 if self.type == 'BRUSH' else Icon.TEXTURE_SMALL, (.9, .9, .9, .92))
 
         item.draw_preview(
             slot_p+Vector((pad, pad)),
@@ -158,12 +158,13 @@ class ShelfSidebar(VerticalViewWidget):
         p = self.get_pos_by_relative_point(Vector((0.0, 1.0)))
         DiText(p, '.', 1, 1) # RESET.
         # p -= Vector((0, self.item_size.y))
-        DiRct(p, self.item_size, (.05,0,.1,.5))
+        DiRct(p, self.item_size, (.08,0.05,.1,.8))
 
         if act_item is None:
             # print("None active brush cat", Props.BrushManager().brush_cats_count)
             DiText(p+Vector((10, 10))*scale, 'No Active Category', 14, scale, (.95, .4, .2, .9)) # RESET.
             DiCage(p, self.item_size, 2, Vector(prefs.theme_sidebar))
+            DiLine(p, p+Vector((self.item_size.x, 0)), 3.0, (.08, .08, .08, .8))
             return
 
         self.draw_item(p, self.item_size,
@@ -174,7 +175,7 @@ class ShelfSidebar(VerticalViewWidget):
                        scale, prefs)
 
         p.y -= 2 * scale
-        DiLine(p, p+Vector((self.item_size.x, 0)), 2.4, (.05, .05, .05, .8))
+        DiLine(p, p+Vector((self.item_size.x, 0)), 3.0, (.08, .08, .08, .8))
 
         if self.hovered_item:
             pass

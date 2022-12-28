@@ -8,7 +8,7 @@ from bpy.app.translations import pgettext_tip as tip_
 from bpy.app.translations import pgettext_iface as iface_
 from time import time
 
-from sculpt_plus.props import Props
+from sculpt_plus.props import Props, toolbar_hidden_brush_tools
 
 
 def _layout_generator_single_row(layout, scale_y):
@@ -36,10 +36,23 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     using_dyntopo : bool = context.sculpt_object.use_dynamic_topology_sculpting
 
     space_type = context.space_data.type
+    active_tool = ToolSelectPanelHelper._tool_active_from_context(context, space_type)
     tool_active_id = getattr(
-        ToolSelectPanelHelper._tool_active_from_context(context, space_type),
+        active_tool,
         "idname", None,
     )
+    # active_tool_label = getattr(active_tool, 'label', None)
+    manager_active_sculpt_tool = Props.BrushManager().active_sculpt_tool
+    toolbar_active_sculpt_tool = tool_active_id.split('.')[1].replace(' ', '_').upper()
+
+    active_is_brush = tool_active_id.split('.')[0] == 'builtin_brush'
+    active_id = tool_active_id.split('.')[1].replace(' ', '_').upper()
+    hidden_brush_tool_selected = active_id in toolbar_hidden_brush_tools
+
+    manager_selected_brush = manager_active_sculpt_tool == toolbar_active_sculpt_tool
+    # print(manager_active_sculpt_tool, toolbar_active_sculpt_tool)
+    # print(manager_selected_brush, hidden_brush_tool_selected)
+    #all_brush_active = manager_active_sculpt_tool == 'ALL_BRUSH' and toolbar_active_sculpt_tool == manager_active_sculpt_tool
 
     if detect_layout:
         ui_gen, show_text = cls._layout_generator_detect_from_region(layout, context.region, scale_y)
@@ -59,7 +72,8 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     skip_first_brush = {'MASK', 'DRAW_FACE_SETS', 'MULTIRES_DISPLACEMENT_ERASER', 'MULTIRES_DISPLACEMENT_SMEAR', 'SIMPLIFY'}
     skipped_brushes = set()
 
-    for item in cls.tools_from_context(context):
+    tools_from_context = cls.tools_from_context(context)
+    for item in tools_from_context:
         if item is None:
             ui_gen.send(True)
             layout.separator(factor=spacing)
@@ -89,6 +103,8 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
             index = -1
             use_menu = False
 
+        is_active = (item.idname == tool_active_id)
+
         tool_idname: str = item.idname.split('.')[1].replace(' ', '_').upper()
         # SKIP first mask and face sets draw brushes.
         if 'builtin_brush' in item.idname:
@@ -99,7 +115,11 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
                 skipped_brushes.add(tool_idname)
                 continue
             else:
-                continue
+                if tool_idname == 'ALL_BRUSH':
+                    if not is_active and manager_active_sculpt_tool and manager_selected_brush and hidden_brush_tool_selected:
+                        is_active = True
+                else:
+                    continue
 
             if tool_idname in multires_tools and not using_multires:
                 continue
@@ -109,12 +129,54 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
         if using_dyntopo and tool_idname in anti_dyntopo_tools:
             continue
 
-        is_active = (item.idname == tool_active_id)
         icon_value = ToolSelectPanelHelper._icon_value_from_icon_handle(item.icon)
 
         sub = ui_gen.send(False)
 
-        if use_menu:
+        if tool_idname == 'ALL_BRUSH':
+            sub.scale_y = 1.75
+            #sub.emboss = 'NORMAL'
+            sub.operator(
+                "sculpt_plus.all_brush_tool",
+                text=" ",
+                depress=is_active,
+                icon_value=icon_value,
+                emboss=True
+            ) # .name = item.idname
+            """
+            if is_active:
+                sub.operator(
+                    "wm.tool_set_by_id",
+                    text=item.label if show_text else "",
+                    depress=is_active,
+                    icon_value=icon_value,
+                ).name = item.idname
+            else:
+                #sub.emboss = 'NONE'
+                #box = sub.box()
+                #box.scale_y = 0.8
+                #box.emboss = 'NORMAL'
+                #sub = box.row(align=True) # split(factor=0.5, align=True)
+                #sub.alignment = 'LEFT'
+                sub.scale_y = 1.75
+                #sub.emboss = 'NORMAL'
+                sub.operator(
+                    "sculpt_plus.all_brush_tool",
+                    text=" ",
+                    depress=is_active,
+                    icon_value=icon_value,
+                    emboss=True
+                ) # .name = item.idname
+                '''
+                sub.operator(
+                    "sculpt_plus.all_brush_tool",
+                    text="",
+                    depress=is_active,
+                    emboss=False
+                )
+                '''
+            """
+        elif use_menu:
             sub.operator_menu_hold(
                 "wm.tool_set_by_id",
                 text=item.label if show_text else "",
@@ -198,7 +260,7 @@ def draw_toolbar(self, context):
         draw_brush_settings_tabs(col_2, context)
     else:
         draw_tool_settings(col_2, context, tool_active, tool_active_id)
-    
+
     col_2.separator()
  
     draw_sculpt_sections(col_2, context)
@@ -236,16 +298,29 @@ def draw_tool_settings(layout, context, active_tool, active_tool_id: str):
         break
 
     if draw_settings is None:
-        print("nope")
+        # print("nope")
         return
 
     section = layout.column(align=True)
+
+    header = section.box().row(align=True)
+    header.scale_y = 1.5
+    header.emboss = 'NONE'
+    space_type, mode = ToolSelectPanelHelper._tool_key_from_context(context)
+    cls = ToolSelectPanelHelper._tool_class_from_space_type(space_type)
+    item, tool, icon_value = cls._tool_get_active(context, space_type, mode, with_icon=True)
+    if item is None:
+        return None
+    header.label(text="    " + item.label, icon_value=icon_value)
+
+    '''
     header = section.row(align=True)
     header.use_property_split = False
     header.box().label(text='', icon='SETTINGS')
     header_toggle = header.box().row(align=True)
     header_toggle.emboss = 'NONE'
     header_toggle.label(text="Tool Settings")
+    '''
     content = section.box().column()
     draw_settings(context, content, active_tool)
 
@@ -288,6 +363,7 @@ def draw_brush_settings_tabs(layout, context):
     if ui_section == 'BRUSH_SETTINGS':
         brush_settings(content, context, act_brush)
     elif ui_section == 'BRUSH_SETTINGS_ADVANCED':
+        content.use_property_split = False
         brush_settings_advanced(content, context, act_brush)
     elif ui_section == 'BRUSH_SETTINGS_STROKE':
         StrokePanel.draw(DummyPanel(content), context)
@@ -388,18 +464,22 @@ def draw_sculpt_sections(layout: UILayout, context):
     header.scale_y = 1.5
     header.label(text=header_label, icon_value=header_icon)
 
-    selector = section.row(align=True)
+    selector = section.grid_flow(align=True, row_major=True, even_columns=True, even_rows=True, columns=2)
     selector.use_property_split = False
-    selector.scale_y = 1.5
+    selector.scale_y = 1.25
     selector.prop(ui, 'toolbar_sculpt_sections', expand=True)
 
     content = section.box().column(align=False)
     content.separator()
     content.use_property_split = True
+    content.use_property_decorate = False
     content_args = (DummyPanel(content), context)
 
     if active_section == 'VOXEL_REMESH':
         VIEW3D_PT_sculpt_voxel_remesh.draw(*content_args)
+    elif active_section == 'QUAD_REMESH':
+        content.scale_y = 1.5
+        content.operator("object.quadriflow_remesh", text="QuadriFlow Remesh")
     elif active_section == 'DYNTOPO':
         if not context.sculpt_object.use_dynamic_topology_sculpting:
             msg = content.box()
@@ -408,6 +488,12 @@ def draw_sculpt_sections(layout: UILayout, context):
             msg.operator("sculpt.dynamic_topology_toggle", text="Enable Dyntopo")
             return
         else:
+            settings = VIEW3D_PT_sculpt_dyntopo.paint_settings(context)
+            if settings is None:
+                msg = content.box()
+                msg.scale_y = 1.5
+                msg.label(text="Only shown when using a brush.", icon='INFO')
+                return
             VIEW3D_PT_sculpt_dyntopo.draw(*content_args)
             content.separator()
             op = content.row()
@@ -437,13 +523,18 @@ def draw_sculpt_sections(layout: UILayout, context):
         levels_col.prop(mod, 'levels')
         levels_col.prop(mod, 'sculpt_levels')
         levels_col.prop(mod, 'render_levels')
-        
+
         content.prop(mod, 'use_sculpt_base_mesh')
         content.separator()
         content.prop(mod, 'show_only_control_edges')
 
         # DATA_PT_modifiers.draw(*content_args)
-        
+
+        #content.separator()
+
+        #row = content.row()
+        #row.scale_y = 1.5
+        #row.operator('object.modifier_apply', text="Apply Multires Modifier").modifier = mod.name
 
 
     content.separator()

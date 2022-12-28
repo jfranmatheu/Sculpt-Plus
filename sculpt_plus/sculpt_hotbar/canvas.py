@@ -254,6 +254,25 @@ class Canvas:
             DiText(Vector((10, 10)), "Please, restart Blender to complete Sculpt+ installation!", 32, 1.0, (1.0, 0.2, 0.1, 1.0))
             return
 
+        #from bgl import (
+        #    glIsEnabled, glDisable,
+        #    GL_POLYGON_SMOOTH, GL_POLYGON_SMOOTH_HINT,
+        #    GL_POLYGON_OFFSET_FILL, GL_POLYGON_OFFSET_LINE,
+        #    GL_POLYGON_OFFSET_POINT, GL_POLYGON_OFFSET_FACTOR,
+        #    GL_POLYGON_OFFSET_UNITS, GL_POLYGON_MODE)
+        from gpu import state
+        #print("\n_______START_________")
+        #print("GL_POLYGON_SMOOTH        -> ", glIsEnabled(GL_POLYGON_SMOOTH))
+        #print("GL_POLYGON_SMOOTH_HINT   -> ", glIsEnabled(GL_POLYGON_SMOOTH_HINT))
+        #print("GL_POLYGON_OFFSET_FILL   -> ", glIsEnabled(GL_POLYGON_OFFSET_FILL))
+        #print("GL_POLYGON_OFFSET_LINE   -> ", glIsEnabled(GL_POLYGON_OFFSET_LINE))
+        #print("GL_POLYGON_OFFSET_POINT  -> ", glIsEnabled(GL_POLYGON_OFFSET_POINT))
+        #print("GL_POLYGON_OFFSET_FACTOR -> ", glIsEnabled(GL_POLYGON_OFFSET_FACTOR))
+        #print("GL_POLYGON_OFFSET_UNITS  -> ", glIsEnabled(GL_POLYGON_OFFSET_UNITS))
+        #print("GL_POLYGON_MODE          -> ", glIsEnabled(GL_POLYGON_MODE))
+
+        state.blend_set('ALPHA')
+
         # LiveView.get().draw_px(ctx)
 
         prefs = get_prefs(ctx)
@@ -302,3 +321,15 @@ class Canvas:
             fps_count = int(counter / (time() - start_time))
             counter = 0
             start_time = time()
+
+        #print("\n_______END_________")
+        #print("GL_POLYGON_SMOOTH        -> ", glIsEnabled(GL_POLYGON_SMOOTH))
+        #print("GL_POLYGON_SMOOTH_HINT   -> ", glIsEnabled(GL_POLYGON_SMOOTH_HINT))
+        #print("GL_POLYGON_OFFSET_FILL   -> ", glIsEnabled(GL_POLYGON_OFFSET_FILL))
+        #print("GL_POLYGON_OFFSET_LINE   -> ", glIsEnabled(GL_POLYGON_OFFSET_LINE))
+        #print("GL_POLYGON_OFFSET_POINT  -> ", glIsEnabled(GL_POLYGON_OFFSET_POINT))
+        #print("GL_POLYGON_OFFSET_FACTOR -> ", glIsEnabled(GL_POLYGON_OFFSET_FACTOR))
+        #print("GL_POLYGON_OFFSET_UNITS  -> ", glIsEnabled(GL_POLYGON_OFFSET_UNITS))
+        #print("GL_POLYGON_MODE          -> ", glIsEnabled(GL_POLYGON_MODE))
+
+        state.blend_set('NONE')

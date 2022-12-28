@@ -78,7 +78,7 @@ def get_brush_tex(brush: Union[Brush, str]) -> GPUTexture:
         resize_and_save_brush_icon(brush)
     return gputex_from_image_file(icon_path, idname=brush['sculpt_plus_id'])
 
-def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), idname: Union[str, None] = None) -> GPUTexture:
+def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), idname: Union[str, None] = None, get_pixels: bool = False) -> GPUTexture:
     """
     Loads an image as  GPUTexture type from a file.
 
@@ -90,10 +90,14 @@ def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), id
 
     gputex: GPUTexture = cache_tex.get(idname, None)
     if gputex is not None:
+        if get_pixels:
+            return gputex, None
         return gputex
 
     img: Image = load_image_and_scale(filepath, size)
     if img is None:
+        if get_pixels:
+            return None, None
         return None
     px: np.ndarray = get_nparray_from_image(img)
 
@@ -115,6 +119,9 @@ def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), id
     del img
 
     cache_tex[idname] = gputex
+    if get_pixels:
+        return gputex, px
+
     return gputex
 
 

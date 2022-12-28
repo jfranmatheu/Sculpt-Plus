@@ -131,7 +131,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
 
     cat_type: StringProperty(options={'HIDDEN'})
     source_type: StringProperty(options={'HIDDEN'})
-    cat_name: StringProperty(default="Blend-Lib Category")
+    # cat_name: StringProperty(default="Blend-Lib Category")
 
     #def invoke(self, context, event):
     #    return context.window_manager.invoke_props_popup(self, event)
@@ -258,3 +258,25 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             data=data,
         )
         return 'FINISHED'
+
+
+class SCULPTPLUS_OT_cleanup_data(Operator):
+    bl_idname: str = 'sculpt_plus.cleanup_data'
+    bl_label: str = "Cleanup ALL data"
+    bl_description: str = "Remove brush/texture data, categories data, hotbar data... Everything."
+
+    #def draw(self, context):
+    #    self.layout.label(text="This action will remove everything!", icon='ERROR')
+    #    self.layout.label(text="A R E  Y O U  S U R E  ?")
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
+
+    def execute(self, context):
+        from shutil import rmtree
+        from sculpt_plus.path import app_dir, ensure_paths
+        from sculpt_plus.props import Props
+        rmtree(app_dir)
+        ensure_paths()
+        Props.BrushManagerDestroy()
+        return {'FINISHED'}

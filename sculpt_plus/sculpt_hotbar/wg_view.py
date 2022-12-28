@@ -31,6 +31,7 @@ class FakeViewItem:
         self.type = type
         self.id = uuid4().hex
         self.name = name
+        self.icon_pixels = None
         self.icon = None if isinstance(icon_filepath, str) else icon_filepath
         self.icon_filepath = icon_filepath if isinstance(icon_filepath, str) else ''
 
@@ -38,7 +39,7 @@ class FakeViewItem:
 
     def load_icon(self):
         if self.icon_filepath and self.icon is None:
-            self.icon = gputex_from_image_file(self.icon_filepath, (100, 100), self.id)
+            self.icon, self.icon_pixels = gputex_from_image_file(self.icon_filepath, (100, 100), self.id, get_pixels=True)
 
 
 class FakeViewItem_Texture(FakeViewItem):

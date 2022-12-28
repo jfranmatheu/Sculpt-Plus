@@ -101,7 +101,6 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
         layout.use_property_split = True
 
         if self.first_time:
-
             return
 
         def section(title: str, icon: str = 'NONE', *props):
@@ -112,13 +111,12 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
                 content.prop(self, prop)
             return content
 
-        col = layout.column(align=True)
-        col.prop(self, 'scale', slider=True)
-        col.prop(self, 'use_smooth_scroll')
-        col.separator()
+        general = section("General UI Settings", 'SETTINGS')
+        # col = layout.column(align=True)
+        general.prop(self, 'scale', slider=True)
+        general.prop(self, 'use_smooth_scroll')
 
-        layout.separator()
-        
+
         #hotbar_styles = ('theme_hotbar', 'theme_hotbar_slot')
         hotbar = section("Hotbar Style", 'STATUSBAR')# *hotbar_styles)
         #hotbar.separator()
@@ -133,6 +131,14 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
 
         #col.label(text="Slot size: "+str(int(self.scale*SLOT_SIZE))+'px')
+
+
+        # DESTRUCTION AND CHAOS....
+        layout.separator()
+
+        row = layout.row()
+        row.scale_y = 2
+        row.operator('sculpt_plus.cleanup_data', text="Clean-up ALL data", icon='ERROR')
 
 
 def get_prefs(context: Context) -> SCULPTPLUS_AddonPreferences:

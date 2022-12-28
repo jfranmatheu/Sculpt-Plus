@@ -21,7 +21,7 @@ def get_toolbar_brush_sections_items(self, context):
 def get_toolbar_sculpt_sections_items(self, context):
     if context.sculpt_object.use_dynamic_topology_sculpting:
         return (
-            ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 1),
+            ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 2),
         )
     ob = context.sculpt_object
     md = None
@@ -31,13 +31,14 @@ def get_toolbar_sculpt_sections_items(self, context):
             break
     if md is not None and md.total_levels > 0:
         return (
-            ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 2),
+            ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 3),
         )
 
     return (
-        ('VOXEL_REMESH', "Voxel Remesh", "Voxel Remesh Options", 'MOD_REMESH', 0),
-        ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 1),
-        ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 2)
+        ('VOXEL_REMESH', "Voxel Remesh", "Voxel Remesh Options", 'FILE_VOLUME', 0),
+        ('QUAD_REMESH', "Quad Remesh", "Quad Remesh Options", 'MOD_REMESH', 1),
+        ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 2),
+        ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 3)
     )
 
 class SCULPTPLUS_PG_ui_toggles(PropertyGroup):

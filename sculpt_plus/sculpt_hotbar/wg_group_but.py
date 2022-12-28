@@ -173,7 +173,7 @@ class ButtonGroup(WidgetBase):
         hover_item = self.hovered_item
         DiText(p, ".", 1, scale, prefs.theme_text)
 
-        DiRct(p, s, (0, 0, 0, .54))
+        DiRct(p, s, (0.12, 0.12, 0.12, .75))
 
         isize = self.item_size
         for idx, (ipos, item) in enumerate(zip(self.items_pos, self.items)):

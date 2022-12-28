@@ -11,7 +11,9 @@ from .image import Thumbnail
 from .texture import Texture
 from .brush_props import BaseBrush, brush_properties_per_sculpt_type
 from sculpt_plus.path import SculptPlusPaths, DBShelf, ThumbnailPaths
+from sculpt_plus.sculpt_hotbar.wg_view import FakeViewItem_Brush, FakeViewItem_Texture
 
+from bpy.types import VIEW3D_PT_sculpt_dyntopo
 
 cache__brush_icons: Dict[str, int] = {}
 
@@ -45,6 +47,7 @@ class TextureSlot:
 
 
 class Brush(BrushCatItem, BaseBrush):
+    id: str
     use_texture: bool
     texture_id: str
     texture_slot: TextureSlot
@@ -52,14 +55,16 @@ class Brush(BrushCatItem, BaseBrush):
     icon_filepath: str
     # icon_id: str -> is the same as brush.id
 
-    def __init__(self, brush: BlBrush = None):
+    def __init__(self, brush: BlBrush = None, fake_brush = None):
         self.texture_id = None
         super(Brush, self).__init__()
         self.thumbnail: Thumbnail = None
         self.texture_slot = TextureSlot(None)
         if brush is not None:
-            self.from_brush(brush)
-            print(f"New BrushItem {self.id} from BlenderBrush {brush.name}")
+            self.from_brush(brush, generate_thumbnail=bool(fake_brush is None))
+            print(f"New BrushItem {self.id} from BlenderBrush {brush.name} {f'and FakeItem {fake_brush.name}' if fake_brush is not None else ''}")
+            if fake_brush:
+                self.from_fake_brush(fake_brush)
 
         ## DBShelf.BRUSH_DEFAULTS.write(self)
         ## DBShelf.BRUSH_SETTINGS.write(self)
@@ -76,12 +81,19 @@ class Brush(BrushCatItem, BaseBrush):
         else:
             setattr(self, attr, value)
 
-    def from_brush(self, brush: BlBrush) -> None:
+    def from_fake_brush(self, fake_brush: FakeViewItem_Brush):
+        self.id = fake_brush.id
+        self.name = fake_brush.name
+        self.use_custom_icon = fake_brush.use_custom_icon
+        if fake_brush.use_custom_icon and fake_brush.icon:
+            self.thumbnail = Thumbnail.from_fake_item(fake_brush, 'BRUSH')
+
+    def from_brush(self, brush: BlBrush, generate_thumbnail: bool = True) -> None:
         # LOAD ICON...
         update_attr = self.update_attr
         if brush.use_custom_icon:
             icon_filepath: Path = Path(brush.icon_filepath)
-            if icon_filepath.exists() and icon_filepath.is_file():
+            if generate_thumbnail and icon_filepath.exists() and icon_filepath.is_file():
                 # data_brush_icons_path: str = SculptPlusPaths.DATA_BRUSH_PREVIEWS()
                 if icon_filepath.stem == self.id: # icon_filepath.relative_to(data_brush_icons_path):
                     # It's ok. It is saved in the sculpt_plus/brush/icons folder
@@ -100,13 +112,18 @@ class Brush(BrushCatItem, BaseBrush):
 
     def to_brush(self, brush: Union[BlBrush, bpy.types.Context]) -> None:
         if isinstance(brush, bpy.types.Context):
+            #settings = VIEW3D_PT_sculpt_dyntopo.paint_settings(brush)
             brush: BlBrush = brush.tool_settings.sculpt.brush
-            ''' Ensure that the current (now previous one) brush is updated before switching to the new one. '''
-            if 'id' in brush and brush['id'] is not None:
-                from sculpt_plus.props import Props
-                prev_brush = Props.GetBrush(brush['id'])
-                if prev_brush is not None:
-                    prev_brush.from_brush(brush)
+            #if brush is None or settings is None:
+            #    bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+
+        ''' Ensure that the current (now previous one) brush is updated before switching to the new one. '''
+        if 'id' in brush and brush['id'] is not None:
+            from sculpt_plus.props import Props
+            prev_brush = Props.GetBrush(brush['id'])
+            if prev_brush is not None:
+                prev_brush.from_brush(brush)
+
         brush['id'] = self.id
         brush.sculpt_tool = self.sculpt_tool
         for attr in brush_properties_per_sculpt_type[self.sculpt_tool]:

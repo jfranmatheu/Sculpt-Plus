@@ -17,15 +17,24 @@ class Texture(CategoryItem):
     cat_id: str
     thumbnail: Thumbnail
 
-    def __init__(self, texture: BlTexture, cat: str = ''):
+    def __init__(self, texture: BlTexture, cat: str = '', fake_texture = None):
         super().__init__()
 
-        self.id = uuid4().hex
         self.name = texture.image.name
         self.image = Image(texture.image, 'TEXTURE@' + self.id)
         self.cat_id: str = cat
         self.thumbnail: Thumbnail = None
-        self.load_icon(self.image.filepath)
+
+        if fake_texture is not None:
+            self.from_fake_texture(fake_texture)
+        else:
+            self.load_icon(self.image.filepath)
+
+    def from_fake_texture(self, fake_texture):
+        self.id = fake_texture.id
+        self.name = fake_texture.name
+        if fake_texture.icon:
+            self.thumbnail = Thumbnail.from_fake_item(fake_texture, 'TEXTURE')
 
     def to_brush(self, context: Context) -> None:
         from sculpt_plus.props import Props

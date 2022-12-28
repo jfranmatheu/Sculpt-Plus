@@ -131,13 +131,16 @@ def DiSilueta(_p,_s,_i,_co,_bco,_op,_use_alpha: float = 1.0, s=sh_silueta):
     s.uniform_float('alpha',_op)
     s.uniform_float('use_transp',_use_alpha)
     s.uniform_sampler(i,t)
-    state.blend_set(A);b.draw(s);state.blend_set('NONE')
+    #state.blend_set(A)
+    b.draw(s)
+    #state.blend_set('NONE')
 def DiLiveSilueta(_ctx,_p,_s,_co,_bco,_op):
     i=_ctx
     DiSilueta(_p,_s,i,_co,_bco,_op,1.0)
 def DiIma(_p,_s,_i,s=sh_img):
     if _i is None:
         return
+    #glDisable(GL_POLYGON_SMOOTH)
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
     b=bat(s, T,{p:(
     (_p.x,_p.y+_s.y),_p,
@@ -147,10 +150,14 @@ def DiIma(_p,_s,_i,s=sh_img):
     s.bind()
     #s.uniform_float(co,(.9,.9,.9,1))
     s.uniform_sampler(i,t)
-    state.blend_set(A);b.draw(s);state.blend_set('NONE')
+    #state.blend_set(A)
+    b.draw(s)
+    #state.blend_set('NONE')
+    #glEnable(GL_POLYGON_SMOOTH)
 def DiImagl(_p,_s,_i,s=sh_img):
     if _i is None:
         return
+    #glDisable(GL_POLYGON_SMOOTH)
     b=bat(s, TF,{p:(
     _p,(_p.x+_s.x,_p.y),
     _p+_s,(_p.x,_p.y+_s.y)),
@@ -160,9 +167,11 @@ def DiImagl(_p,_s,_i,s=sh_img):
     s.bind()
     s.uniform_int(i, 0)
     b.draw(s)
+    #glEnable(GL_POLYGON_SMOOTH)
 def DiImaco(_p,_s,_i,_co,s=sh_img_co):
     if _i is None:
         return
+    #glDisable(GL_POLYGON_SMOOTH)
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
     b=bat(s, T,{p:(
     (_p.x,_p.y+_s.y),_p,
@@ -172,10 +181,14 @@ def DiImaco(_p,_s,_i,_co,s=sh_img_co):
     s.bind()
     s.uniform_float(co,_co)
     s.uniform_sampler(i,t)
-    state.blend_set(A);b.draw(s);state.blend_set('NONE')
+    #state.blend_set(A)
+    b.draw(s)
+    #state.blend_set('NONE')
+    #glEnable(GL_POLYGON_SMOOTH)
 def DiImaOpGamHl(_p,_s,_i,_op:float=1.0,_hl:int=0,s=sh_img_a_op_gam_hl):
     if _i is None:
         return
+    #glDisable(GL_POLYGON_SMOOTH)
     t=get_tex(_i) if not isinstance(_i,TEX) else _i
     b=bat(s, T,{p:(
     (_p.x,_p.y+_s.y),_p,
@@ -186,7 +199,10 @@ def DiImaOpGamHl(_p,_s,_i,_op:float=1.0,_hl:int=0,s=sh_img_a_op_gam_hl):
     s.uniform_float(op,_op)
     s.uniform_float(hl,_hl)
     s.uniform_sampler(i,t)
-    state.blend_set(A);b.draw(s);state.blend_set('NONE')
+    #state.blend_set(A)
+    b.draw(s)
+    #state.blend_set('NONE')
+    #glEnable(GL_POLYGON_SMOOTH)
 def DiBr(_p,_s,_b,_act=False,_op=1):
     DiImaOpGamHl(_p,_s,get_brush_tex(_b),_op=_op,_hl=int(_act))
     #ico=BrushIcon.from_brush(_b)
@@ -198,16 +214,16 @@ def DiIcoCol(_p,_s,_i,_co):
 def DiIcoOpGamHl(_p,_s,_i,_op=1.0,_hl=0):
     DiImaOpGamHl(_p,_s,get_ui_image_tex(_i),_op,_hl)
 def DiLine(_a,_b,_lt,_co,s=sh_unif):
-    state.blend_set(A)
+    #state.blend_set(A)
     b=bat(s,L,{p:(_a,_b)})
     state.line_width_set(_lt)
     s.bind()
     s.uniform_float(co,_co)
     b.draw(s)
     state.line_width_set(1.0)
-    state.blend_set('NONE')
+    #state.blend_set('NONE')
 def DiCage(_p,_s,_lt,_co,s=sh_unif):
-    state.blend_set(A)
+    #state.blend_set(A)
     b=bat(s,LL,{p:(
     _p,(_p.x+_s.x,_p.y),
     _p+_s, (_p.x,_p.y+_s.y),)})
@@ -216,9 +232,10 @@ def DiCage(_p,_s,_lt,_co,s=sh_unif):
     s.uniform_float(co,_co)
     b.draw(s)
     state.line_width_set(1.0)
-    state.blend_set('NONE')
-def DiRct(_p,_s,_co,s=sh_unif):
-    state.blend_set(A)
+    #state.blend_set('NONE')
+def DiRct(_p,_s,_co,hack=True,s=sh_unif):
+    #glDisable(GL_POLYGON_SMOOTH)
+    #state.blend_set(A)
     b=bat(s,T,{p:(
     _p,(_p.x+_s.x,_p.y),
     (_p.x,_p.y+_s.y),_p+_s)},
@@ -226,7 +243,10 @@ def DiRct(_p,_s,_co,s=sh_unif):
     s.bind()
     s.uniform_float(co,_co)
     b.draw(s)
-    state.blend_set('NONE')
+    #state.blend_set('NONE')
+    #glEnable(GL_POLYGON_SMOOTH)
+    #if hack:
+    #    DiText(_p,'.',1,1,(0,0,0,0))
 def DiArrowSolid(_o,_s,_co,_invert=False,s=sh_unif):
     hh=Vector((0,_s.x/2))
     hw=Vector((_s.x/2,0))
@@ -241,19 +261,17 @@ def DiArrowSolid(_o,_s,_co,_invert=False,s=sh_unif):
     else:b=bat(s,T,{p:(_o+hh*2,_o-hh*2,_o+hw*2)},indices=((0,1,2),))
     s.bind()
     s.uniform_float(co,_co)
-    state.blend_set(A)
-    glEnable(GL_BLEND)
+    #state.blend_set(A)
     b.draw(s)
-    state.blend_set('NONE')
-    glDisable(GL_BLEND)
+    #state.blend_set('NONE')
 def DiTri(_p,_co,s=sh_unif):
     b=bat(s,T,{p:_p},indices=((0,1,2),))
     s.bind()
     s.uniform_float(co,_co)
-    state.blend_set(A)
+    #state.blend_set(A)
     #glEnable(GL_BLEND)
     b.draw(s)
-    state.blend_set('NONE')
+    #state.blend_set('NONE')
     #glDisable(GL_BLEND)
 def DiTriCorner(_corner_origin,_cateto_length,_corner_idname,_co,s=sh_unif):
     if _corner_idname == 'TOP_LEFT':
@@ -283,12 +301,13 @@ def DiTriCorner(_corner_origin,_cateto_length,_corner_idname,_co,s=sh_unif):
     DiTri(_p,_co,s)
 def DiStar(_p,_size,s=sh_estrellita):
     b=bat(s,P,{p:[_p]})
-    state.blend_set(A)
+    #state.blend_set(A)
     state.point_size_set(_size)
     b.draw(s)
     state.point_size_set(1.0)
-    state.blend_set('NONE')
+    #state.blend_set('NONE')
 def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shadow_props: dict = None, draw_rect_props: dict = None, id:int=None, rotation:float=None):
+    state.blend_set('NONE')
     id=font_info['id'] if id is None else id
     text_color(id, *_co)
     text_size(id, max(7.5, _size), int(72*_scale))
@@ -316,13 +335,14 @@ def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shad
         margin: float = draw_rect_props.get('margin', 3) * _scale
         _p = Vector(_p) - Vector((margin, margin))
         s = Vector((dim)) + Vector((margin, margin)) * 2.0
-        DiRct(_p, s, color)
+        DiRct(_p, s, color, hack=False)
         DiCage(_p, s, 2.2, draw_rect_props.get('outline_color', Vector(color)*.9))
     text_draw(id, _text)
     if shadow_props is not None:
         text_disable(id, SHADOW)
     if rotation is not None:
         text_disable(id, ROTATION)
+    state.blend_set('ALPHA')
 def get_rect_from_text(_p, _text, _size, _scale, _pivot=(0, 0), _margin:float = 0):
     id=font_info['id']
     text_size(id, _size, int(72*_scale))

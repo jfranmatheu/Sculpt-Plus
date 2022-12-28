@@ -36,7 +36,8 @@ class Image(object):
         self.pixels: np.ndarray = None
         self.filepath: str = input_image.filepath_from_user() if isinstance(input_image, BlImage) else input_image
         self.use_optimize = optimize
-        self.load_image(input_image)
+        if input_image:
+            self.load_image(input_image)
         if optimize:
             self.image_size = thumb_image_size
             self.px_size = thumb_px_size
@@ -103,6 +104,15 @@ class Image(object):
             filepath: str = input_image.filepath_from_user()
             
             if self.use_optimize:
+                '''
+                import imbuf
+                img = imbuf.load(filepath)
+                if img.size.x <= 128 and img.size.y <= 128:
+                    optimized = True
+                else:
+                    optimized = False
+                img.free()
+                '''
                 '''
                 import imbuf
                 img = imbuf.load(filepath)
@@ -234,8 +244,20 @@ class Thumbnail(Image):
     is_valid: bool
     id_type: str
 
+    @classmethod
+    def from_fake_item(cls, fake_item, type: str) -> 'Thumbnail':
+        thumb: Thumbnail = cls(None, fake_item.id, type)
+        thumb.filepath = fake_item.icon_filepath
+        thumb.pixels = fake_item.icon_pixels
+        if fake_item.id in gpu_utils.cache_tex:
+            gpu_utils.cache_tex.pop(fake_item.id)
+        if fake_item.icon:
+            cache_thumbnail[thumb.id] = fake_item.icon
+        return thumb
+
     def __init__(self, image_path: str, idname: str, _type: str) -> None:
-        print(f"New thumbnail for {_type} with id {idname} using image from {image_path}")
+        if image_path:
+            print(f"New thumbnail for {_type} with id {idname} using image from {image_path}")
         self.id_type = _type
         super().__init__(image_path, _type + '@' + idname, optimize=True)
 

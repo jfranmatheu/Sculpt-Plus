@@ -35,6 +35,12 @@ class HotbarManager:
         self.alt_brushes: List[str] = [None] * 10
         self.use_alt: bool = False
 
+    def __del__(self):
+        self._selected = None
+        self.alt_selected = None
+        self._brushes.clear()
+        self.alt_brushes.clear()
+
     @property
     def brushes(self) -> List[str]:
         if self.use_alt:
@@ -96,6 +102,7 @@ class Manager:
 
     active_brush_cat: BrushCategory
     active_texture_cat: TextureCategory
+    active_sculpt_tool: str
 
     selected_item: str
 
@@ -112,11 +119,26 @@ class Manager:
             cls._instance = super(Manager, cls).__new__(cls)
         return cls._instance
 
+    def __del__(self):
+        self._active_brush = None
+        self.active_texture = None
+        self._active_brush_cat = None
+        self._active_texture_cat = None
+        self.active_sculpt_tool = None
+        self.brushes.clear()
+        self.textures.clear()
+        self.brush_cats.clear()
+        self.texture_cats.clear()
+        del self.hotbar
+
     def __init__(self):
+        self.initilized: bool = False
+
         self._active_brush_cat: str = ''
         self._active_texture_cat: str = ''
         self._active_brush: str = ''
-        self.active_texture: str = ''
+        self._active_texture: str = ''
+        self._active_sculpt_tool: str = ''
 
         self.brush_cats = OrderedDict()
         self.brushes = dict()
@@ -156,6 +178,24 @@ class Manager:
         self._active_brush = brush_id
         if brush_id and (brush := self.get_brush(brush_id)):
             self.active_texture = brush.texture_id
+            self.active_sculpt_tool = brush.sculpt_tool
+
+    @property
+    def active_texture(self) -> str:
+        return self._active_texture
+
+    @active_texture.setter
+    def active_texture(self, texture: Union[Texture, str]):
+        texture_id = texture.id if isinstance(texture, Texture) else texture
+        self._active_texture = texture_id
+
+    @property
+    def active_sculpt_tool(self) -> str:
+        return self._active_sculpt_tool
+
+    @active_sculpt_tool.setter
+    def active_sculpt_tool(self, tool: Union[Brush, str]):
+        self._active_sculpt_tool = tool.sculpt_tool if isinstance(tool, Brush) else tool
 
     @property
     def active_texture_cat(self) -> Union[TextureCategory, None]:
@@ -197,19 +237,29 @@ class Manager:
                     return brush_cat
             return None
         if isinstance(cat, str):
-            return self.brush_cats.get(cat, None)
+            if brush_cat := self.brush_cats.get(cat, None):
+                return brush_cat
+            for brush_cat in self.brush_cats.values():
+                if brush_cat.name == cat:
+                    return brush_cat
+            return None
         if isinstance(cat, Brush):
             return self.brush_cats.get(cat.cat_id, None)
         return None
 
     def get_texture_cat(self, cat: Union[str, Texture, int]) -> TextureCategory:
         if isinstance(cat, int):
-            for brush_cat in self.brush_cats.values():
-                if brush_cat.index == cat:
-                    return brush_cat
+            for text_cat in self.texture_cats.values():
+                if text_cat.index == cat:
+                    return text_cat
             return None
         if isinstance(cat, str):
-            return self.texture_cats.get(cat, None)
+            if text_cat := self.texture_cats.get(cat, None):
+                return text_cat
+            for text_cat in self.texture_cats.values():
+                if text_cat.name == cat:
+                    return text_cat
+            return None
         if isinstance(cat, Texture):
             return self.texture_cats.get(cat.cat_id, None)
         return None
@@ -258,7 +308,7 @@ class Manager:
         # DBShelf.BRUSH_DEFAULTS.remove(*cat_item_ids)
 
     def remove_texture_cat(self, cat: Union[str, TextureCategory]) -> None:
-        if cat is None:
+        if not cat:
             return
         texture_cat: TextureCategory = self.texture_cats.pop(cat) if isinstance(cat, str) else self.brush_cats.pop(cat.id)
         if not texture_cat:
@@ -332,7 +382,9 @@ class Manager:
     def add_texture(self, texture: Texture) -> None:
         self.textures[texture.id] = texture
 
-    def new_brush_cat(self, cat_name: str = 'Untitled', cat_id: str = None, *brush_ids: List[str]) -> BrushCategory:
+    def new_brush_cat(self, cat_name: str = 'Untitled', cat_id: str = None, check_exists: bool = False, *brush_ids: List[str]) -> BrushCategory:
+        if check_exists and (tex_cat := self.get_brush_cat(cat_name)):
+            return tex_cat
         brush_cat: BrushCategory = BrushCategory(cat_name, cat_id)
         for brush_id in brush_ids:
             brush_cat.link_item(brush_id)
@@ -340,11 +392,13 @@ class Manager:
         self.brush_cats[brush_cat.id] = brush_cat
         self.active_brush_cat = brush_cat.id
 
-        ## DBShelf.BRUSH_CAT.write(brush_cat)
+        DBShelf.BRUSH_CAT.write(brush_cat)
         ## brush_cat.save()
         return brush_cat
 
-    def new_texture_cat(self, cat_name: str = 'Untitled', cat_id: str = None, *texture_ids: List[str]) -> TextureCategory:
+    def new_texture_cat(self, cat_name: str = 'Untitled', cat_id: str = None, check_exists: bool = False, *texture_ids: List[str]) -> TextureCategory:
+        if check_exists and (tex_cat := self.get_texture_cat(cat_name)):
+            return tex_cat
         texture_cat: TextureCategory = TextureCategory(cat_name, cat_id)
         for texture_id in texture_ids:
             texture_cat.link_item(texture_id)
@@ -352,27 +406,31 @@ class Manager:
         self.texture_cats[texture_cat.id] = texture_cat
         self.active_texture_cat = texture_cat.id
 
-        ## DBShelf.TEXTURE_CAT.write(texture_cat)
+        DBShelf.TEXTURE_CAT.write(texture_cat)
         ## texture_cat.save()
         return texture_cat
 
-    def load_brushes_from_datablock(self, cat_name: str, cat_id: str, brush_names: List[Union[str, BlBrush]], remove_brush_datablocks: bool = True) -> None:
+    def load_brushes_from_datablock(self, cat_name: str, cat_id: str, brush_names: List[Union[str, BlBrush]], fake_items: dict = {}, remove_brush_datablocks: bool = True) -> None:
         if remove_brush_datablocks:
             remove_brush = bpy.data.brushes.remove
             remove_image = bpy.data.images.remove
             remove_texture = bpy.data.textures.remove
         data_brushes: Dict[str, BlBrush] = bpy.data.brushes
-        brush_cat: BrushCategory = self.new_brush_cat(cat_name, cat_id)
-        undefined_texture_cat: TextureCategory = self.get_texture_cat('UNDEFINED')
-        if undefined_texture_cat is None:
-            undefined_texture_cat = self.new_texture_cat('Undefined', "UNDEFINED")
+        brush_cat: BrushCategory = self.new_brush_cat(cat_name, cat_id, check_exists=True)
+        # undefined_texture_cat: TextureCategory = self.get_texture_cat('UNDEFINED')
+        # if undefined_texture_cat is None:
+        #     undefined_texture_cat = self.new_texture_cat('Undefined', "UNDEFINED")
+        texture_cat: TextureCategory = self.new_texture_cat(cat_name, cat_id, check_exists=True)
+
         with DBShelfManager.BRUSH_SETTINGS() as db, DBShelfManager.BRUSH_DEFAULTS() as db_defaults:
             for brush_name in brush_names:
                 bl_brush: BlBrush = brush_name if isinstance(brush_name, BlBrush) else data_brushes.get(brush_name, None)
                 if bl_brush is None:
                     continue
 
-                brush: Brush = Brush(bl_brush)
+                fake_brush = fake_items.get(bl_brush.name, None)
+
+                brush: Brush = Brush(bl_brush, fake_brush=fake_brush)
                 self.add_brush(brush)
                 brush_cat.link_item(brush)
 
@@ -382,9 +440,15 @@ class Manager:
                         if bl_image.source in {'FILE', 'SEQUENCE'} and bl_image.pixels:
                             image_path: Path = Path(bl_image.filepath_from_user())
                             if image_path.exists() and image_path.is_file():
-                                texture: Texture = Texture(bl_texture)
+
+                                # if 'fake_id' in bl_image:
+                                #     fake_texture = fake_brush.texture
+                                # else:
+                                fake_texture = fake_brush.texture if fake_brush else None
+
+                                texture: Texture = Texture(bl_texture, fake_texture=fake_texture)
                                 self.add_texture(texture)
-                                undefined_texture_cat.link_item(texture)
+                                texture_cat.link_item(texture)
 
                                 brush.texture_id = texture.id
 
@@ -402,7 +466,7 @@ class Manager:
 
         return brush_cat
 
-    def load_textures_from_datablock(self, cat_name: str, cat_id: str, image_names: List[Union[str, BlBrush]], remove_image_datablocks: bool = True) -> None:
+    def load_textures_from_datablock(self, cat_name: str, cat_id: str, image_names: List[Union[str, BlBrush]], fake_items: List[FakeViewItem_Texture]=None, remove_image_datablocks: bool = True) -> None:
         data_images: Dict[str, BlBrush] = bpy.data.images
         texture_cat: TextureCategory = self.new_texture_cat(cat_name, cat_id)
 
@@ -421,8 +485,10 @@ class Manager:
                 image_path: Path = Path(bl_image.filepath_from_user())
                 if not image_path.exists() or not image_path.is_file():
                     continue
+                
+                fake_texture = fake_items.get(bl_image.name, None)
 
-                texture: Texture = Texture(FakeBlTexture(bl_image))
+                texture: Texture = Texture(FakeBlTexture(bl_image), fake_texture=fake_texture)
                 self.add_texture(texture)
                 texture_cat.link_item(texture)
                 db.write(texture_cat)
@@ -437,7 +503,7 @@ class Manager:
 
     def load_default_brushes(self) -> None:
         print("[SCULPT+] Loading default brushes...")
-        brush_cat: BrushCategory = self.load_brushes_from_datablock('Default', 'DEFAULT', filtered_builtin_brush_names, remove_brush_datablocks=False)
+        brush_cat: BrushCategory = self.load_brushes_from_datablock('Default', None, filtered_builtin_brush_names, remove_brush_datablocks=False)
         self.hotbar.brushes = [brush_id for brush_id in brush_cat.item_ids[:10]]
         brush_cat.load_icon(Icon.BRUSH_PENCIL_X.get_path())
         self.active_brush_cat = brush_cat
@@ -471,21 +537,44 @@ class Manager:
         if 'images'  in datablocks and datablocks['images']:
             self.load_textures_from_datablock('Blend-lib Cat', None, data_to.images)
 
+
+    #def _load_viewitem_brushes_from_datablock(self, cat_name: str, items: List[FakeViewItem_Brush], datablocks: List[Brush]) -> None:
+    #    for item in items:
+            
+
     def load_viewitems_from_lib(self, lib_path: str, type: str, items: List[Union[FakeViewItem_Brush, FakeViewItem_Texture]]) -> None:
         if not items:
             return
 
+        cat_name: str = Path(lib_path).stem
+
+        dict_fake_items: dict[str, str] = {}
+        def _prepare_item(item, datablocks) -> bool:
+            if item is None:
+                return False
+            if item.name in datablocks:
+                # Ensure that the datablock does not exist,
+                # to avoid name collision when creating the item.
+                datablocks.remove(datablocks[item.name])
+            dict_fake_items[item.name] = item
+            return True
+
         with bpy.data.libraries.load(lib_path) as (data_from, data_to):
             if type == 'BRUSH':
-                data_to.brushes = [brush.name for brush in items]
-                # data_to.images = [brush.texture.name for brush in items if brush.texture is not None]
+                data_to.brushes = [brush.name for brush in items if _prepare_item(brush, bpy.data.brushes)]
+                # data_to.textures = [brush.texture.name for brush in items if brush.texture is not None] #_prepare_item(brush.texture, bpy.data.textures)]
             elif type == 'TEXTURE':
-                data_to.images = [texture.name for texture in items]
+                data_to.images = [texture.name for texture in items if _prepare_item(texture, bpy.data.images)]
+
+        #print(dict_name_id_relation.keys())
 
         if type == 'BRUSH':
-            self.load_brushes_from_datablock('Blend-lib Cat', None, data_to.brushes)
+            self.load_brushes_from_datablock(cat_name, None, data_to.brushes, fake_items=dict_fake_items)
+            # self._load_viewitem_brushes_from_datablock(cat_name, items, data_to.brushes)
         elif type == 'TEXTURE':
-            self.load_textures_from_datablock('Blend-lib Cat', None, data_to.images)
+            self.load_textures_from_datablock(cat_name, None, data_to.images, fake_items=dict_fake_items)
+
+        del items
 
     def new_texture_cat_from_directory(self, texture_dirpath: str) -> None:
         pass
@@ -511,25 +600,25 @@ class Manager:
 
         print("[SCULPT+] Loading brushes from database...")
         with DBShelfManager.BRUSH_SETTINGS() as shelf_manager__brushes:
-            for brush_id, brush_data in shelf_manager__brushes.get_items():
+            for (brush_id, brush_data) in shelf_manager__brushes.get_items():
                 print("\t> ", brush_data.name)
                 self.brushes[brush_id] = brush_data
 
         print("[SCULPT+] Loading brush categories from database...")
         with DBShelfManager.BRUSH_CAT() as shelf_manager__brush_cats:
-            for brush_cat_id, brush_cat_data in shelf_manager__brush_cats.get_items():
+            for (brush_cat_id, brush_cat_data) in shelf_manager__brush_cats.get_items():
                 print("\t> ", brush_cat_data.name)
                 self.brush_cats[brush_cat_id] = brush_cat_data
 
         print("[SCULPT+] Loading textures from database...")
         with DBShelfManager.TEXTURE() as shelf_manager__textures:
-            for texture_id, texture_data in shelf_manager__textures.get_items():
+            for (texture_id, texture_data) in shelf_manager__textures.get_items():
                 print("\t> ", texture_data.name)
                 self.textures[texture_id] = texture_data
 
         print("[SCULPT+] Loading texture categories from database...")
         with DBShelfManager.TEXTURE_CAT() as shelf_manager__texture_cats:
-            for texture_cat_id, texture_cat_data in shelf_manager__texture_cats.get_items():
+            for (texture_cat_id, texture_cat_data) in shelf_manager__texture_cats.get_items():
                 print("\t> ", texture_cat_data.name)
                 self.texture_cats[texture_cat_id] = texture_cat_data
 
@@ -540,28 +629,6 @@ class Manager:
         # Exit condition: enters in sculpt mode and above process done.
         # Continue condition: not in sculpt mode, wait for 1 second or so.
         # Note: Maybe can use a msgbus trigger instead.
-
-        '''
-        with shelve.open(brush_cats_db_filepath) as db__brush_cats:
-            # print("Brush cats ids:", db__brush_cats.keys())
-            for brush_cat_id, brush_cat_item in db__brush_cats.items():
-                self.brush_cats[brush_cat_id] = brush_cat_item
-        with shelve.open(brushes_db_filepath) as db__brushes:
-            # print("Brushes ids:", db__brushes.keys())
-            for brush_id, brush_item in db__brushes.items():
-                self.brushes[brush_id] = brush_item
-
-            # Resolve hotbar brushes.
-            for i, brush_id in enumerate(list(self.hotbar.brushes)):
-                if brush:= self.get_brush(brush_id):
-                    # Make sure some Sculpt+ brush is selected.
-                    if self.hotbar.selected is None:
-                        brush.to_brush(bpy.context)
-                        self.hotbar.selected = brush_id
-                    break
-                else:
-                    self.hotbar.brushes[i] = None
-        '''
 
         print("[SCULPT+] Loading config file...")
         config_data: dict = {}
@@ -593,10 +660,10 @@ class Manager:
             return
         print("[Sculpt+] Saving UI config...")
         config_data = {
-            'active_brush': self.active_brush if self.active_brush else None,
-            'active_texture': self.active_texture if self.active_texture else None,
-            'active_brush_cat'  : self.active_brush_cat.id   if self.active_brush_cat   else None,
-            'active_texture_cat': self.active_texture_cat.id if self.active_texture_cat else None,
+            'active_brush': self._active_brush if self._active_brush else None,
+            'active_texture': self._active_texture if self._active_texture else None,
+            'active_brush_cat'  : self._active_brush_cat   if self._active_brush_cat   else None,
+            'active_texture_cat': self._active_texture_cat if self._active_texture_cat else None,
             'hotbar': self.hotbar.serialize(),
         }
         with open(SculptPlusPaths.CONFIG_FILE(), 'w') as f:
