@@ -120,7 +120,7 @@ class Icon(Enum):
     ADD_PLUS_2 = '.icons8-add_2-67'
     LINES_DIAGONAL = '.icons8-diagonal-lines-60'
     IMAGE = '.icons8-image-64'
-    TEXTURE_SMALL = 'icons8-texture-small-24'
+    TEXTURE_SMALL = '.icons8-texture-small-24'
     TEXTURE = '.icons8-texture-48'
     TEXTURE_OPACITY = '.icons8-texture-opacity-48'
     PAINT_BRUSH = '.icons8-paint-brush-50'

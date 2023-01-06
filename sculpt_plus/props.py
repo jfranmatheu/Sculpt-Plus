@@ -1,10 +1,10 @@
 from typing import Union, List, Dict, Set, Tuple
 
 import bpy
-from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture
+from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
-from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager
+from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager, FakeViewItem_Brush, FakeViewItem_Texture
 
 #from sculpt_plus.core.data.scn import SCULPTPLUS_PG_scn
 #from sculpt_plus.core.data.wm import SCULPTPLUS_PG_wm
@@ -16,6 +16,8 @@ from sculpt_plus.management.manager import Manager, TextureCategory, BrushCatego
 # SOME NICE SCULPT TOOL - BRUSH NAME CONSTANTS:
 sculpt_tool_brush_name: Dict[str, str] = {'BLOB': 'Blob', 'BOUNDARY': 'Boundary', 'CLAY': 'Clay', 'CLAY_STRIPS': 'Clay Strips', 'CLAY_THUMB': 'Clay Thumb', 'CLOTH': 'Cloth', 'CREASE': 'Crease', 'DRAW_FACE_SETS': 'Draw Face Sets', 'DRAW_SHARP': 'Draw Sharp', 'ELASTIC_DEFORM': 'Elastic Deform', 'FILL': 'Fill/Deepen', 'FLATTEN': 'Flatten/Contrast', 'GRAB': 'Grab', 'INFLATE': 'Inflate/Deflate', 'LAYER': 'Layer', 'MASK': 'Mask', 'MULTIPLANE_SCRAPE': 'Multi-plane Scrape', 'DISPLACEMENT_ERASER': 'Multires Displacement Eraser', 'DISPLACEMENT_SMEAR': 'Multires Displacement Smear', 'NUDGE': 'Nudge', 'PAINT': 'Paint', 'PINCH': 'Pinch/Magnify', 'POSE': 'Pose', 'ROTATE': 'Rotate', 'SCRAPE': 'Scrape/Peaks', 'DRAW': 'SculptDraw', 'SIMPLIFY': 'Simplify', 'TOPOLOGY': 'Slide Relax', 'SMOOTH': 'Smooth', 'SNAKE_HOOK': 'Snake Hook', 'THUMB': 'Thumb'}
 builtin_brush_names: Tuple[str] = tuple(sculpt_tool_brush_name.values())
+builtin_brushes: Set[str] = set(builtin_brush_names)
+builtin_images: Set[str]  = {'Render Result', 'Viewer Node'}
 manager_exclude_brush_tools: Set[str] = {'MASK', 'DRAW_FACE_SETS', 'SIMPLIFY', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR'}
 toolbar_hidden_brush_tools: Set[str] = {sculpt_tool for sculpt_tool in sculpt_tool_brush_name.keys() if sculpt_tool not in manager_exclude_brush_tools}
 exclude_brush_names: Set[str] = {sculpt_tool_brush_name[sculpt_tool] for sculpt_tool in manager_exclude_brush_tools}
@@ -37,6 +39,12 @@ class SculptToolUtils:
 
 ''' Helper to get properties paths (with typing). '''
 class Props:
+    @staticmethod
+    def get_temp_thumbnail_image() -> BlImage:
+        if image := bpy.data.images.get('.sculpt_plus_thumbnail', None):
+            return image
+        return bpy.data.image.new('.sculpt_plus_thumbnail', 100, 100)
+
     @staticmethod
     def Canvas() -> Union[Canvas, None]:
         if not hasattr(bpy, 'sculpt_hotbar'):
@@ -317,3 +325,56 @@ class Props:
     @classmethod
     def ToggleHotbarAlt(cls):
         cls.Hotbar().toggle_alt()
+
+
+
+class FakeItemContextManager:
+    items: List[Union[FakeViewItem_Brush, FakeViewItem_Texture]]
+
+    def __init__(self, mode: str = 'w'):
+        from .path import SculptPlusPaths
+        self.items: List[Union[FakeViewItem_Brush, FakeViewItem_Texture]] = []
+        self.mode: str = mode
+        self.json_filepath = SculptPlusPaths.APP__TEMP('fake_items.json')
+
+    def __enter__(self):
+        if self.mode == 'r':
+            import json
+            with open(self.json_filepath, 'r') as f:
+                items_data: dict = json.load(f)
+                self.deserialize_data(items_data)
+        return self
+
+    def deserialize_data(self, items_data: dict) -> None:
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.mode == 'w':
+            with open(self.json_filepath, mode='w') as f:
+                pass
+
+    def add_item(self, item: Union[FakeViewItem_Brush, FakeViewItem_Texture]) -> None:
+        self.items.append(item)
+
+
+class CM_FakeItem_Brush(FakeItemContextManager):
+    items: List[FakeViewItem_Brush]
+
+    def deserialize_data(self, items_data: dict) -> None:
+        for item_id, item_data in items_data.items():
+            self.brush(item_id, item_data)
+
+    def brush(self, name: str, id: str = '') -> FakeViewItem_Brush:
+        brush_item = FakeViewItem_Brush(name)
+        self.add_item(brush_item)
+        if id:
+            brush_item.id = id
+        return brush_item
+
+    def brush_from_datablock(self, bl_brush: BlBrush, generate_thumbnail: bool = True) -> FakeViewItem_Brush:
+        brush_item = FakeViewItem_Brush.from_bl_brush(bl_brush, generate_thumbnail=generate_thumbnail)
+        self.add_item(brush_item)
+        return brush_item
+
+class CM_FakeViewItem_Texture(FakeItemContextManager):
+    items: List[FakeViewItem_Texture]

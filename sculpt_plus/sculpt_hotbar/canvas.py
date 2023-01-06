@@ -1,6 +1,7 @@
 from math import floor
 import functools
 from time import time
+from datetime import datetime
 
 from .di import DiCage, DiRct,DiBr,DiText
 from mathutils import Vector
@@ -44,11 +45,13 @@ class Canvas:
         self.progress = 0
         self.draw_progress = True
         self.progress_label = label
+        self.progress_time = time()
 
     def progress_stop(self):
         self.draw_progress = False
         self.progress_label = ''
-    
+        print("[TIME] Progress Spent -> %.2f seconds" % (time() - self.progress_time))
+
     def progress_update(self, progress: float, label: str = ''):
         self.progress = progress
         if label:
@@ -177,7 +180,7 @@ class Canvas:
         return False
 
     def invoke(self, ctx, evt):
-        print("Canvas::invoke - Event:", evt.type, evt.value)
+        ## print("Canvas::invoke - Event:", evt.type, evt.value)
         # print(evt.alt)
         if evt.type == 'LEFT_ALT':
             from sculpt_plus.props import Props
@@ -309,7 +312,18 @@ class Canvas:
                 pbar_size,
                 3.0,
                 (.1, .1, .1, 1.0))
-            DiText(center, str(int(self.progress*100)) + '%', 16, self.scale, pivot=(.5, .5), shadow_props={})
+            timer = time() - self.progress_time
+            '''
+            m = timer / 60
+            m = int(m) if m >= 1 else 0
+            if m >= 1:
+                timer -= m
+            s = int(timer)
+            ms = int((timer - s) * 100)
+            print('%i:%i:%i' % (m, s, ms))
+            '''
+            dt = datetime.fromtimestamp(timer).strftime('%M:%S.%f')[:-4]
+            DiText(center, str(int(self.progress*100)) + '%  /  ' + dt, 16, self.scale, pivot=(.5, .5), shadow_props={})
             if self.progress_label:
                 DiText(center + Vector((0, (16+8)*self.scale)), self.progress_label, 20, self.scale, pivot=(.5, 0), draw_rect_props={}, shadow_props={})
 

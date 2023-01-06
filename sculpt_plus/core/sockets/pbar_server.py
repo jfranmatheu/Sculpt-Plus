@@ -13,10 +13,10 @@ class PBarServer(SocketServer):
         self.on_progress_update = callback
 
     def process_data(self, _progress: int) -> str:
-        print("[SERVER] Progress:", _progress)
+        # print("[SERVER] Progress:", _progress)
         progress: float = _progress / 100.0
         self.progress = round(progress, 2)
-        if progress >= .98:
+        if _progress >= 100:
             self.progress = 1
             res = 'FINISHED'
         else:

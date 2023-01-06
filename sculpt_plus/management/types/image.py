@@ -29,10 +29,12 @@ class Image(object):
     px_size: int
     image_size: Tuple[int, int]
     is_valid: bool
+    # thumbnail: 'Thumbnail'
 
     def __init__(self, input_image: Union[BlImage, str], tex_id: str = None, optimize = None):
         ''' We'll be using the idname here to get the optimized image. '''
         self.id: str = tex_id if tex_id else uuid4().hex
+        # self.thumbnail: Thumbnail = None
         self.pixels: np.ndarray = None
         self.filepath: str = input_image.filepath_from_user() if isinstance(input_image, BlImage) else input_image
         self.use_optimize = optimize
@@ -66,7 +68,6 @@ class Image(object):
         to_image.pixels.foreach_set(self.pixels)
 
         print("Nice image pixels are given!")
-        
 
 
     def load_image(self, input_image: Union[BlImage, str]):
@@ -178,7 +179,7 @@ class Image(object):
             from PIL import Image as PilImage
             with PilImage.open(filepath) as pil_img:
                 if self.use_optimize:
-                    pil_img = pil_img.resize(thumb_image_size, PilImage.Resampling.BILINEAR)
+                    pil_img = pil_img.resize(thumb_image_size, PilImage.Resampling.NEAREST)
                     pil_img.save(out_filepath, format='PNG')
                 else:
                     self.image_size = list(pil_img.size)
@@ -255,9 +256,9 @@ class Thumbnail(Image):
             cache_thumbnail[thumb.id] = fake_item.icon
         return thumb
 
-    def __init__(self, image_path: str, idname: str, _type: str) -> None:
-        if image_path:
-            print(f"New thumbnail for {_type} with id {idname} using image from {image_path}")
+    def __init__(self, image_path: Union[BlImage, str], idname: str, _type: str) -> None:
+        #if image_path:
+        #    print(f"New thumbnail for {_type} with id {idname} using image from {image_path}")
         self.id_type = _type
         super().__init__(image_path, _type + '@' + idname, optimize=True)
 

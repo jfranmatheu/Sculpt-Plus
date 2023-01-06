@@ -80,6 +80,11 @@ class SculptPlusPaths(Enum):
     SRC_LIB_IMAGES_BRUSHES = join(SRC_LIB_IMAGES, 'brushes')
     SRC_LIB_SCRIPTS = join(SRC_LIB, 'scripts')
 
+    LIB_SHADERS = join(SRC_LIB, 'shaders')
+    LIB_SHADERS_VERT = join(LIB_SHADERS, 'vert')
+    LIB_SHADERS_FRAG = join(LIB_SHADERS, 'frag')
+    LIB_SHADERS_BUILTIN = join(LIB_SHADERS, 'builtin')
+
     APP = str(app_dir)
     APP__DATA = str(data_dir)
     APP__TEMP = str(temp_dir)
@@ -100,14 +105,22 @@ class SculptPlusPaths(Enum):
     DATA_TEXTURE_IMAGES = str(data_texture_dir / "images")
     DATA_TEXTURE_CAT_ICONS = str(data_texture_dir / "cats")
 
+    TEMP_FAKE_ITEMS = str(temp_dir / "fake_items")
+    TEMP_THUMBNAILS = str(temp_dir / "thumbnails")
+
     def __call__(self, *path):
         if not path:
             return self.value
         return join(self.value, *path)
 
+    def read(self, *path) -> str:
+        with open(self(*path), mode='r') as f:
+            return f.read()
+
 
 class ScriptPaths:
     GENERATE_THUMBNAILS = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_thumbnails.py')
+    GENERATE_NPZ_FROM_BLENDLIB = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_images_n_thumbnails.py')
 
 
 class ThumbnailPaths:
@@ -184,6 +197,8 @@ class DBShelfPaths:
     TEXTURE_CAT = SculptPlusPaths.APP__DATA('texture_cats')
     TEXTURES = SculptPlusPaths.APP__DATA('textures')
 
+    TEMPORAL = SculptPlusPaths.APP__TEMP('temp_db')
+
 
 class DBShelf(Enum):
     BRUSH_SETTINGS = DBShelfPaths.BRUSH_SETTINGS
@@ -191,6 +206,8 @@ class DBShelf(Enum):
     BRUSH_CAT = DBShelfPaths.BRUSH_CAT
     TEXTURE_CAT = DBShelfPaths.TEXTURE_CAT
     TEXTURES = DBShelfPaths.TEXTURES
+
+    TEMPORAL = DBShelfPaths.TEMPORAL
 
     def items(self) -> dict:
         path: str = self.value # item.id
@@ -213,6 +230,10 @@ class DBShelf(Enum):
 
 class DBShelfManager:
     @classmethod
+    def TEMPORAL(cls, cleanup: bool = True) -> 'DBShelfManager':
+        return cls(DBShelfPaths.TEMPORAL, cleanup=cleanup)
+
+    @classmethod
     def BRUSH_SETTINGS(cls) -> 'DBShelfManager':
         return cls(DBShelfPaths.BRUSH_SETTINGS)
 
@@ -232,8 +253,13 @@ class DBShelfManager:
     def TEXTURE(cls) -> 'DBShelfManager':
         return cls(DBShelfPaths.TEXTURES)
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, cleanup: bool = False):
         self.db_path = path
+
+        if cleanup:
+            _path = Path(path)
+            if _path.exists() and _path.is_file():
+                _path.unlink()
 
     def __enter__(self):
         self.db = shelve.open(self.db_path)

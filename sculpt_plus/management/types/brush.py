@@ -1,6 +1,7 @@
 from os import path
 from pathlib import Path
 from typing import Union, Dict, List
+from time import time
 
 import bpy
 from bpy.types import Brush as BlBrush, Image as BlImage, Texture as BlTexture, TextureSlot as BlTextureSlot
@@ -55,17 +56,18 @@ class Brush(BrushCatItem, BaseBrush):
     icon_filepath: str
     # icon_id: str -> is the same as brush.id
 
-    def __init__(self, brush: BlBrush = None, fake_brush = None):
+    def __init__(self, brush: BlBrush = None, fake_brush = None, generate_thumbnail=True):
         self.texture_id = None
         super(Brush, self).__init__()
         self.thumbnail: Thumbnail = None
         self.texture_slot = TextureSlot(None)
         if brush is not None:
-            self.from_brush(brush, generate_thumbnail=bool(fake_brush is None))
+            ## start_time = time()
+            self.from_brush(brush, generate_thumbnail=bool(fake_brush is None and generate_thumbnail))
             print(f"New BrushItem {self.id} from BlenderBrush {brush.name} {f'and FakeItem {fake_brush.name}' if fake_brush is not None else ''}")
             if fake_brush:
                 self.from_fake_brush(fake_brush)
-
+            ## print("\t[TIME] -> " + str(round(time() - start_time, 3)) + "s")
         ## DBShelf.BRUSH_DEFAULTS.write(self)
         ## DBShelf.BRUSH_SETTINGS.write(self)
 
@@ -91,9 +93,9 @@ class Brush(BrushCatItem, BaseBrush):
     def from_brush(self, brush: BlBrush, generate_thumbnail: bool = True) -> None:
         # LOAD ICON...
         update_attr = self.update_attr
-        if brush.use_custom_icon:
+        if brush.use_custom_icon and generate_thumbnail:
             icon_filepath: Path = Path(brush.icon_filepath)
-            if generate_thumbnail and icon_filepath.exists() and icon_filepath.is_file():
+            if icon_filepath.exists() and icon_filepath.is_file():
                 # data_brush_icons_path: str = SculptPlusPaths.DATA_BRUSH_PREVIEWS()
                 if icon_filepath.stem == self.id: # icon_filepath.relative_to(data_brush_icons_path):
                     # It's ok. It is saved in the sculpt_plus/brush/icons folder

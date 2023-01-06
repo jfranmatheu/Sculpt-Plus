@@ -3,12 +3,13 @@ from bl_ui.space_toolsystem_common import ToolSelectPanelHelper, ToolDef
 from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel
 from bl_ui.space_view3d import _draw_tool_settings_context_mode
 from bl_ui.properties_data_modifier import DATA_PT_modifiers
-from bpy.types import UILayout, Modifier, VIEW3D_PT_sculpt_voxel_remesh, VIEW3D_PT_sculpt_dyntopo
+from bpy.types import UILayout, MultiresModifier, VIEW3D_PT_sculpt_voxel_remesh, VIEW3D_PT_sculpt_dyntopo
 from bpy.app.translations import pgettext_tip as tip_
 from bpy.app.translations import pgettext_iface as iface_
 from time import time
 
 from sculpt_plus.props import Props, toolbar_hidden_brush_tools
+from sculpt_plus.utils.modifiers import get_modifier_by_type
 
 
 def _layout_generator_single_row(layout, scale_y):
@@ -135,47 +136,13 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
 
         if tool_idname == 'ALL_BRUSH':
             sub.scale_y = 1.75
-            #sub.emboss = 'NORMAL'
             sub.operator(
                 "sculpt_plus.all_brush_tool",
                 text=" ",
                 depress=is_active,
                 icon_value=icon_value,
                 emboss=True
-            ) # .name = item.idname
-            """
-            if is_active:
-                sub.operator(
-                    "wm.tool_set_by_id",
-                    text=item.label if show_text else "",
-                    depress=is_active,
-                    icon_value=icon_value,
-                ).name = item.idname
-            else:
-                #sub.emboss = 'NONE'
-                #box = sub.box()
-                #box.scale_y = 0.8
-                #box.emboss = 'NORMAL'
-                #sub = box.row(align=True) # split(factor=0.5, align=True)
-                #sub.alignment = 'LEFT'
-                sub.scale_y = 1.75
-                #sub.emboss = 'NORMAL'
-                sub.operator(
-                    "sculpt_plus.all_brush_tool",
-                    text=" ",
-                    depress=is_active,
-                    icon_value=icon_value,
-                    emboss=True
-                ) # .name = item.idname
-                '''
-                sub.operator(
-                    "sculpt_plus.all_brush_tool",
-                    text="",
-                    depress=is_active,
-                    emboss=False
-                )
-                '''
-            """
+            )
         elif use_menu:
             sub.operator_menu_hold(
                 "wm.tool_set_by_id",
@@ -463,14 +430,19 @@ def draw_sculpt_sections(layout: UILayout, context):
     header = section.box().row(align=True)
     header.scale_y = 1.5
     header.label(text=header_label, icon_value=header_icon)
+    
+    mod = get_modifier_by_type(context.sculpt_object, 'MULTIRES')
+    skip_selector = context.sculpt_object.use_dynamic_topology_sculpting or mod is not None 
 
-    selector = section.grid_flow(align=True, row_major=True, even_columns=True, even_rows=True, columns=2)
-    selector.use_property_split = False
-    selector.scale_y = 1.25
-    selector.prop(ui, 'toolbar_sculpt_sections', expand=True)
+    if not skip_selector:
+        selector = section.grid_flow(align=True, row_major=True, even_columns=True, even_rows=True, columns=2)
+        selector.use_property_split = False
+        selector.scale_y = 1.25
+        selector.prop(ui, 'toolbar_sculpt_sections', expand=True)
 
     content = section.box().column(align=False)
-    content.separator()
+    if not skip_selector:
+        content.separator()
     content.use_property_split = True
     content.use_property_decorate = False
     content_args = (DummyPanel(content), context)
@@ -501,43 +473,70 @@ def draw_sculpt_sections(layout: UILayout, context):
             op.alert = True
             op.operator("sculpt.dynamic_topology_toggle", text="Disable Dyntopo")
     else:
-        # content.template_modifiers()
-        ob = context.sculpt_object
-        # print([m.type for m in ob.modifiers])
-        md: Modifier = None
-        for mod in ob.modifiers:
-            if mod.type == 'MULTIRES':
-                md: Modifier = mod
-                break
-
-        if md is None:
+        if mod is None:
             msg = content.box()
             msg.scale_y = 1.5
             msg.label(text="No Multires Modifier", icon='INFO')
             msg.operator('object.modifier_add', text="Add Multires Modifier").type = 'MULTIRES'
             return
-        
-        mod: Modifier = mod
-        
-        levels_col = content.column(align=True)
-        levels_col.prop(mod, 'levels')
-        levels_col.prop(mod, 'sculpt_levels')
-        levels_col.prop(mod, 'render_levels')
 
-        content.prop(mod, 'use_sculpt_base_mesh')
-        content.separator()
-        content.prop(mod, 'show_only_control_edges')
-
+        draw_sculpt_multires(content, mod)
         # DATA_PT_modifiers.draw(*content_args)
 
-        #content.separator()
-
-        #row = content.row()
-        #row.scale_y = 1.5
-        #row.operator('object.modifier_apply', text="Apply Multires Modifier").modifier = mod.name
-
-
     content.separator()
+
+
+def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
+    layout.use_property_split = False
+
+    levels_layout = layout.column(align=True)
+    levels_layout.box().label(text="L e v e l s", icon='ALIASED')
+    levels_layout = levels_layout.grid_flow(row_major=True, columns=4, even_columns=True, even_rows=True, align=True)
+    levels_layout.scale_y = 1.5
+    for i in range(mod.total_levels + 1):
+        levels_layout.operator('sculpt_plus.multires_change_level', text=str(i), depress=i==mod.sculpt_levels).level = i
+
+    layout.separator(factor=0.25)
+
+    ops_layout = layout.column(align=True)
+    ops_layout.box().label(text='L e v e l   U p !  (Subdivide)', icon='SORT_DESC')
+    ops_layout = ops_layout.row(align=True)
+    ops_layout.scale_y = 1.5
+    op = ops_layout.operator('object.multires_subdivide', text='Smooth')
+    op.modifier = mod.name
+    op.mode = 'CATMULL_CLARK'
+    op = ops_layout.operator('object.multires_subdivide', text='Simple')
+    op.modifier = mod.name
+    op.mode = 'SIMPLE'
+    op = ops_layout.operator('object.multires_subdivide', text='Linear')
+    op.modifier = mod.name
+    op.mode = 'LINEAR'
+
+    layout.separator(factor=0.25)
+
+    ops_layout = layout.column(align=True)
+    ops_layout.box().label(text='L e v e l   D o w n !', icon='SORT_ASC')
+    ops_layout = ops_layout.column(align=True)
+    ops_layout.operator('object.multires_unsubdivide', text='Rebuild Lower Level from Base Level')
+    ops_layout.operator('object.multires_higher_levels_delete', text='Delete Higher Levels from Level ' + str(mod.sculpt_levels))
+
+    layout.separator(factor=0.25)
+
+    ops_layout = layout.column(align=True)
+    ops_layout.box().label(text='S h a p e   M o r p h', icon='MONKEY')
+    ops_layout = ops_layout.column(align=True)
+    ops_layout.operator('object.multires_reshape', text='Reshape')
+    ops_layout.operator('object.multires_base_apply', text='Apply Base')
+
+    layout.separator()
+
+    layout.prop(mod, 'use_sculpt_base_mesh')
+    # layout.prop(mod, 'show_only_control_edges')
+
+
+    #row = content.row()
+    #row.scale_y = 1.5
+    #row.operator('object.modifier_apply', text="Apply Multires Modifier").modifier = mod.name
 
 
 def register():

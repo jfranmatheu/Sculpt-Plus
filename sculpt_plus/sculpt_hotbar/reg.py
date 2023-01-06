@@ -36,14 +36,17 @@ def register():
         elif brushes := list(Props.BrushManager().brushes.values()):
             Props.SelectBrush(ctx, brushes[0])
         else:
+            if ctx.space_data is None:
+                Props.BrushManager().active_sculpt_tool = 'NULL'
+                return None
             bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
             curr_active_tool = ToolSelectPanelHelper.tool_active_from_context(ctx)
             if curr_active_tool is None:
-                return True
+                return
             type, curr_active_tool = curr_active_tool.idname.split('.')
             curr_active_tool = curr_active_tool.replace(' ', '_').upper()
             if curr_active_tool in exclude_brush_tools or type != 'builtin_brush':
-                return True
+                return
             Props.BrushManager().active_sculpt_tool = curr_active_tool
     def dummy_poll_view(ctx):
         if ctx.mode != 'SCULPT':

@@ -17,18 +17,18 @@ class Texture(CategoryItem):
     cat_id: str
     thumbnail: Thumbnail
 
-    def __init__(self, texture: BlTexture, cat: str = '', fake_texture = None):
+    def __init__(self, texture: BlTexture, cat: str = '', fake_texture = None, generate_thumbnail=True):
         super().__init__()
 
         self.name = texture.image.name
-        self.image = Image(texture.image, 'TEXTURE@' + self.id)
+        self.image = Image(texture.image, 'TEXTURE@' + self.id) # , generate_thumbnail=(fake_texture is None and generate_thumbnail))
         self.cat_id: str = cat
         self.thumbnail: Thumbnail = None
 
         if fake_texture is not None:
             self.from_fake_texture(fake_texture)
-        else:
-            self.load_icon(self.image.filepath)
+        elif generate_thumbnail:
+            self.load_icon(self.image)
 
     def from_fake_texture(self, fake_texture):
         self.id = fake_texture.id
@@ -45,7 +45,7 @@ class Texture(CategoryItem):
         image: BlImage = Props.TextureImageSingleton(context)
         self.image.to_image(image)
 
-    def load_icon(self, filepath: Union[str, Path]) -> str:
+    def load_icon(self, filepath: Union[BlImage, str, Path]) -> str:
         if self.thumbnail is not None:
             del self.thumbnail
         self.thumbnail = Thumbnail(filepath, self.id, 'TEXTURE')

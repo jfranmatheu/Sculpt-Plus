@@ -29,7 +29,9 @@ class SocketClient(object):
         self.socket.connect(('localhost', self.port))
 
     def stop(self) -> None:
-        self.socket.close()
+        if self.socket is not None:
+            self.socket.close()
+            self.socket = None
 
     def __enter__(self):
         self.start()
@@ -53,6 +55,8 @@ class SocketClient(object):
         :param client: Client socket.
         :return: Received data.
         """
+        if self.socket is None:
+            return
         # Receive data from client.
         self.socket.sendall(
             self.pack_data(

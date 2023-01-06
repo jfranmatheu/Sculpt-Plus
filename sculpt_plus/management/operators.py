@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 import subprocess
 import sys
 import json
+import numpy as np
 from sculpt_plus.path import ScriptPaths, SculptPlusPaths
 
 '''
@@ -194,27 +195,29 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             ],
             #stdout=subprocess.PIPE,
             #stderr=subprocess.PIPE,
-            shell=True
+            shell=False
         )
 
         #print(out)
         self.cv.progress_start(label=f"Loading {self.cat_type.capitalize()} data from {self.source_type.capitalize()}")
 
         context.window_manager.modal_handler_add(self)
-        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
+        self._timer = context.window_manager.event_timer_add(0.01, window=context.window)
         return 'RUNNING_MODAL' # 'FINISHED'
 
     def modal(self, context, event):
+        if event.type not in {'TIMER'}:
+            return {'RUNNING_MODAL'}
         res = self.pbar.run_in_modal()
         if res == 'FINISHED':
             self.done(context)
         elif res == 'CANCELLED': # in {'FINISHED', 'CANCELLED'}:
             self.error(context)
-        print(res)
+        # print(res)
         return {res}
 
     def on_progress_update(self, progress: float) -> None:
-        print("[MODAL] Progress:", progress)
+        # print("[MODAL] Progress:", progress)
         self.region.tag_redraw()
         self.cv.progress_update(progress, None)
 
@@ -226,17 +229,23 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         del self.pbar
 
     def error(self, context) -> None:
+        print("ERROR!")
         self.cleanup(context)
 
     def done(self, context) -> str:
+        print("DONE")
+        #abort = self.pbar.progress < 1
+
         self.cleanup(context)
 
         #out, err = process.communicate()
+        #if abort:
+        #print("ERROR! Bad progress, abort!")
         return_code = self.process.wait()
         if return_code != 0:
-            #print(err)
+            print('error:', return_code)
             return 'CANCELLED'
-        
+
         temporal_dir = SculptPlusPaths.APP__TEMP()
         temporal_dir: Path = Path(temporal_dir)
         assets_importer_json_file = temporal_dir / 'asset_importer_data.json'
@@ -247,15 +256,51 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         with assets_importer_json_file.open('r') as json_file:
             data = json.load(json_file)
 
+        if not data:
+            print("WARN! No loaded data!")
+            return 'CANCELLED'
+
+        from sculpt_plus.sculpt_hotbar.wg_view import FakeViewItem_Texture, FakeViewItem_Brush
+
+        previews_filepath = temporal_dir / 'previews.npz'
+        if not previews_filepath.exists() or not previews_filepath.is_file():
+            # FAILED SOMETHING.
+            np.savez_compressed(previews_filepath, np.array([0]))
+
+        fake_items = []
+        with np.load(previews_filepath) as previews:
+            if self.cat_type == 'TEXTURE':
+                fake_items = [
+                    FakeViewItem_Texture(
+                        **item,
+                        icon_pixels=previews.get(item['name'], None)
+                    ) for item in data['images']
+                ]
+            elif self.cat_type == 'BRUSH':
+                fake_items = [
+                    FakeViewItem_Brush(
+                        name=item['name'],
+                        icon_filepath=item['icon_filepath'],
+                        icon_size=item['icon_size'],
+                        icon_pixels=previews.get(item['name'], None),
+                        texture_data={
+                            **item['texture'],
+                            'icon_pixels': previews.get('TEX@'+item['texture']['name'], None) if item['texture']['icon_filepath'] else None,
+                        } if 'texture' in item else None,
+                    ) for item in data['brushes']
+                ]
+            # print(list(previews.keys()))
+
         # print(data)
 
-        if not data:
+        if fake_items == []:
+            print("ERROR! No items!")
             return 'CANCELLED'
 
         self.mod_asset_importer.show(
-            self.filepath,
+            abspath(self.filepath),
             type=self.cat_type,
-            data=data,
+            data=fake_items,
         )
         return 'FINISHED'
 

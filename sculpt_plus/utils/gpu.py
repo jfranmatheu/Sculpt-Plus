@@ -2,6 +2,7 @@ import bpy
 from gpu.types import Buffer, GPUTexture
 from bpy.types import Brush, Image, Camera, Context
 from pathlib import Path
+from math import sqrt
 from time import sleep, time
 from os import path
 from mathutils import Vector, Matrix
@@ -122,6 +123,42 @@ def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), id
     if get_pixels:
         return gputex, px
 
+    return gputex
+
+def gputex_from_pixels(size: Tuple[int, int], idname: Union[str, None], pixels: np.ndarray) -> GPUTexture:
+    """
+    Loads an image as  GPUTexture type from a file.
+
+    Args:
+        filepath (str): Path to the image file.
+    """
+    gputex: GPUTexture = cache_tex.get(idname, None)
+    if gputex is not None:
+        return gputex
+
+    #pixels_size: int = len(pixels)
+
+    buff: Buffer = Buffer(
+        'FLOAT',
+        size[0]*size[1]*4,
+        pixels
+    )
+
+    #_size =  sqrt(pixels_size / 4)
+    #_size = int(_size)
+    #if size[0] != _size or size[1] != _size:
+    #    print(f"WTF! Size mismatch! ({size}) vs ({(_size, _size)}).")
+    #    size = (_size, _size)
+
+    gputex: GPUTexture = GPUTexture(
+        size,
+        layers=0,
+        is_cubemap=False,
+        format='RGBA16F',
+        data=buff
+    )
+
+    cache_tex[idname] = gputex
     return gputex
 
 

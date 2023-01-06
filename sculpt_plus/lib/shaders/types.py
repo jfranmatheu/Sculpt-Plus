@@ -4,10 +4,10 @@ class ShaderType:
     LINES       = "LINES"
     TRIS        = "TRIS"
     LINE_STRIP  = "LINE_STRIP"
-    LINE_LOOP   = "LINE_LOOP"
-    LINES_ADJ   = "LINES_ADJ"
-    TRI_FAN     = "TRI_FAN"
+    LINE_LOOP   = "LINE_LOOP" # DEPRECATED
+    LINES_ADJ   = "LINES_ADJ" # DEPRECATED
+    TRI_FAN     = "TRIS" # DEPRECATED
     TRIS_ADJ    = "TRIS_ADJ"
-    LINE_STRIP_ADJ  = "LINE_STRIP_ADJ"
+    LINE_STRIP_ADJ  = "LINE_STRIP_ADJ" # DEPRECATED
     TRI_STRIP   = "TRI_STRIP"
-    IMG         = TRI_FAN
+    IMG         = TRIS # DEPRECATED

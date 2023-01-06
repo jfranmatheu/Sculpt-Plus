@@ -14,9 +14,16 @@ class PBarClient(SocketClient):
 
     def set_progress(self, progress: float) -> None:
         self.progress = progress
-        if self.progress >= .98:
+        if self.progress >= 1.0:
             self.progress = 1.0
-        self.send_data()
+        try:
+            self.send_data()
+        except ConnectionAbortedError as e:
+            print(e)
+            self.stop()
+
+    def complete(self) -> None:
+        self.set_progress(1.0)
 
     def update(self, progress: float) -> None:
         self.set_progress(progress * self.progress_increment_rate)
@@ -25,7 +32,7 @@ class PBarClient(SocketClient):
         self.set_progress(self.progress + self.progress_increment_rate)
 
     def prepare_data(self) -> tuple:
-        print("[CLIENT] Progress:", self.progress)
+        # print("[CLIENT] Progress:", self.progress)
         return (
             int(self.progress * 100),
         )

@@ -3,12 +3,16 @@ from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget, FakeViewItem_Brush, Fa
 from sculpt_plus.sculpt_hotbar.wg_but import Button, ButtonGroup
 from sculpt_plus.sculpt_hotbar.wg_selector import WidgetSelector
 from sculpt_plus.management.types.image import Thumbnail
-from sculpt_plus.sculpt_hotbar.di import DiRct, DiCage, DiIma, DiIcoCol, DiIco, DiText, DiIcoOpGamHl
+from sculpt_plus.sculpt_hotbar.di import DiRct, DiCage, DiIma, DiIcoCol, DiIco, DiText, DiIcoOpGamHl, DiImaOpGamHl
 from sculpt_plus.utils.gpu import gputex_from_image_file
 from sculpt_plus.lib.icons import Icon
 from sculpt_plus.props import Props
+from sculpt_plus.path import DBShelfManager, DBShelfPaths, ScriptPaths, SculptPlusPaths
 
+import bpy
 from typing import Union
+import subprocess
+from time import time
 
 
 class AssetImporterModal(WidgetBase): # WidgetContainer
@@ -53,28 +57,19 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
             elif move_to == 'OUTPUT':
                 self.output_textures, self.input_brushes = self.input_brushes, self.output_textures
 
-    def show(self, lib_path: str, type: str, data: dict[str, str]) -> None:
+    def show(self, lib_path: str, type: str, data: Union[list[FakeViewItem_Brush], list[FakeViewItem_Texture]]) -> None:
         if not data:
             return
 
         self.lib_path = lib_path
         self.ctx_type = type
-        if type == 'TEXTURE':
-            self.input_textures = [
-                FakeViewItem_Texture(
-                    item['name'],
-                    item['icon_filepath']
-                ) for item in data['images']
-            ]
-        elif type == 'BRUSH':
-            self.input_brushes = [
-                FakeViewItem_Brush(
-                    item['name'],
-                    item['icon_filepath'],
-                    item['texture'].get('name', None) if 'texture' in item else None,
-                    item['texture'].get('icon_filepath', None) if 'texture' in item else None
-                ) for item in data['brushes']
-            ]
+
+        if type == 'BRUSH':
+            self.input_brushes = data
+            self.output_brushes = []
+        elif type == 'TEXTURE':
+            self.input_textures = data
+            self.output_textures = []
 
         self.enabled = True
         self.cv.shelf.expand = False
@@ -94,7 +89,36 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
         items = self.output_brushes if self.ctx_type == 'BRUSH' else self.output_textures if self.ctx_type == 'TEXTURE' else None
         if not items:
             return
-        manager.load_viewitems_from_lib(lib_path=self.lib_path, type=self.ctx_type, items=items)
+
+        start_time = time()
+        # with DBShelfManager.TEMPORAL() as temp_db:
+        #     {temp_db.write(item) for item in items}
+        output_file: str = SculptPlusPaths.APP__TEMP('fake_items_texture_ids.txt')
+        with open(output_file, 'w', encoding='ascii') as f:
+            if self.ctx_type == 'BRUSH':
+                f.write('\n'.join([b.texture.id + b.texture.name for b in items if b.texture is not None]))
+            elif self.ctx_type == 'TEXTURE':
+                f.write('\n'.join([t.id + t.name for t in items]))
+        print("*[TIME] Save fake items to temporal database: %.2f seconds" % (time() - start_time))
+
+        start_time = time()
+        process = subprocess.Popen(
+            [
+                bpy.app.binary_path,
+                self.lib_path,
+                '--background',
+                '--python',
+                ScriptPaths.GENERATE_NPZ_FROM_BLENDLIB,
+                '--',
+                output_file,
+                # self.ctx_type
+            ],
+        )
+        process.wait()
+        print("*[TIME] Save selected textures to .npy: %.2f seconds" % (time() - start_time))
+
+        #manager.load_viewitems_from_lib(lib_path=self.lib_path, type=self.ctx_type, items=items)
+        del items
         self.close()
 
     def cancel(self):
@@ -105,10 +129,13 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
         self.cv.shelf.expand = True
         self.enabled = False
         self.lib_path = None
-        self.input_brushes = None
-        self.input_textures = None
-        self.output_brushes = None
-        self.output_textures = None
+
+        if self.ctx_type == 'BRUSH':
+            del self.input_brushes
+            del self.output_brushes
+        elif self.ctx_type == 'TEXTURE':
+            del self.input_textures
+            del self.output_textures
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         # print(self.enabled)
@@ -262,13 +289,13 @@ class AssetImporterGrid(ViewWidget, AssetImporterWidget):
         pad = 4 * scale
         padding = Vector((pad, pad))
         DiRct(slot_p, slot_s, slot_color)
-        DiIma(slot_p + padding, slot_s - padding * 2, item.icon)
+        DiImaOpGamHl(slot_p + padding, slot_s - padding * 2, item.icon)
 
         if isinstance(item, FakeViewItem_Brush) and item.texture:
             texsize = slot_s.x * .4
             texsize = Vector((texsize, texsize))
             texpos = slot_p + Vector((slot_s.x - texsize.x, 0))
-            DiIma(texpos, texsize, item.texture.icon)
+            DiImaOpGamHl(texpos, texsize, item.texture.icon)
             DiCage(texpos, texsize, 1, (.1, .1, .1, .92))
 
         if is_hovered:
