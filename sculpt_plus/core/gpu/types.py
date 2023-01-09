@@ -93,7 +93,7 @@ class GPU_SHADER_CREATE_INFO:
 
     @classmethod
     def push(cls, info: 'GPU_SHADER_CREATE_INFO') -> None:
-        cls._instances[info.idname] = info.shader_info
+        cls._instances[info.idname] = info
 
     def compile(self) -> GPU_SHADER:
         ''' Create shader from this shader info object, as well as compile it. '''
@@ -116,7 +116,7 @@ class GPU_SHADER_CREATE_INFO:
         GPU_SHADER_CREATE_INFO.push(self)
 
     @record_action
-    def define(self, name: str, value) -> 'GPU_SHADER_CREATE_INFO':
+    def define(self, name: str, value: str = '') -> 'GPU_SHADER_CREATE_INFO':
         """Add a preprocessing define directive. In GLSL it would be something like:
 
             #define name value
@@ -132,7 +132,7 @@ class GPU_SHADER_CREATE_INFO:
     @record_action
     def fragment_out(self, attr_index: int, type: str, name: str, blend: str = 'NONE') -> 'GPU_SHADER_CREATE_INFO':
         """ Specify a fragment output corresponding to a framebuffer target slot. """
-        self.shader_info.fragment_out(attr_index, type, name, blend)
+        self.shader_info.fragment_out(attr_index, type, name, blend=blend)
         return self
 
     @record_action
