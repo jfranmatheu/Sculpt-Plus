@@ -12,7 +12,6 @@ from .image import Thumbnail
 from .texture import Texture
 from .brush_props import BaseBrush, brush_properties_per_sculpt_type
 from sculpt_plus.path import SculptPlusPaths, DBShelf, ThumbnailPaths
-from sculpt_plus.sculpt_hotbar.wg_view import FakeViewItem_Brush, FakeViewItem_Texture
 
 from bpy.types import VIEW3D_PT_sculpt_dyntopo
 
@@ -56,15 +55,15 @@ class Brush(BrushCatItem, BaseBrush):
     icon_filepath: str
     # icon_id: str -> is the same as brush.id
 
-    def __init__(self, brush: BlBrush = None, fake_brush = None, generate_thumbnail=True):
+    def __init__(self, brush: BlBrush = None, fake_brush = None, generate_thumbnail=True, custom_id: str = None):
         self.texture_id = None
-        super(Brush, self).__init__()
+        super(Brush, self).__init__(custom_id=custom_id)
         self.thumbnail: Thumbnail = None
         self.texture_slot = TextureSlot(None)
         if brush is not None:
             ## start_time = time()
             self.from_brush(brush, generate_thumbnail=bool(fake_brush is None and generate_thumbnail))
-            print(f"New BrushItem {self.id} from BlenderBrush {brush.name} {f'and FakeItem {fake_brush.name}' if fake_brush is not None else ''}")
+            # print(f"New BrushItem {self.id} from BlenderBrush {brush.name} {f'and FakeItem {fake_brush.name}' if fake_brush is not None else ''}")
             if fake_brush:
                 self.from_fake_brush(fake_brush)
             ## print("\t[TIME] -> " + str(round(time() - start_time, 3)) + "s")
@@ -83,7 +82,8 @@ class Brush(BrushCatItem, BaseBrush):
         else:
             setattr(self, attr, value)
 
-    def from_fake_brush(self, fake_brush: FakeViewItem_Brush):
+    def from_fake_brush(self, fake_brush):
+        # from sculpt_plus.management.types.fake_item import FakeViewItem_Brush
         self.id = fake_brush.id
         self.name = fake_brush.name
         self.use_custom_icon = fake_brush.use_custom_icon
@@ -111,6 +111,7 @@ class Brush(BrushCatItem, BaseBrush):
             update_attr(attr, getattr(brush, attr))
 
         self.texture_slot.from_texture_slot(brush.texture_slot)
+        return self
 
     def to_brush(self, brush: Union[BlBrush, bpy.types.Context]) -> None:
         if isinstance(brush, bpy.types.Context):

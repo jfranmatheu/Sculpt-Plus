@@ -1,10 +1,11 @@
 import bpy
 from blf import(enable as text_enable, disable as text_disable,SHADOW, shadow as text_shadow, shadow_offset as text_shadow_offset,color as text_color, position as text_position, size as text_size,dimensions as text_dim, draw as text_draw, ROTATION, rotation as text_rotation,clipping as text_clipping, CLIPPING, WORD_WRAP)
 from mathutils import Vector
+from bpy.app import background
 p='pos';op='op';co='color';hl='hl';T='TRIS';TF='TRI_FAN';texidx='texCoord';i='image';A='ALPHA';LL='LINE_LOOP';L='LINES';P='POINTS'
 from gpu.shader import from_builtin as get_builtin_shader
-sh_unif = get_builtin_shader('2D_UNIFORM_COLOR')
-sh_img = get_builtin_shader('2D_IMAGE')
+sh_unif = None if background else get_builtin_shader('2D_UNIFORM_COLOR')
+sh_img = None if background else get_builtin_shader('2D_IMAGE')
 from gpu.texture import from_image as get_tex
 from gpu_extras.batch import batch_for_shader as bat
 from gpu_extras.presets import draw_circle_2d
@@ -14,17 +15,17 @@ from bpy.types import UILayout
 from sculpt_plus.lib import BrushIcon
 from sculpt_plus.utils.gpu import get_brush_tex, get_ui_image_tex
 from gpu import *
-sh_img_co=CreateShader();sh_img_co=SH("""
+sh_img_co=CreateShader();sh_img_co=None if background else SH("""
 uniform mat4 ModelViewProjectionMatrix;in vec2 texCoord;in vec2 pos;out vec2 texCoord_interp;void main(){gl_Position=ModelViewProjectionMatrix * vec4(pos.xy, 0.0f, 1.0f); gl_Position.z=1.0; texCoord_interp=texCoord;}
 ""","""
 in vec2 texCoord_interp;out vec4 fragColor;uniform vec4 color;uniform sampler2D image;void main(){fragColor=texture(image, texCoord_interp);if(fragColor.a<.01f){discard;}fragColor.a*=color.a;fragColor.rgb=color.rgb;}
 """)
-sh_img_a_op_gam_hl=CreateShader();sh_img_a_op_gam_hl=SH("""
+sh_img_a_op_gam_hl=CreateShader();sh_img_a_op_gam_hl=None if background else SH("""
 uniform mat4 ModelViewProjectionMatrix;in vec2 texCoord;in vec2 pos;out vec2 texCoord_interp;void main(){gl_Position=ModelViewProjectionMatrix * vec4(pos.xy, 0.0f, 1.0f); gl_Position.z=1.0; texCoord_interp=texCoord;}
 ""","""
 in vec2 texCoord_interp;out vec4 fragColor;uniform float op;uniform float hl;uniform sampler2D image;void main(){fragColor=texture(image, texCoord_interp);if(fragColor.a<.01f){discard;}fragColor.a*=op;fragColor.rgb=pow(fragColor.rgb, vec3(2.2-hl));}
 """)
-sh_estrellita=CreateShader();sh_estrellita=SH("""
+sh_estrellita=CreateShader();sh_estrellita=None if background else SH("""
 uniform mat4 ModelViewProjectionMatrix;uniform float size;in vec2 pos;void main(){gl_Position = ModelViewProjectionMatrix * vec4(pos, 1.0, 1.0);gl_PointSize = size;}
 ""","""
 out vec4 fragColor;
@@ -69,7 +70,7 @@ void main()
   fragColor = vec4(pow(col, vec3(2.2)),opa);
 }
 """)
-sh_silueta=CreateShader();sh_silueta=SH("""
+sh_silueta=CreateShader();sh_silueta=None if background else SH("""
 uniform mat4 ModelViewProjectionMatrix;in vec2 texCoord;in vec2 pos;out vec2 texCoord_interp;void main(){gl_Position=ModelViewProjectionMatrix * vec4(pos.xy, 0.0f, 1.0f); gl_Position.z=1.0; texCoord_interp=texCoord;}
 ""","""
 in vec2 texCoord_interp;

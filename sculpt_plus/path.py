@@ -121,6 +121,8 @@ class SculptPlusPaths(Enum):
 class ScriptPaths:
     GENERATE_THUMBNAILS = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_thumbnails.py')
     GENERATE_NPZ_FROM_BLENDLIB = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_images_n_thumbnails.py')
+    EXPORT_BRUSHES_FROM_BLENDLIB = SculptPlusPaths.SRC_LIB_SCRIPTS('export_brushes_from_blendlib.py')
+    EXPORT_TEXTURES_FROM_DIRECTORY = SculptPlusPaths.SRC_LIB_SCRIPTS('export_textures_from_directory.py')
 
 
 class ThumbnailPaths:
@@ -197,7 +199,7 @@ class DBShelfPaths:
     TEXTURE_CAT = SculptPlusPaths.APP__DATA('texture_cats')
     TEXTURES = SculptPlusPaths.APP__DATA('textures')
 
-    TEMPORAL = SculptPlusPaths.APP__TEMP('temp_db')
+    TEMPORAL = SculptPlusPaths.APP__TEMP('fake_items')
 
 
 class DBShelf(Enum):
@@ -209,10 +211,18 @@ class DBShelf(Enum):
 
     TEMPORAL = DBShelfPaths.TEMPORAL
 
+    def destroy(self) -> None:
+        Path(self.value).unlink()
+
     def items(self) -> dict:
         path: str = self.value # item.id
         with shelve.open(path) as db:
             return db.items()
+    
+    def values(self) -> list:
+        path: str = self.value # item.id
+        with shelve.open(path) as db:
+            return list(db.values())
 
     def write(self, *items: tuple):
         path: str = self.value# item.id
@@ -257,9 +267,15 @@ class DBShelfManager:
         self.db_path = path
 
         if cleanup:
-            _path = Path(path)
-            if _path.exists() and _path.is_file():
-                _path.unlink()
+            dat_filepath = Path(path + '.dat')
+            if dat_filepath.exists() and dat_filepath.is_file():
+                dat_filepath.unlink()
+            dir_filepath = Path(path + '.dir')
+            if dir_filepath.exists() and dir_filepath.is_file():
+                dir_filepath.unlink()
+            bak_filepath = Path(path + '.bak')
+            if bak_filepath.exists() and bak_filepath.is_file():
+                bak_filepath.unlink()
 
     def __enter__(self):
         self.db = shelve.open(self.db_path)

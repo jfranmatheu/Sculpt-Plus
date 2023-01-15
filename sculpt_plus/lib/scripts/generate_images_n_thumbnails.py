@@ -117,7 +117,7 @@ def bl_save_image(image_id: str, image: BlImage, generate_thumbnail: bool = True
         _thumb_image.file_format = 'JPEG'
         _thumb_image.filepath_raw = SculptPlusPaths.DATA_TEXTURE_IMAGES(image_id + '.thumbnail.jpg')
         _thumb_image.use_half_precision = True
-        # _thumb_image.pixels.foreach_get(image_path.read_bytes())
+        # _thumb_image.pixels.foreach_get(image_path.read_bytes ())
         _thumb_image.pixels.foreach_set(_thumb_pixels)
         _thumb_image.save()
 

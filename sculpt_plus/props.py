@@ -4,7 +4,8 @@ import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
-from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager, FakeViewItem_Brush, FakeViewItem_Texture
+from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager
+from sculpt_plus.management.types.fake_item import FakeViewItem_Brush, FakeViewItem_Texture
 
 #from sculpt_plus.core.data.scn import SCULPTPLUS_PG_scn
 #from sculpt_plus.core.data.wm import SCULPTPLUS_PG_wm

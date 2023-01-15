@@ -12,10 +12,12 @@ from uuid import uuid4
 
 from sculpt_plus.utils.gpu import gputex_from_image_file, get_brush_type_tex, gputex_from_pixels
 from sculpt_plus.management.types.brush_props import sculpt_tool_items
+from sculpt_plus.management.types import Brush, Texture
 
 
 sculpt_tool_items_set = set(sculpt_tool_items)
 COMPATIBLE_IMAGE_EXTENSIONS = {'PNG', 'JPG', 'JPEG', 'TGA', 'TIFF', 'TIF', 'PSD'}
+
 
 def _verify_image_path(filepath: str) -> Path or None:
     image_path = Path(filepath)
@@ -116,6 +118,12 @@ class FakeViewItem_Texture(FakeViewItem):
         #else:
         #    fake_texture.set_icon(filepath, size=image.size)
         return fake_texture
+    
+    def come_true(self) -> None:
+        ''' Turn fake item into a real item! Save thumbnail and image, brush info...
+            whatever info in corresponding folder and database. '''
+        pass
+
 
 class FakeViewItem_Brush(FakeViewItem):
     use_custom_icon: bool
@@ -202,3 +210,11 @@ class FakeViewItem_Brush(FakeViewItem):
         )
         self.set_texture(fake_texture)
         return fake_texture
+
+    def come_true(self) -> None:
+        ''' Turn fake item into a real item! Save thumbnail and image, brush info...
+            whatever info in corresponding folder and database. '''
+        if self.texture is not None:
+            self.texture.come_true()
+        
+        # Brush come true...

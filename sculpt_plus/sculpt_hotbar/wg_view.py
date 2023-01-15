@@ -3,7 +3,7 @@ from bpy.types import Brush, Texture, ImageTexture, Image
 from mathutils import Vector
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
-from sculpt_plus.sculpt_hotbar.di import DiLine, DiTex
+from sculpt_plus.sculpt_hotbar.di import DiLine, DiText
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.cursor import Cursor, CursorIcon
 from sculpt_plus.utils.math import clamp

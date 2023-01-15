@@ -12,7 +12,7 @@ from bpy.types import Brush as BlBrush, Texture as BlTexture, Image as BlImage
 from sculpt_plus.path import DBShelf, SculptPlusPaths, DBShelfPaths, DBShelfManager, data_brush_dir, data_texture_dir
 from .types.cat import BrushCategory, TextureCategory, Brush, Texture
 from sculpt_plus.lib import Icon
-from sculpt_plus.sculpt_hotbar.wg_view import FakeViewItem_Brush, FakeViewItem_Texture
+from sculpt_plus.management.types.fake_item import FakeViewItem_Brush, FakeViewItem_Texture
 
 
 builtin_brush_names = ('Blob', 'Boundary', 'Clay', 'Clay Strips', 'Clay Thumb', 'Cloth', 'Crease', 'Draw Face Sets', 'Draw Sharp', 'Elastic Deform', 'Fill/Deepen', 'Flatten/Contrast', 'Grab', 'Inflate/Deflate', 'Layer', 'Mask', 'Multi-plane Scrape', 'Multires Displacement Eraser', 'Multires Displacement Smear', 'Nudge', 'Paint', 'Pinch/Magnify', 'Pose', 'Rotate', 'Scrape/Peaks', 'SculptDraw', 'Simplify', 'Slide Relax', 'Smooth', 'Snake Hook', 'Thumb')
@@ -396,12 +396,12 @@ class Manager:
     def add_texture(self, texture: Texture) -> None:
         self.textures[texture.id] = texture
 
-    def new_brush_cat(self, cat_name: str = 'Untitled', cat_id: str = None, check_exists: bool = False, *brush_ids: List[str]) -> BrushCategory:
+    def new_brush_cat(self, cat_name: str = 'Untitled', cat_id: str = None, check_exists: bool = False, brush_items: List[Brush] = []) -> BrushCategory:
         if check_exists and (tex_cat := self.get_brush_cat(cat_name)):
             return tex_cat
         brush_cat: BrushCategory = BrushCategory(cat_name, cat_id)
-        for brush_id in brush_ids:
-            brush_cat.link_item(brush_id)
+        for brush_item in brush_items:
+            brush_cat.link_item(brush_item)
         brush_cat.index = self.brush_cats_count
         self.brush_cats[brush_cat.id] = brush_cat
         self.active_brush_cat = brush_cat.id
@@ -410,12 +410,12 @@ class Manager:
         ## brush_cat.save()
         return brush_cat
 
-    def new_texture_cat(self, cat_name: str = 'Untitled', cat_id: str = None, check_exists: bool = False, *texture_ids: List[str]) -> TextureCategory:
+    def new_texture_cat(self, cat_name: str = 'Untitled', cat_id: str = None, check_exists: bool = False, texture_items: List[Texture] = []) -> TextureCategory:
         if check_exists and (tex_cat := self.get_texture_cat(cat_name)):
             return tex_cat
         texture_cat: TextureCategory = TextureCategory(cat_name, cat_id)
-        for texture_id in texture_ids:
-            texture_cat.link_item(texture_id)
+        for texture_item in texture_items:
+            texture_cat.link_item(texture_item)
         texture_cat.index = self.texture_cats_count
         self.texture_cats[texture_cat.id] = texture_cat
         self.active_texture_cat = texture_cat.id
@@ -606,6 +606,12 @@ class Manager:
         pass
         #texture = TexCatItem(texture_path)
         #self.textures[texture.id] = texture
+
+
+    def load_brushes_from_temporal_data(self) -> None:
+        ''' Load Brushes data from temporal (fake items) data. '''
+        # Get fake items data in temporal files.
+        pass
 
 
     ''' Generic methods, load and save. '''

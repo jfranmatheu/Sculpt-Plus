@@ -25,7 +25,8 @@ class CategoryItem(object):
 
         #if _save:
         #    self._save()
-        self.save_default()
+        if _save:
+            self.save_default()
 
         self.init()
 

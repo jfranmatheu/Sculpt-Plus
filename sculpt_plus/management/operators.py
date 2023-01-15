@@ -10,7 +10,7 @@ import subprocess
 import sys
 import json
 import numpy as np
-from sculpt_plus.path import ScriptPaths, SculptPlusPaths
+from sculpt_plus.path import ScriptPaths, SculptPlusPaths, DBShelf, DBShelfManager
 
 '''
 class SCULPTPLUS_OT_debug_fill_brush_categories(Operator):
@@ -174,6 +174,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         # RUN ANOTHER BLENDER INSTANCE IN BACKGROUND,
         # EXECUTE AN SCRIPT THAT SAVES THE BRUSH ICONS AND TEXTURES
         # AS THUMBNAILS OF 100X100 PX IN A KNOWN TEMPORAL FOLDER.
+        '''
         temporal_dir = SculptPlusPaths.APP__TEMP() # TemporaryDirectory(prefix="sculpt_plus_")
         args = (
             str(temporal_dir),
@@ -182,6 +183,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             #'#$#'.join(brushes) if brushes else 'NONE',
             #'#$#'.join(images) if images else 'NONE',
         )
+        '''
 
         self.process = subprocess.Popen(
             [
@@ -189,13 +191,17 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
                 abspath(self.filepath),
                 '--background',
                 '--python',
-                ScriptPaths.GENERATE_THUMBNAILS,
+                # ScriptPaths.GENERATE_THUMBNAILS,
+                ScriptPaths.EXPORT_BRUSHES_FROM_BLENDLIB
+                if self.cat_type == 'BRUSH' else
+                ScriptPaths.EXPORT_TEXTURES_FROM_DIRECTORY,
                 '--',
-                *args
+                #*args
+                str(pbar.port)
             ],
             #stdout=subprocess.PIPE,
             #stderr=subprocess.PIPE,
-            shell=False
+            shell=True
         )
 
         #print(out)
@@ -246,6 +252,25 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             print('error:', return_code)
             return 'CANCELLED'
 
+        # New SCRIPT is export_brushes_from_blendlib.py
+        # So, we'll have different input which will be a temporal database
+        # filled with all item data from the .blend lib.
+
+        # Get items from the temporal database.
+        temp_items = DBShelf.TEMPORAL.values()
+
+        if not temp_items:
+            print("ERROR! No items!")
+            return 'CANCELLED'
+
+        self.mod_asset_importer.show(
+            abspath(self.filepath),
+            type=self.cat_type,
+            data=temp_items,
+        )
+
+        return 'FINISHED'
+
         temporal_dir = SculptPlusPaths.APP__TEMP()
         temporal_dir: Path = Path(temporal_dir)
         assets_importer_json_file = temporal_dir / 'asset_importer_data.json'
@@ -260,7 +285,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             print("WARN! No loaded data!")
             return 'CANCELLED'
 
-        from sculpt_plus.sculpt_hotbar.wg_view import FakeViewItem_Texture, FakeViewItem_Brush
+        from sculpt_plus.management.types.fake_item import FakeViewItem_Brush, FakeViewItem_Texture
 
         previews_filepath = temporal_dir / 'previews.npz'
         if not previews_filepath.exists() or not previews_filepath.is_file():

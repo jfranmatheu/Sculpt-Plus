@@ -1,18 +1,20 @@
 from sculpt_plus.sculpt_hotbar.wg_container import Canvas, Vector, SCULPTPLUS_AddonPreferences, WidgetContainer, WidgetBase
-from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget, FakeViewItem_Brush, FakeViewItem_Texture, FakeViewItem
+from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
+from sculpt_plus.management.types.fake_item import FakeViewItem_Brush, FakeViewItem_Texture, FakeViewItem
 from sculpt_plus.sculpt_hotbar.wg_but import Button, ButtonGroup
 from sculpt_plus.sculpt_hotbar.wg_selector import WidgetSelector
 from sculpt_plus.management.types.image import Thumbnail
-from sculpt_plus.sculpt_hotbar.di import DiRct, DiCage, DiIma, DiIcoCol, DiIco, DiText, DiIcoOpGamHl, DiImaOpGamHl
+from sculpt_plus.sculpt_hotbar.di import DiRct, DiCage, DiIma, DiIcoCol, DiIco, DiText, DiIcoOpGamHl, DiImaOpGamHl, DiBr
 from sculpt_plus.utils.gpu import gputex_from_image_file
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import Props
+from sculpt_plus.props import Props, Brush, Texture
 from sculpt_plus.path import DBShelfManager, DBShelfPaths, ScriptPaths, SculptPlusPaths
 
 import bpy
 from typing import Union
 import subprocess
 from time import time
+from os.path import basename
 
 
 class AssetImporterModal(WidgetBase): # WidgetContainer
@@ -26,6 +28,7 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
         self.output_brushes = []
         self.output_textures = []
         self.ctx_type = 'BRUSH'
+        self.use_fake_items = False
 
         #self.add_child(AssetImporterGrid_Inputs(self.cv, (.05, .45, .05, .9)))
         #self.add_child(AssetImporterGrid_Outputs(self.cv, (.55, .95, .05, .9)))
@@ -57,9 +60,11 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
             elif move_to == 'OUTPUT':
                 self.output_textures, self.input_brushes = self.input_brushes, self.output_textures
 
-    def show(self, lib_path: str, type: str, data: Union[list[FakeViewItem_Brush], list[FakeViewItem_Texture]]) -> None:
+    def show(self, lib_path: str, type: str, data: Union[list[Brush], list[Texture], list[FakeViewItem_Brush], list[FakeViewItem_Texture]], use_fake_items: bool = False) -> None:
         if not data:
             return
+
+        self.use_fake_items = use_fake_items
 
         self.lib_path = lib_path
         self.ctx_type = type
@@ -89,6 +94,22 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
         items = self.output_brushes if self.ctx_type == 'BRUSH' else self.output_textures if self.ctx_type == 'TEXTURE' else None
         if not items:
             return
+
+        # New WORKFLOW...
+        # So, input items are real but temporal ones... not fake items anymore.
+        cat_name: str = basename(self.lib_path)
+        if self.ctx_type == 'BRUSH':
+            for item in items:
+                manager.add_brush(item)
+            manager.new_brush_cat(cat_name, brush_items=items)
+        elif self.ctx_type == 'TEXTURE':
+            for item in items:
+                manager.add_brush(item)
+            manager.new_texture_cat(cat_name, texture_items=items)
+
+        del items
+        self.close()
+        return
 
         start_time = time()
         # with DBShelfManager.TEMPORAL() as temp_db:
@@ -285,18 +306,34 @@ class AssetImporterGrid(ViewWidget, AssetImporterWidget):
         DiText(self.get_pos_by_relative_point(Vector((0, 1))) + Vector((0, 8 * scale)), self.header_label, 16, scale)
         DiRct(self.pos, self.size, Vector(prefs.theme_sidebar) * .7)
 
-    def draw_item(self, slot_p, slot_s, item: Union[FakeViewItem_Brush, FakeViewItem_Texture], is_hovered: bool, slot_color, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
+    def draw_item(self, slot_p, slot_s, item: Union[Brush, Texture, FakeViewItem_Brush, FakeViewItem_Texture], is_hovered: bool, slot_color, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pad = 4 * scale
         padding = Vector((pad, pad))
         DiRct(slot_p, slot_s, slot_color)
-        DiImaOpGamHl(slot_p + padding, slot_s - padding * 2, item.icon)
 
-        if isinstance(item, FakeViewItem_Brush) and item.texture:
-            texsize = slot_s.x * .4
-            texsize = Vector((texsize, texsize))
-            texpos = slot_p + Vector((slot_s.x - texsize.x, 0))
-            DiImaOpGamHl(texpos, texsize, item.texture.icon)
-            DiCage(texpos, texsize, 1, (.1, .1, .1, .92))
+        if isinstance(item, (FakeViewItem_Brush, FakeViewItem_Texture)):
+            DiImaOpGamHl(slot_p + padding, slot_s - padding * 2, item.icon)
+
+            if isinstance(item, FakeViewItem_Brush) and item.texture:
+                texsize = slot_s.x * .4
+                texsize = Vector((texsize, texsize))
+                texpos = slot_p + Vector((slot_s.x - texsize.x, 0))
+                DiImaOpGamHl(texpos, texsize, item.texture.icon)
+                DiCage(texpos, texsize, 1, (.1, .1, .1, .92))
+
+        elif isinstance(item, (Brush, Texture)):
+            def draw_preview_fallback(p, s, act):
+                if isinstance(item, Brush):
+                    DiBr(p, s, item.sculpt_tool, act)
+                elif isinstance(item, Texture):
+                    DiIcoCol(p, s, Icon.TEXTURE, (.92, .92, .92, .9))
+
+            item.draw_preview(
+                slot_p,
+                slot_s,
+                is_hovered,
+                fallback=draw_preview_fallback
+            )
 
         if is_hovered:
             DiRct(slot_p, slot_s, (.05, .05, .05, .82))
@@ -306,7 +343,7 @@ class AssetImporterGrid(ViewWidget, AssetImporterWidget):
             r = slot_s.x * .2
             radius = Vector((r, r))
             DiIcoOpGamHl(mid - radius, radius * 2, self.item_hover_icon, 1.5)
-            # DiIcoOpGamHl(mouse - radius, radius * 2, self.item_hover_icon, 1.0) 
+            # DiIcoOpGamHl(mouse - radius, radius * 2, self.item_hover_icon, 1.0)
 
 
 class AssetImporterGrid_Inputs(AssetImporterGrid):
