@@ -1,19 +1,15 @@
-from time import time, sleep
 from pathlib import Path
 import sys
-from uuid import uuid4
 from math import floor
-import asyncio
 from threading import Thread
-import multiprocessing
+from multiprocessing import cpu_count
 
-from bpy.types import ID as BlID, Image as BlImage, Texture as BlTexture, ImageTexture as BlImageTexture, Brush as BlBrush
 from bpy import ops as OP
 from bpy import data as D
 from bpy.path import abspath
 
-from sculpt_plus.path import SculptPlusPaths, DBShelfManager
-from sculpt_plus.props import builtin_brushes, Texture, Brush
+from sculpt_plus.path import DBShelfManager
+from sculpt_plus.props import builtin_brushes, Brush
 from sculpt_plus.core.sockets.pbar_client import PBarClient
 
 
@@ -33,12 +29,19 @@ Command arguments:
 6. Socket communication PORT.
 '''
 argv = sys.argv
-print(argv)
 PYTHON_EXEC = argv[0]
 BLENDLIB_FILEPATH = argv[1]
 THIS_SCRIPT_FILEPATH = argv[4]
 SOCKET_PORT = int(argv[6])
+USE_DEBUG = '--debug' in argv
 
+if USE_DEBUG:
+    from time import time
+    from bpy.types import Brush as BlBrush
+    print(argv)
+    start_time = time()
+else:
+    BlBrush = None
 
 ##############################################################################
 # CONSTANTS.
@@ -50,14 +53,13 @@ COMPATIBLE_IMAGE_EXTENSIONS = {'PNG', 'JPG', 'JPEG', 'TGA', 'TIFF', 'TIF', 'PSD'
 # UTIL FUNCTIONS.
 ##############################################################################
 
-def insert_custom_property(ID: BlID, name: str, value) -> None:
+def insert_custom_property(ID, name: str, value) -> None:
     ID[name] = value
 
 
 ##############################################################################
 # PROCESS...
 ##############################################################################
-start_time = time()
 
 ''' Create a client Socket to communicate the progress to the invoker process. '''
 client_progress = PBarClient(port=SOCKET_PORT)
@@ -67,7 +69,7 @@ client_progress.start()
 brushes: list[BlBrush] = [b for b in D.brushes if b.use_paint_sculpt and b.name not in builtin_brushes]
 
 ''' Generate UUIDs for every brush. '''
-{insert_custom_property(brush, 'sculpt_plus_id', uuid4().hex) for brush in brushes}
+# {insert_custom_property(brush, 'sculpt_plus_id', uuid4().hex) for brush in brushes}
 
 ''' Count will be useful to determine the interval for progress reporting.
     As well as to split brushes in several async loops for concurrent or parallel processing.'''
@@ -102,13 +104,13 @@ brush_items: list[Brush] = [
 ''' MULTI-THREADING '''
 brush_items: list[Brush] = []
 
-def new_brush_item(brush: BlBrush) -> Brush:
+def new_brush_item(bl_brush: BlBrush) -> Brush:
     client_progress.increase()
     # print("\t- Creating brush", brush.name)
     return Brush(
-        brush,
+        bl_brush,
         fake_brush=None,
-        generate_thumbnail=False,
+        #generate_thumbnail=False,
         #custom_id=brush_ids[brush.name])
     )
 
@@ -118,15 +120,16 @@ def run_thread(input_bl_brushes: list[BlBrush]):
         brush_item: Brush = new_brush_item(bl_brush)
 
         if brush_item.use_custom_icon:
+            brush_item.icon_filepath = abspath(brush_item.icon_filepath)
             icon_path: Path = Path(brush_item.icon_filepath)
-            if icon_path.exists() or not icon_path.is_file():
+            if not icon_path.exists() or not icon_path.is_file():
                 brush_item.icon_filepath = ''
                 brush_item.use_custom_icon = False
 
         brush_items.append(brush_item)
 
 min_brushes_per_thread = 10
-thread_count: int = int(multiprocessing.cpu_count() / 2)
+thread_count: int = int(cpu_count() / 2)
 if thread_count > (brush_count / min_brushes_per_thread):
     # Does not need too many threads.
     thread_count = floor(brush_count / min_brushes_per_thread)
@@ -140,7 +143,7 @@ threads = []
 
 index = 0
 for count in brushes_per_loop:
-    thread = Thread(target=run_thread, args=(brushes[index:index+count],), daemon=True)
+    thread = Thread(target=run_thread, args=(brushes[index:index+count],), daemon=False)
     index += count
 
     threads.append(thread)
@@ -160,6 +163,7 @@ with DBShelfManager.TEMPORAL(cleanup=True) as db_temp:
 
 client_progress.complete(stop=True)
 
-print("================================")
-print("[TIME] Finished in %.2f seconds" % (time() - start_time))
-print("================================")
+if USE_DEBUG:
+    print("================================")
+    print("[TIME] Finished in %.2f seconds" % (time() - start_time))
+    print("================================")

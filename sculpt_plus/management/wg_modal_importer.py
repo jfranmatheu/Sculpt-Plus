@@ -64,6 +64,26 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
         if not data:
             return
 
+        if not use_fake_items:
+            thumbnails = []
+            for item in data:
+                # Thumbnails are empty ones, so we need to fill the filepath source.
+                # We ensure that the lazy generation is disabled, to batch generate all thumbnail images at once.
+                thumbnail = item.thumbnail
+                if type == 'BRUSH':
+                    print(item.use_custom_icon, item.icon_filepath)
+                    if item.use_custom_icon and item.icon_filepath:
+                        thumbnail.set_filepath(item.icon_filepath, lazy_generate=False)
+                        thumbnails.append(thumbnail)
+                elif type == 'TEXTURE':
+                    thumbnail.set_filepath(item.image.filepath, lazy_generate=False)
+                    thumbnails.append(thumbnail)
+            print("Thumbnails:", thumbnails)
+            # thumbnails = [item.thumbnail for item in data]
+            if len(thumbnails) > 0:
+                from .thumbnailer import Thumbnailer
+                Thumbnailer.push(*thumbnails)
+
         self.use_fake_items = use_fake_items
 
         self.lib_path = lib_path

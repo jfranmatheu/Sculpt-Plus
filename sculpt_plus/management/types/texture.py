@@ -11,24 +11,26 @@ from sculpt_plus.path import DBShelf, ThumbnailPaths
 
 
 class Texture(CategoryItem):
+    bl_type = 'TEXTURE'
+
     id: str
     name: str
     image: Image
     cat_id: str
     thumbnail: Thumbnail
 
-    def __init__(self, texture: BlTexture, cat: str = '', fake_texture = None, generate_thumbnail=True):
-        super().__init__()
+    def __init__(self, texture: BlTexture, cat: str = '', fake_texture = None, custom_id: str = None): #, generate_thumbnail=False):
+        super().__init__(cat=cat, custom_id=custom_id)
 
         self.name = texture.image.name
         self.image = Image(texture.image, 'TEXTURE@' + self.id) # , generate_thumbnail=(fake_texture is None and generate_thumbnail))
         self.cat_id: str = cat
-        self.thumbnail: Thumbnail = None
+        # self.thumbnail: Thumbnail = None
 
         if fake_texture is not None:
             self.from_fake_texture(fake_texture)
-        elif generate_thumbnail:
-            self.load_icon(self.image)
+        #elif generate_thumbnail:
+        #    self.load_icon(self.image)
 
     def from_fake_texture(self, fake_texture):
         self.id = fake_texture.id

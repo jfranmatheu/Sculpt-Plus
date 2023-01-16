@@ -22,6 +22,8 @@ cache_thumbnail: Dict[str, GPUTexture] = dict()
 
 
 class Image(object):
+    bl_type = 'IMAGE'
+
     pixels: np.ndarray
     filepath: str
     id: str
@@ -246,6 +248,10 @@ class Thumbnail(Image):
     id_type: str
 
     @classmethod
+    def empty(cls, item) -> 'Thumbnail':
+        return cls(None, item.id, item.bl_type)
+
+    @classmethod
     def from_fake_item(cls, fake_item, type: str) -> 'Thumbnail':
         thumb: Thumbnail = cls(None, fake_item.id, type)
         thumb.filepath = fake_item.icon_filepath
@@ -260,15 +266,30 @@ class Thumbnail(Image):
         #if image_path:
         #    print(f"New thumbnail for {_type} with id {idname} using image from {image_path}")
         self.id_type = _type
+        self._status: str = 'NONE'
         super().__init__(image_path, _type + '@' + idname, optimize=True)
 
     @property
     def is_valid(self) -> bool:
-        return self.pixels is not None and self.filepath
+        return self.pixels is not None and self.filepath and self.status == 'READY'
+
+    @property
+    def is_loading(self) -> bool:
+        return self.status == 'LOADING'
+
+    @property
+    def status(self) -> str:
+        return self._status
+
+    @status.setter
+    def status(self, status: str):
+        self._status = status
+
+    def set_filepath(self, filepath: str, lazy_generate: bool = True) -> None:
+        self.filepath = filepath
+        if lazy_generate:
+            from ..thumbnailer import Thumbnailer
+            Thumbnailer.push(self)
 
     def draw(self, p, s, act: bool = False, opacity: float = 1) -> None:
-        if self.is_valid:
-            DiImaOpGamHl(p, s, self.get_gputex(),_op=opacity,_hl=int(act))
-        else:
-            print(f"Error drawing thumbnail for {self.id_type} with id {self.id.split('@')[1]} and filepath: {self.filepath}")
-        #DiIma(p, s, self.get_gputex())
+        DiImaOpGamHl(p, s, self.get_gputex(),_op=opacity,_hl=int(act))

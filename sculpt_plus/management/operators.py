@@ -267,6 +267,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             abspath(self.filepath),
             type=self.cat_type,
             data=temp_items,
+            use_fake_items=False
         )
 
         return 'FINISHED'

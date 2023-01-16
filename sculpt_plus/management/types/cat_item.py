@@ -5,6 +5,7 @@ from copy import deepcopy
 
 from .image import Thumbnail
 from sculpt_plus.path import DBPickle, DBShelf
+from sculpt_plus.sculpt_hotbar.di import DiText, DiRct
 
 
 class CategoryItem(object):
@@ -21,7 +22,7 @@ class CategoryItem(object):
         self.id = uuid4().hex if custom_id is None else custom_id
         self.fav = False
         self.cat_id = cat
-        self.thumbnail: Thumbnail = None
+        self.thumbnail: Thumbnail = Thumbnail.empty(self)
 
         #if _save:
         #    self._save()
@@ -67,10 +68,13 @@ class CategoryItem(object):
         pass
 
     def draw_preview(self, p, s, act: bool = False, fallback = None, opacity: float = 1) -> None:
-        if self.thumbnail:
+        if self.thumbnail and self.thumbnail.is_valid:
             self.thumbnail.draw(p, s, act, opacity=opacity)
-        elif fallback:
+        elif fallback is not None:
             fallback(p, s, act)
+            if self.thumbnail is not None and self.thumbnail.is_loading:
+                DiRct(p, s, (0, 0, 0, .5))
+                DiText(p, "Loading...", 11, 1)
 
 
 class BrushCatItem(CategoryItem):

@@ -47,6 +47,8 @@ class TextureSlot:
 
 
 class Brush(BrushCatItem, BaseBrush):
+    bl_type = 'BRUSH'
+
     id: str
     use_texture: bool
     texture_id: str
@@ -55,20 +57,16 @@ class Brush(BrushCatItem, BaseBrush):
     icon_filepath: str
     # icon_id: str -> is the same as brush.id
 
-    def __init__(self, brush: BlBrush = None, fake_brush = None, generate_thumbnail=True, custom_id: str = None):
+    def __init__(self, brush: BlBrush = None, fake_brush = None, custom_id: str = None): #, generate_thumbnail=False):
         self.texture_id = None
         super(Brush, self).__init__(custom_id=custom_id)
-        self.thumbnail: Thumbnail = None
+        # self.thumbnail: Thumbnail = None
         self.texture_slot = TextureSlot(None)
         if brush is not None:
-            ## start_time = time()
-            self.from_brush(brush, generate_thumbnail=bool(fake_brush is None and generate_thumbnail))
+            self.from_brush(brush) #, generate_thumbnail=bool(fake_brush is None and generate_thumbnail))
             # print(f"New BrushItem {self.id} from BlenderBrush {brush.name} {f'and FakeItem {fake_brush.name}' if fake_brush is not None else ''}")
-            if fake_brush:
+            if fake_brush is not None:
                 self.from_fake_brush(fake_brush)
-            ## print("\t[TIME] -> " + str(round(time() - start_time, 3)) + "s")
-        ## DBShelf.BRUSH_DEFAULTS.write(self)
-        ## DBShelf.BRUSH_SETTINGS.write(self)
 
     def load_icon(self, filepath: Union[str, Path]) -> str:
         if self.thumbnail is not None:
@@ -90,9 +88,11 @@ class Brush(BrushCatItem, BaseBrush):
         if fake_brush.use_custom_icon and fake_brush.icon:
             self.thumbnail = Thumbnail.from_fake_item(fake_brush, 'BRUSH')
 
-    def from_brush(self, brush: BlBrush, generate_thumbnail: bool = True) -> None:
+    def from_brush(self, brush: BlBrush) -> None:
         # LOAD ICON...
         update_attr = self.update_attr
+
+        '''
         if brush.use_custom_icon and generate_thumbnail:
             icon_filepath: Path = Path(brush.icon_filepath)
             if icon_filepath.exists() and icon_filepath.is_file():
@@ -106,6 +106,7 @@ class Brush(BrushCatItem, BaseBrush):
                     self.icon_filepath = brush.icon_filepath = self.load_icon(icon_filepath)
             else:
                 brush.use_custom_icon = False
+        '''
 
         for attr in brush_properties_per_sculpt_type[brush.sculpt_tool]:
             update_attr(attr, getattr(brush, attr))
