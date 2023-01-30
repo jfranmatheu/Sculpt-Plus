@@ -59,7 +59,7 @@ class Props:
     @staticmethod
     def Temporal(context: Context):# -> SCULPTPLUS_PG_wm:
         return context.window_manager.sculpt_plus
-        
+
     @classmethod
     def UI(cls, context: Context):# -> SCULPTPLUS_PG_wm:
         return cls.Temporal(context).ui
@@ -73,12 +73,28 @@ class Props:
         return texture
 
     @classmethod
-    def TextureImageSingleton(cls, context: Context) -> BlImage:
-        texture = cls.TextureSingleton(context)
-        if texture.image is None:
+    def TextureImageSingleton(cls, context: Context, use_sequence: bool = False) -> BlImage:
+        texture: BlImageTexture = cls.TextureSingleton(context)
+        image: BlImage = cls.Scene(context).image
+        if image is None:
             image: BlImage = bpy.data.images.new('...sculpt_plus_brush_tex_image', 1024, 1024)
+        if texture.image != image:
             texture.image = image
-        return texture.image
+        return image
+        if use_sequence:
+            image: BlImage = cls.Scene(context).image_seq
+        else:
+            image: BlImage = cls.Scene(context).image
+        if image is None:
+            name = '...sculpt_plus_brush_tex_image'
+            if use_sequence:
+                name += '_seq'
+            image = bpy.data.images.new(name, 1024, 1024)
+        if use_sequence:
+            image.source = 'SEQUENCE'
+        if texture.image != image:
+            texture.image = image
+        return image
 
     @staticmethod
     def BrushManager() -> Manager:# -> SCULPTPLUS_PG_brush_manager:
@@ -135,7 +151,7 @@ class Props:
     @classmethod
     def BrushCatsCount(cls) -> int:
         return cls.BrushManager().brush_cats_count
-    
+
     @classmethod
     def TextureCatsCount(cls) -> int:
         return cls.BrushManager().texture_cats_count
@@ -173,7 +189,7 @@ class Props:
     def ActiveTextureCat(cls) -> TextureCategory:# -> SCULPTPLUS_PG_brush_category:
         # return cls.BrushManager(context).active
         return cls.BrushManager().active_texture_cat
-    
+
     @classmethod
     def ActiveTextureCatIndex(cls) -> int:
         act_cat = cls.ActiveTextureCat()
@@ -235,7 +251,7 @@ class Props:
     @classmethod
     def GetBrush(cls, brush_id: str) -> Brush:
         return cls.BrushManager().get_brush(brush_id)
-    
+
     @classmethod
     def GetTexture(cls, texture_id: str) -> Texture:
         return cls.BrushManager().get_texture(texture_id)
@@ -243,7 +259,7 @@ class Props:
     @classmethod
     def GetActiveBrush(cls) -> Brush:
         return cls.GetBrush(cls.BrushManager().active_brush)
-    
+
     @classmethod
     def GetActiveTexture(cls) -> Texture:
         return cls.GetTexture(cls.BrushManager().active_texture)
@@ -257,7 +273,7 @@ class Props:
     @classmethod
     def Hotbar(cls) -> HotbarManager:
         return cls.BrushManager().hotbar
-    
+
     @classmethod
     def GetHotbarSelectedId(cls) -> Union[str, None]:
         return cls.Hotbar().selected
@@ -316,6 +332,10 @@ class Props:
         if brush.texture_id is not None:
             if texture := cls.GetTexture(brush.texture_id):
                 texture.to_brush(ctx)
+                print(texture.name, texture.image.filepath_raw)
+
+        ui_props = cls.UI(ctx)
+        ui_props.toolbar_brush_sections = 'BRUSH_SETTINGS'
 
     @classmethod
     def SetHotbarSelected(cls, ctx: Context, selected: Union[int, str, Brush]) -> None:

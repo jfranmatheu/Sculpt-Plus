@@ -71,14 +71,14 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
                 # We ensure that the lazy generation is disabled, to batch generate all thumbnail images at once.
                 thumbnail = item.thumbnail
                 if type == 'BRUSH':
-                    print(item.use_custom_icon, item.icon_filepath)
+                    # print(item.use_custom_icon, item.icon_filepath)
                     if item.use_custom_icon and item.icon_filepath:
-                        thumbnail.set_filepath(item.icon_filepath, lazy_generate=False)
+                        # thumbnail.set_filepath(item.icon_filepath, lazy_generate=False)
                         thumbnails.append(thumbnail)
                 elif type == 'TEXTURE':
                     thumbnail.set_filepath(item.image.filepath, lazy_generate=False)
                     thumbnails.append(thumbnail)
-            print("Thumbnails:", thumbnails)
+            # print("Thumbnails:", thumbnails)
             # thumbnails = [item.thumbnail for item in data]
             if len(thumbnails) > 0:
                 from .thumbnailer import Thumbnailer
@@ -117,11 +117,26 @@ class AssetImporterModal(WidgetBase): # WidgetContainer
 
         # New WORKFLOW...
         # So, input items are real but temporal ones... not fake items anymore.
-        cat_name: str = basename(self.lib_path)
+        cat_name: str = basename(self.lib_path).removesuffix('.blend')
         if self.ctx_type == 'BRUSH':
-            for item in items:
-                manager.add_brush(item)
+            texture_items: list[Texture] = []
+            items.sort(key=lambda i: i.name)
+            for brush_item in items:
+                if hasattr(brush_item, 'texture'):
+                    # Has a texture item attached!
+                    texture_items.append(brush_item.detach_texture())
+                manager.add_brush(brush_item)
+            texture_items.sort(key=lambda i: i.name)
+            for tex_item in texture_items:
+                manager.add_texture(tex_item)
             manager.new_brush_cat(cat_name, brush_items=items)
+            manager.new_texture_cat(cat_name, texture_items=texture_items)
+            from .thumbnailer import Thumbnailer
+            if len(texture_items) <= 40:
+                Thumbnailer.push(*[tex_item.thumbnail for tex_item in texture_items])
+            else:
+                Thumbnailer.push(*[tex_item.thumbnail for tex_item in texture_items[:40]])
+            del texture_items
         elif self.ctx_type == 'TEXTURE':
             for item in items:
                 manager.add_brush(item)
@@ -342,17 +357,12 @@ class AssetImporterGrid(ViewWidget, AssetImporterWidget):
                 DiCage(texpos, texsize, 1, (.1, .1, .1, .92))
 
         elif isinstance(item, (Brush, Texture)):
-            def draw_preview_fallback(p, s, act):
-                if isinstance(item, Brush):
-                    DiBr(p, s, item.sculpt_tool, act)
-                elif isinstance(item, Texture):
-                    DiIcoCol(p, s, Icon.TEXTURE, (.92, .92, .92, .9))
-
             item.draw_preview(
                 slot_p,
                 slot_s,
                 is_hovered,
-                fallback=draw_preview_fallback
+                #fallback=draw_preview_fallback
+                view_widget=self
             )
 
         if is_hovered:

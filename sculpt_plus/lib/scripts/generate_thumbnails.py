@@ -73,10 +73,10 @@ def generate_thumbnail(filename: str, in_image_path: str):
     # print("Generate thumbnail from:", image_path)
     filename = ''.join(c for c in filename if c in valid_filename_chars)
     image = Image.open(in_image_path)
-    # out_image_path = str(PREVIEWS_PATH / (filename + image.format)) # '.thumbnail'
+    # out_image_path = str(PREVIEWS_PATH / (filename + image.file_format)) # '.thumbnail'
     # if image.width > 256 or image.height > 256:
     image = image.resize(THUMBNAIL_SIZE, Image.Resampling.NEAREST) #, Image.Resampling.LANCZOS)
-    # image.save(out_image_path, image.format)
+    # image.save(out_image_path, image.file_format)
     image_size = (image.width, image.height)
     image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     thumb_pixels = np.array(image, dtype=np.float32).reshape(image.width*image.height*4) / 255

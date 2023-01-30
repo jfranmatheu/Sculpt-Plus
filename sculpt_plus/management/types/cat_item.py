@@ -1,11 +1,15 @@
 from uuid import uuid4
-from typing import List, Dict, Union
-from pathlib import Path
 from copy import deepcopy
+from colorsys import hsv_to_rgb
+
+from mathutils import Vector
 
 from .image import Thumbnail
-from sculpt_plus.path import DBPickle, DBShelf
-from sculpt_plus.sculpt_hotbar.di import DiText, DiRct
+from ..thumbnailer import Thumbnailer
+from sculpt_plus.path import DBShelf
+from sculpt_plus.lib import Icon
+from sculpt_plus.utils.math import map_value
+from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiText, DiRct, DiCage, DiBr, DiIcoOpGamHl
 
 
 class CategoryItem(object):
@@ -18,7 +22,7 @@ class CategoryItem(object):
     thumbnail: Thumbnail
 
     def __init__(self, cat=None, _save=False, custom_id: str = None):
-        super(CategoryItem, self).__init__()
+        # super(CategoryItem, self).__init__()
         self.id = uuid4().hex if custom_id is None else custom_id
         self.fav = False
         self.cat_id = cat
@@ -67,14 +71,12 @@ class CategoryItem(object):
     def save_default(self) -> None:
         pass
 
-    def draw_preview(self, p, s, act: bool = False, fallback = None, opacity: float = 1) -> None:
+    def draw_preview(self, p: Vector, s: Vector, act: bool = False, opacity: float = 1, parent_widget = None, fallback=None) -> None:
         if self.thumbnail and self.thumbnail.is_valid:
             self.thumbnail.draw(p, s, act, opacity=opacity)
         elif fallback is not None:
-            fallback(p, s, act)
-            if self.thumbnail is not None and self.thumbnail.is_loading:
-                DiRct(p, s, (0, 0, 0, .5))
-                DiText(p, "Loading...", 11, 1)
+            # error = self.thumbnail.is_error or self.thumbnail.is_unsupported
+            fallback(p, s, act, self.thumbnail)
 
 
 class BrushCatItem(CategoryItem):
@@ -89,6 +91,17 @@ class BrushCatItem(CategoryItem):
     def save_default(self) -> None:
         DBShelf.BRUSH_DEFAULTS.write(self)
 
+    def draw_preview(self, p: Vector, s: Vector, act: bool = False, opacity: float = 1, view_widget = None, fallback=None) -> None:
+        if self.thumbnail and self.thumbnail.is_valid:
+            self.thumbnail.draw(p, s, act, opacity=opacity)
+        elif fallback is not None:
+            fallback(p, s, act, opacity)
+        else:
+            DiBr(p, s, self.sculpt_tool, act)
+            if self.thumbnail.is_loading:
+                DiRct(p, s, (0, 0, 0, .5*opacity))
+                DiText(p+Vector((2, 2)), "Loading...", 12, 1, shadow_props={})
+
 
 class TextureCatItem(CategoryItem):
     type: str = 'TEXTURE'
@@ -101,3 +114,36 @@ class TextureCatItem(CategoryItem):
 
     def save_default(self) -> None:
         pass
+
+    def draw_preview(self, p: Vector, s: Vector, act: bool = False, opacity: float = 1, view_widget = None, fallback=None) -> None:
+        if self.thumbnail and self.thumbnail.is_valid:
+            self.thumbnail.draw(p, s, act, opacity)
+        elif fallback is not None:
+            # error = self.thumbnail.is_error or self.thumbnail.is_unsupported
+            fallback(p, s, act, opacity)
+        elif self.thumbnail is not None:
+            if self.thumbnail.is_unsupported:
+                #_pad = s.x *.1
+                #pad = Vector((_pad, _pad))
+                #ico_p = p + pad
+                #ico_s = s - pad * 2
+                format = self.thumbnail.file_format
+                if format == 'PSD':
+                    DiIcoOpGamHl(p, s, Icon.FILE_PSD_1, 0.8*opacity, int(act))
+                    # DiIcoCol(ico_p, ico_s, Icon.FILE_PSD_2, color)
+            else:
+                if view_widget:
+                    rel_pos = p - view_widget.view_pos
+                    x = rel_pos.x / view_widget.view_size.x
+                    y = (rel_pos.y + view_widget.scroll) / view_widget.view_size.y
+                    x = map_value(x, (0, 1), (.2, .8))
+                    color = (*hsv_to_rgb(y, x, 0.9), 0.9 * opacity)
+                else:
+                    color = (.9, .9, .9, .9*opacity)
+
+                DiIcoCol(p, s, Icon.TEXTURE_OPACITY, color)
+                if self.thumbnail.is_loading:
+                    DiRct(p, s, (0, 0, 0, .5*opacity))
+                    DiText(p+Vector((2, 2)), "Loading...", 12, 1, shadow_props={})
+                else:
+                    Thumbnailer.push(self.thumbnail)

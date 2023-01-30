@@ -63,6 +63,8 @@ def ensure_paths():
         (data_texture_dir / "cats").mkdir()
         (data_texture_dir / "previews").mkdir()
         (data_texture_dir / "images").mkdir()
+        (temp_dir / "fake_items").mkdir()
+        (temp_dir / "thumbnails").mkdir()
         if not management_config_file.exists():
             management_config_file.touch()
             with management_config_file.open('w', encoding='ascii') as file:
@@ -79,6 +81,8 @@ class SculptPlusPaths(Enum):
     SRC_LIB_IMAGES_ICONS = join(SRC_LIB_IMAGES, 'icons')
     SRC_LIB_IMAGES_BRUSHES = join(SRC_LIB_IMAGES, 'brushes')
     SRC_LIB_SCRIPTS = join(SRC_LIB, 'scripts')
+    SRC_LIB_BLEND = join(SRC_LIB, 'blend')
+    BLEND_EMPTY = join(SRC_LIB_BLEND, 'empty.blend')
 
     LIB_SHADERS = join(SRC_LIB, 'shaders')
     LIB_SHADERS_VERT = join(LIB_SHADERS, 'vert')
@@ -122,7 +126,9 @@ class ScriptPaths:
     GENERATE_THUMBNAILS = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_thumbnails.py')
     GENERATE_NPZ_FROM_BLENDLIB = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_images_n_thumbnails.py')
     EXPORT_BRUSHES_FROM_BLENDLIB = SculptPlusPaths.SRC_LIB_SCRIPTS('export_brushes_from_blendlib.py')
+    CONVERT_TEXTURES_TO_PNG_FROM_BLENDLIB = SculptPlusPaths.SRC_LIB_SCRIPTS('convert_textures_to_png_from_blendlib.py')
     EXPORT_TEXTURES_FROM_DIRECTORY = SculptPlusPaths.SRC_LIB_SCRIPTS('export_textures_from_directory.py')
+    GENERATE_NPY_FROM_IMAGE_PATHS = SculptPlusPaths.SRC_LIB_SCRIPTS('generate_npy_from_image_paths.py')
 
 
 class ThumbnailPaths:
@@ -192,6 +198,7 @@ class DBPickle(Enum):
         os.remove(path)
 
 
+
 class DBShelfPaths:
     BRUSH_SETTINGS = SculptPlusPaths.APP__DATA('brush_settings')
     BRUSH_DEFAULTS = SculptPlusPaths.APP__DATA('brush_defaults')
@@ -199,7 +206,7 @@ class DBShelfPaths:
     TEXTURE_CAT = SculptPlusPaths.APP__DATA('texture_cats')
     TEXTURES = SculptPlusPaths.APP__DATA('textures')
 
-    TEMPORAL = SculptPlusPaths.APP__TEMP('fake_items')
+    TEMPORAL = SculptPlusPaths.APP__TEMP('temporal_items')
 
 
 class DBShelf(Enum):
@@ -236,6 +243,11 @@ class DBShelf(Enum):
             for item in items:
                 item_id: str = item if isinstance(item, str) else item.id
                 del db[item_id]
+
+    def reset(self) -> None:
+        """ Remove everything from this database. """
+        db = shelve.open(self.value, flag='n')
+        db.close()
 
 
 class DBShelfManager:
@@ -296,3 +308,8 @@ class DBShelfManager:
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.db.close()
+
+    def reset(self) -> None:
+        """ Remove everything from this database. """
+        self.db.close()
+        self.db = shelve.open(self.db_path, flag='n')

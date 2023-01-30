@@ -10,7 +10,7 @@ from .generated import BaseBrush
 
 brush_properties: Dict[str, Property] = lambda : bpy.types.Brush.bl_rna.properties
 
-exclude_properties: Set[str] = {'direction'}
+exclude_properties: Set[str] = set()
 
 # ['DRAW', 'DRAW_SHARP', 'CLAY', 'CLAY_STRIPS', 'CLAY_THUMB',
 # 'LAYER', 'INFLATE', 'BLOB', 'CREASE', 'SMOOTH', 'FLATTEN',

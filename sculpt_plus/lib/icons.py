@@ -125,6 +125,9 @@ class Icon(Enum):
     TEXTURE_OPACITY = '.icons8-texture-opacity-48'
     PAINT_BRUSH = '.icons8-paint-brush-50'
 
+    FILE_PSD_1 = '.icons8-psd-1-96'
+    FILE_PSD_2 = '.icons8-psd-2-64'
+
     def __call__(self) -> Image:
         return load_image(self.value, '.png', 'icons')
 

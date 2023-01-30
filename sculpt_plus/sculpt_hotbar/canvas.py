@@ -191,7 +191,7 @@ class Canvas:
             self.refresh(ctx)
             return Return.FINISH()
         if not self.wg_on_hover:
-            if self.shelf.expand and not self.shelf.anim_pool:
+            if self.shelf.expand and not self.shelf.anim_pool and evt.type in {'LEFTMOUSE', 'RIGHTMOUSE', 'ESC'}:
                 self.shelf.expand = False
             return Return.FINISH()
         if not self.wg_on_hover.interactable:

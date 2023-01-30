@@ -9,8 +9,12 @@ from tempfile import TemporaryDirectory
 import subprocess
 import sys
 import json
+from collections import deque
 import numpy as np
 from sculpt_plus.path import ScriptPaths, SculptPlusPaths, DBShelf, DBShelfManager
+from sculpt_plus.props import Texture
+
+
 
 '''
 class SCULPTPLUS_OT_debug_fill_brush_categories(Operator):
@@ -144,12 +148,15 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         if not filepath.exists():
             return {'CANCELLED'}
 
+        self.psd_queue: list[Texture] = []
+        self.modal_context = 'SUBPROCESS'
+
         if filepath.suffix == ".blend":
             self.source_type = 'LIBRARY'
             return {self.load_blendlib(context)}
 
         elif filepath.suffix in {'.png', '.jpg', '.jpeg'}:
-            self.source_type = 'SINGLE IMAGE'
+            self.source_type = 'SINGLE_IMAGE'
             self.load_image(context)
 
         elif filepath.is_dir():
@@ -197,6 +204,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
                 ScriptPaths.EXPORT_TEXTURES_FROM_DIRECTORY,
                 '--',
                 #*args
+                #'--debug',
                 str(pbar.port)
             ],
             #stdout=subprocess.PIPE,
@@ -216,10 +224,9 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
             return {'RUNNING_MODAL'}
         res = self.pbar.run_in_modal()
         if res == 'FINISHED':
-            self.done(context)
-        elif res == 'CANCELLED': # in {'FINISHED', 'CANCELLED'}:
+            res = self.done(context)
+        if res == 'CANCELLED': # in {'FINISHED', 'CANCELLED'}:
             self.error(context)
-        # print(res)
         return {res}
 
     def on_progress_update(self, progress: float) -> None:
@@ -233,6 +240,7 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         self.cv.progress_stop()
         self.pbar.stop()
         del self.pbar
+        DBShelf.TEMPORAL.reset()
 
     def error(self, context) -> None:
         print("ERROR!")
@@ -241,8 +249,6 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
     def done(self, context) -> str:
         print("DONE")
         #abort = self.pbar.progress < 1
-
-        self.cleanup(context)
 
         #out, err = process.communicate()
         #if abort:
@@ -259,9 +265,27 @@ class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
         # Get items from the temporal database.
         temp_items = DBShelf.TEMPORAL.values()
 
+        '''
+        if self.cat_type == 'BRUSH':
+            for brush_item in temp_items:
+                if hasattr(brush_item, 'texture'):
+                    if brush_item.texture.image.file_format == 'PSD':
+                        self.psd_queue.append(brush_item.texture)
+        elif self.cat_type == 'TEXTURE':
+            for texture_item in temp_items:
+                if texture_item.image.file_format == 'PSD':
+                    self.psd_queue.append(texture_item)
+
+        if self.psd_queue:
+            from .psd_converter import PsdConverter
+            PsdConverter(abspath(self.filepath), self.psd_queue)
+        '''
+
         if not temp_items:
             print("ERROR! No items!")
             return 'CANCELLED'
+
+        self.cleanup(context)
 
         self.mod_asset_importer.show(
             abspath(self.filepath),

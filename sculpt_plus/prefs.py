@@ -96,6 +96,27 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     set_list : EnumProperty(items=get_camera_list, name="Camera List")
 
 
+    toolbar_position: EnumProperty(
+        name="Toolbar Position",
+        items=(
+            ('LEFT', 'Left', "Left, while panels will be at its right"),
+            ('RIGHT', 'Right', "Right, while panels will be at its left")
+        ),
+        default='LEFT'
+    )
+
+    toolbar_panel_mask_layout: EnumProperty(
+        name="Mask Panel Layout",
+        items=(
+            ('COMPACT', "Compact", "A simple and compact display of the different mask operations, without subpanels/sections or tabs"),
+            ('SECTIONS', "Sections", "A set of sections (box-like) for each kind of mask operation"),
+            ('TABS', "Tabs", "Only the selected tab option is visible"),
+        ),
+        default='SECTIONS'
+    )
+    # collapse_mask_panel_sections: BoolProperty(default=False, name="Collapse Mask Panel Sections", description="Turns the box sections on the Mask Panel into a tab selector\n which collapses all except the selected one")
+
+
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
@@ -103,25 +124,35 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
         if self.first_time:
             return
 
-        def section(title: str, icon: str = 'NONE', *props):
-            section = layout.column(align=True)
+        def section(title: str, icon: str = 'NONE', align=True, _layout=None, *props):
+            _layout = _layout or layout
+            section = _layout.column(align=True)
             section.box().row(align=True).label(text=title, icon=icon)
-            content = section.box().column(align=True)
+            content = section.box().column(align=align)
             for prop in props:
                 content.prop(self, prop)
             return content
 
-        general = section("General UI Settings", 'SETTINGS')
+        toolbar_settings = section("3D Viewport Toolbar Settings", 'TOOL_SETTINGS', align=False)
+        toolbar_settings.row().prop(self, 'toolbar_position', expand=True)
+        toolbar_settings.prop(self, 'toolbar_panel_mask_layout')
+
+
+        ''' SCULPT HOTBAR.... '''
+        hotbar_prefs = section('Sculpt Hotbar Preferences', 'STATUSBAR')
+        hotbar_prefs = hotbar_prefs.split(factor=0.4)
+
+        general = section("General UI Settings", 'SETTINGS', align=False, _layout=hotbar_prefs)
         # col = layout.column(align=True)
         general.prop(self, 'scale', slider=True)
         general.prop(self, 'use_smooth_scroll')
 
 
         #hotbar_styles = ('theme_hotbar', 'theme_hotbar_slot')
-        hotbar = section("Hotbar Style", 'STATUSBAR')# *hotbar_styles)
+        hotbar = section("Style", 'STATUSBAR', align=False, _layout=hotbar_prefs)# *hotbar_styles)
         #hotbar.separator()
-        hotbar.prop(self, 'margin_bottom', slider=True)
-        hotbar.prop(self, 'padding', slider=True)
+        hotbar.prop(self, 'margin_bottom', text="Bottom Margin", slider=True)
+        hotbar.prop(self, 'padding', text="Brush Icon Padding", slider=True)
 
         #shelf_styles = ('theme_shelf', 'theme_shelf_slot')
         #section("Brush-Shelf Style", 'DESKTOP', *shelf_styles)

@@ -1,4 +1,3 @@
-from math import floor
 from time import time
 from typing import Set, List, Union
 
@@ -159,22 +158,25 @@ class ShelfGrid(ViewWidget):
         return super().on_left_click(ctx, cv, m)
 
     def on_leftmouse_release(self, ctx, cv: Canvas, m: Vector) -> None:
+        # IF SELECT ON RELEASE.
         super().on_leftmouse_release(ctx, cv, m)
-        if self.type == 'TEXTURE' and self.selected_item:
-            texture: Texture = self.selected_item
-            texture.to_brush(ctx)
+        #if self.type == 'TEXTURE' and self.selected_item:
+        #    texture: Texture = self.selected_item
+        #    texture.to_brush(ctx)
         return False
 
     def on_double_click(self, ctx, cv: Canvas, m: Vector) -> None:
         if self.hovered_item is None:
             return
+        # IF SELECT ON DOUBLE CLICK.
         if self.type == 'BRUSH':
             if self.hovered_item.id in Props.GetHotbarBrushIds():
                 Props.SetHotbarSelected(ctx, self.hovered_item)
             else:
                 Props.SelectBrush(ctx, self.hovered_item)
         elif self.type == 'TEXTURE':
-            pass
+            texture: Texture = self.hovered_item
+            texture.to_brush(ctx)
 
         # Close shelf.
         cv.shelf.expand = False
@@ -257,17 +259,13 @@ class ShelfGrid(ViewWidget):
         if is_hovered:
             DiRct(slot_p, slot_s, Vector(prefs.theme_hotbar_slot)+Vector((.2, .2, .2, 0))) # (.6,.6,.6,.25))
 
-        def draw_preview_fallback(p, s, act):
-            if self.type == 'BRUSH':
-                DiBr(p, s, item.sculpt_tool, act)
-            else:
-                DiRct(p, s, Vector(prefs.theme_shelf_slot)*.8)
 
         item.draw_preview(
             slot_p,
             slot_s,
             is_hovered,
-            fallback=draw_preview_fallback
+            view_widget=self
+            # fallback=draw_preview_fallback
         )
 
         #if brush_idx_rel is not None and brush in brush_idx_rel:
@@ -674,7 +672,7 @@ class ShelfGridItemInfo(WidgetBase):
         act_texture = Props.GetActiveTexture()
         if act_texture: # act_brush and act_brush.texture_id and (act_texture := Props.GetTexture(act_brush.texture_id)):
             label = act_texture.name
-            act_texture.draw_preview(item_pos, item_size, False, fallback=draw_preview_fallback, opacity=opacity)
+            act_texture.draw_preview(item_pos, item_size, act=False, opacity=opacity)
         else:
             label = "No Texture"
             draw_preview_fallback(item_pos, item_size, False)

@@ -23,8 +23,10 @@ class TextureSlot:
     map_mode: str
     offset: list[float]
     scale: list[float]
+    angle: float
 
-    _attributes = ('map_mode', 'offset', 'scale')
+    _attributes = ('map_mode', 'mask_map_mode', 'offset', 'scale',
+        'use_rake', 'use_random', 'random_angle', 'angle')
 
     def __init__(self, texture_slot: BlTextureSlot):
         if texture_slot is not None:
@@ -67,6 +69,15 @@ class Brush(BrushCatItem, BaseBrush):
             # print(f"New BrushItem {self.id} from BlenderBrush {brush.name} {f'and FakeItem {fake_brush.name}' if fake_brush is not None else ''}")
             if fake_brush is not None:
                 self.from_fake_brush(fake_brush)
+
+    def attach_texture(self, texture: Texture):
+        self.texture = texture
+        self.texture_id = texture.id
+
+    def detach_texture(self) -> Texture:
+        tex = self.texture
+        self.texture = None
+        return tex
 
     def load_icon(self, filepath: Union[str, Path]) -> str:
         if self.thumbnail is not None:
