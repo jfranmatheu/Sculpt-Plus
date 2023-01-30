@@ -450,7 +450,7 @@ class Manager:
 
             if use_fake: fake_brush = fake_items.get(bl_brush.name, None)
 
-            brush: Brush = Brush(bl_brush, fake_brush=fake_brush, generate_thumbnail=generate_thumbnails)
+            brush: Brush = Brush(bl_brush, fake_brush=fake_brush) #, generate_thumbnail=generate_thumbnails)
             self.add_brush(brush)
             brush_cat.link_item(brush)
 
@@ -462,7 +462,7 @@ class Manager:
 
                             if fake_brush: fake_texture = fake_brush.texture
 
-                            texture: Texture = Texture(bl_texture, fake_texture=fake_texture, generate_thumbnail=generate_thumbnails) # NOTE: Marked as false to avoid waiting for infinity.)
+                            texture: Texture = Texture(bl_texture, fake_texture=fake_texture) #, generate_thumbnail=generate_thumbnails) # NOTE: Marked as false to avoid waiting for infinity.)
                             self.add_texture(texture)
                             texture_cat.link_item(texture)
 

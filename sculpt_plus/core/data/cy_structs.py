@@ -1,4 +1,4 @@
-from ctypes import POINTER, Structure, c_bool, c_char, c_char_p, c_double, c_float, c_int, c_longlong, c_wchar_p, c_short, c_byte, c_uint, sizeof, cast, byref, c_void_p
+from ctypes import POINTER, Structure, c_bool, c_char, c_char_p, c_double, c_float, c_int, c_longlong, c_wchar_p, c_short, c_byte, c_uint, sizeof, cast, byref, c_void_p, c_ubyte
 from enum import IntEnum, Enum
 
 
@@ -124,21 +124,12 @@ class Enumeration(c_uint):
 ##############################################################
 # STRUCT DEFINITIONS.
 ##############################################################
-'''
-/** integer rectangle. */
-typedef struct rcti {
-  int xmin, xmax;
-  int ymin, ymax;
-} rcti;
-
-/** float rectangle. */
-typedef struct rctf {
-  float xmin, xmax;
-  float ymin, ymax;
-} rctf;
-'''
 
 class CY_rect:
+    @property
+    def position(self):
+        return self.xmin, self.ymin
+
     @property
     def size_x(self):
         return self.xmax - self.xmin
@@ -173,32 +164,7 @@ class CY_ListBase(Structure):
         ('last', c_void_p), # POINTER(ListBase)),
     ]
 
-'''
-enum uiItemType {
-  ITEM_BUTTON,
 
-  ITEM_LAYOUT_ROW,
-  ITEM_LAYOUT_COLUMN,
-  ITEM_LAYOUT_COLUMN_FLOW,
-  ITEM_LAYOUT_ROW_FLOW,
-  ITEM_LAYOUT_GRID_FLOW,
-  ITEM_LAYOUT_BOX,
-  ITEM_LAYOUT_ABSOLUTE,
-  ITEM_LAYOUT_SPLIT,
-  ITEM_LAYOUT_OVERLAP,
-  ITEM_LAYOUT_RADIAL,
-
-  ITEM_LAYOUT_ROOT
-#if 0
-      TEMPLATE_COLUMN_FLOW,
-  TEMPLATE_SPLIT,
-  TEMPLATE_BOX,
-
-  TEMPLATE_HEADER,
-  TEMPLATE_HEADER_ID,
-#endif
-};
-'''
 class uiItemType():
     ITEM_BUTTON = 0
 
@@ -215,21 +181,7 @@ class uiItemType():
 
     ITEM_LAYOUT_ROOT = 11
 
-'''
-typedef enum eUIEmbossType {
-  UI_EMBOSS = 0,          /* use widget style for drawing */
-  UI_EMBOSS_NONE = 1,     /* Nothing, only icon and/or text */
-  UI_EMBOSS_PULLDOWN = 2, /* Pull-down menu style */
-  UI_EMBOSS_RADIAL = 3,   /* Pie Menu */
-  /**
-   * The same as #UI_EMBOSS_NONE, unless the button has
-   * a coloring status like an animation state or red alert.
-   */
-  UI_EMBOSS_NONE_OR_STATUS = 4,
 
-  UI_EMBOSS_UNDEFINED = 255, /* For layout engine, use emboss from block. */
-} eUIEmbossType;
-'''
 class uiEmbossType():
     UI_EMBOSS = 0,          # use widget style for drawing
     UI_EMBOSS_NONE = 1,     # Nothing, only icon and/or text
@@ -244,13 +196,6 @@ class uiEmbossType():
     UI_EMBOSS_UNDEFINED = 255, # For layout engine, use emboss from block.
 
 
-'''
-struct uiItem {
-  uiItem *next, *prev;
-  uiItemType type;
-  int flag;
-};
-'''
 class CY_uiItem(Structure):
     '''
     @property
@@ -278,50 +223,14 @@ class CY_uiItem(Structure):
         ('flag', c_int)
     ]
 
-'''
-struct uiButtonItem {
-  uiItem item;
-  uiBut *but;
-};
-'''
+
 class CY_uiButtonItem(Structure):
     _fields_ = [
         ('item', CY_uiItem),
         ('but', c_longlong) # POINTER(CY_uiBut))
     ]
 
-'''
-struct uiLayout {
-  uiItem item;
 
-  uiLayoutRoot *root;
-  bContextStore *context;
-  uiLayout *parent;
-  ListBase items;
-
-  char heading[UI_MAX_NAME_STR];
-
-  /** Sub layout to add child items, if not the layout itself. */
-  uiLayout *child_items_layout;
-
-  int x, y, w, h;
-  float scale[2];
-  short space;
-  bool align;
-  bool active;
-  bool active_default;
-  bool activate_init;
-  bool enabled;
-  bool redalert;
-  bool keepaspect;
-  /** For layouts inside grid-flow, they and their items shall never have a fixed maximal size. */
-  bool variable_size;
-  char alignment;
-  eUIEmbossType emboss;
-  /** for fixed width or height to avoid UI size changes */
-  float units[2];
-};
-'''
 class CY_uiLayout(Structure):
     x: int
     y: int
@@ -390,59 +299,177 @@ class CY_uiLayout(Structure):
         ('units', c_float * 2)
     ]
 
+class CY_IconTextOverlay(Structure):
+    _fields_ = [
+        ('text', c_char * 5)
+    ]
+
+class CY_PointerRNA(Structure):
+    _fields_ = [
+        ('owner_id', c_longlong),
+        ('type', c_longlong),
+        ('data', c_void_p)
+    ]
+
+class CY_uiBut(Structure):
+    @property
+    def size(self) -> tuple[int, int]:
+        return self.rect.size
+
+    @property
+    def position(self) -> tuple[int, int]:
+        return self.rect.position
+
+    _fields_ = [
+        ('next', c_longlong),
+        ('prev', c_longlong),
+        ('layout', POINTER(CY_uiLayout)),
+        ('flag', c_int),
+        ('drawflag', c_int),
+        ('type', c_int), # enum
+        ('pointype', c_int), # enum
+        ('bit', c_short),
+        ('bitnr', c_short),
+        ('retval', c_short),
+        ('strwidth', c_short),
+        ('alignnr', c_short),
+        ('ofs', c_short),
+        ('pos', c_short),
+        ('selsta', c_short),
+        ('selend', c_short),
+        ('str', c_char_p),
+        ('strdata', c_char * UI_MAX_NAME_STR),
+        ('drawstr', c_char * UI_MAX_NAME_STR),
+        ('rect', CY_rectf),
+        ('poin', c_char_p),
+        ('hardmin', c_float),
+        ('hardmax', c_float),
+        ('softmin', c_float),
+        ('softmax', c_float),
+        ('a1', c_float),
+        ('a2', c_float),
+        ('col', c_ubyte * 4),
+        ('identity_cmp_func', c_longlong), # uiButIdentityCompareFunc # its a reference to a function
+        ('func', c_longlong), # uiButHandleFunc # its a reference to a function
+        ('func_arg1', c_void_p),
+        ('func_arg2', c_void_p),
+        ('funcN', c_longlong), # uiButHandleNFunc # its a reference to a function
+        ('func_argN', c_void_p),
+        ('context', c_longlong), # bContextStore
+        ('autocomplete_func', c_longlong), # uiButCompleteFunc # ref to a func
+        ('autofunc_arg', c_void_p),
+        ('rename_func', c_longlong), # uiButHandleRenameFunc # ref to a func
+        ('rename_arg1', c_void_p),
+        ('rename_orig', c_void_p),
+        ('hold_func', c_longlong), # uiButHandleHoldFunc # ref to a func
+        ('hold_argN', c_void_p),
+        ('tip', c_char_p),
+        ('tip_func', c_longlong), # uiButToolTipFunc # ref to func
+        ('tip_arg', c_void_p),
+        ('tip_arg_free', c_longlong), # uiFreeArgFunc # ref to func
+        ('disabled_info', c_char_p),
+        ('icon', c_int), # enum BIFIconID
+        ('emboss', c_int), # enum eUIEmbossType
+        ('pie_dir', c_int), # enum RadialDirection
+        ('changed', c_bool),
+        ('unit_type', c_ubyte),
+        ('iconadd', c_short),
+        ('block_create_func', c_longlong), # uiBlockCreateFunc # ref to func
+        ('menu_create_func', c_longlong), # uiMenuCreateFunc # ref to func
+        ('menu_step_func', c_longlong), # uiMenuStepFunc # ref to func
+        ('rnapoin', CY_PointerRNA),
+        ('rnaprop', c_longlong), # CY_PropertyRNA
+        ('rnaindex', c_int),
+        ('optype', c_longlong),
+        ('opptr', c_longlong),
+        ('opcontext', c_int), # enum wmOperatorCallContext
+        ('menu_key', c_ubyte),
+        ('extra_op_icons', CY_ListBase),
+        ('dragtype', c_char),
+        ('dragflag', c_short),
+        ('dragpoin', c_longlong),
+        ('imb', c_longlong),
+        ('imb_scale', c_float),
+        ('active', c_longlong),
+        ('custom_data', c_void_p),
+        ('editstr', c_char_p),
+        ('editval', POINTER(c_double)),
+        ('editvec', c_float_p),
+        ('pushed_state_func', c_longlong), # ref to func # uiButPushedStateFunc
+        ('pushed_state_arg', c_void_p),
+        ('icon_overlay_text', CY_IconTextOverlay), # IconTextOverlay
+        ('block', c_longlong)
+    ]
+
+
+class CY_uiLayoutItemBx(Structure):
+    @property
+    def button(self) -> CY_uiBut:
+        return CY_uiBut.from_address(self.roundbox)
+
+    _fields_ = [
+        ('litem', CY_uiLayout),
+        ('roundbox', c_longlong)
+    ]
+
+
+######################################
+# GIZMOS
+
+class CY_wmGizmoGroup(Structure):
+    _fields_ = [
+        ('next', c_longlong),
+        ('prev', c_longlong),
+        ('type', c_longlong), # wmGizmoGroupType
+        ('gizmos', CY_ListBase), # wmGizmo
+        ('parent_gzmap', c_longlong),
+        ('py_instance', c_void_p),
+        ('reports', c_longlong), # ReportList
+        ('hide', c_uint * 2), # weird struct union hack
+        ('tag_remove', c_bool),
+        ('customdata', c_void_p),
+        ('customdata_free', c_void_p), # beauty: void (*customdata_free)(void *)
+        ('init_flag', c_int) # enum eWM_GizmoFlagGroupInitFlag
+    ]
+
+class CY_wmGizmoMapSelectState(Structure):
+    _fields_ = [
+        ('items', c_longlong), # **items... wmGizmo
+        ('len', c_int),
+        ('len_alloc', c_int)
+    ]
+
+class CY_GizmoMapContext(Structure):
+    _fields_ = [
+        ('highlight', c_longlong), # wmGizmo
+        ('modal', c_longlong), # wmGizmo
+        ('select', CY_wmGizmoMapSelectState), # wmGizmoMapSelectState
+        ('event_xy', c_int * 2),
+        ('event_grabcursor', c_short),
+        ('last_cursor', c_int)
+    ]
+
+class CY_wmGizmoMap(Structure):
+    @property
+    def context(self) -> CY_GizmoMapContext:
+        return self.gzmap_context
+
+    @property
+    def group(self) -> CY_wmGizmoGroup:
+        return self.groups
+
+    _fields_ = [
+        ('type', c_int),
+        ('groups', CY_ListBase), # wmGizmoGroup
+        ('update_flag', c_char * 2),
+        ('is_init', c_bool),
+        ('tag_remove_group', c_bool),
+        ('gzmap_context', CY_GizmoMapContext)
+    ]
+
+
 ######################################
 # AREGION
-
-'''
-/** View 2D data - stored per region. */
-typedef struct View2D {
-  /** Tot - area that data can be drawn in; cur - region of tot that is visible in viewport. */
-  rctf tot, cur;
-  /** Vert - vertical scroll-bar region; hor - horizontal scroll-bar region. */
-  rcti vert, hor;
-  /** Mask - region (in screen-space) within which 'cur' can be viewed. */
-  rcti mask;
-
-  /** Min/max sizes of 'cur' rect (only when keepzoom not set). */
-  float min[2], max[2];
-  /** Allowable zoom factor range (only when (keepzoom & V2D_LIMITZOOM)) is set. */
-  float minzoom, maxzoom;
-
-  /** Scroll - scroll-bars to display (bit-flag). */
-  short scroll;
-  /** Scroll_ui - temp settings used for UI drawing of scrollers. */
-  short scroll_ui;
-
-  /** Keeptot - 'cur' rect cannot move outside the 'tot' rect? */
-  short keeptot;
-  /** Keepzoom - axes that zooming cannot occur on, and also clamp within zoom-limits. */
-  short keepzoom;
-  /** Keepofs - axes that translation is not allowed to occur on. */
-  short keepofs;
-
-  /** Settings. */
-  short flag;
-  /** Alignment of content in totrect. */
-  short align;
-
-  /** Storage of current winx/winy values, set in UI_view2d_size_update. */
-  short winx, winy;
-  /** Storage of previous winx/winy values encountered by UI_view2d_curRect_validate(),
-   * for keepaspect. */
-  short oldwinx, oldwiny;
-
-  /** Pivot point for transforms (rotate and scale). */
-  short around;
-
-  /* Usually set externally (as in, not in view2d files). */
-  /** Alpha of vertical and horizontal scroll-bars (range is [0, 255]). */
-  char alpha_vert, alpha_hor;
-  char _pad[6];
-
-  /* animated smooth view */
-  struct SmoothView2DStore *sms;
-  struct wmTimer *smooth_timer;
-} View2D;'''
 
 class CY_SmoothView2DStore(Structure):
     _fields_ = [
@@ -482,25 +509,6 @@ class CY_View2D(Structure):
     ]
 
 
-'''
-typedef struct ARegion_Runtime {
-  /* Panel category to use between 'layout' and 'draw'. */
-  const char *category;
-
-  /**
-   * The visible part of the region, use with region overlap not to draw
-   * on top of the overlapping regions.
-   *
-   * Lazy initialize, zero'd when unset, relative to #ARegion.winrct x/y min. */
-  rcti visible_rect;
-
-  /* The offset needed to not overlap with window scroll-bars. Only used by HUD regions for now. */
-  int offset_x, offset_y;
-
-  /* Maps uiBlock->name to uiBlock for faster lookups. */
-  struct GHash *block_name_map;
-} ARegion_Runtime;
-'''
 class CY_ARegion_Runtime(Structure):
     _fields_ = [
         ('category', c_char_p),
@@ -510,75 +518,6 @@ class CY_ARegion_Runtime(Structure):
         ('block_name_map', c_longlong) # POINTER(GHash)
     ]
 
-
-'''
-typedef struct ARegion {
-  struct ARegion *next, *prev;
-
-  /** 2D-View scrolling/zoom info (most regions are 2d anyways). */
-  View2D v2d;
-  /** Coordinates of region. */
-  rcti winrct;
-  /** Runtime for partial redraw, same or smaller than winrct. */
-  rcti drawrct;
-  /** Size. */
-  short winx, winy;
-
-  /** Region is currently visible on screen. */
-  short visible;
-  /** Window, header, etc. identifier for drawing. */
-  short regiontype;
-  /** How it should split. */
-  short alignment;
-  /** Hide, .... */
-  short flag;
-
-  /** Current split size in unscaled pixels (if zero it uses regiontype).
-   * To convert to pixels use: `UI_DPI_FAC * region->sizex + 0.5f`.
-   * However to get the current region size, you should usually use winx/winy from above, not this!
-   */
-  short sizex, sizey;
-
-  /** Private, cached notifier events. */
-  short do_draw;
-  /** Private, cached notifier events. */
-  short do_draw_paintcursor;
-  /** Private, set for indicate drawing overlapped. */
-  short overlap;
-  /** Temporary copy of flag settings for clean full-screen. */
-  short flagfullscreen;
-
-  /** Callbacks for this region type. */
-  struct ARegionType *type;
-
-  /** #uiBlock. */
-  ListBase uiblocks;
-  /** Panel. */
-  ListBase panels;
-  /** Stack of panel categories. */
-  ListBase panels_category_active;
-  /** #uiList. */
-  ListBase ui_lists;
-  /** #uiPreview. */
-  ListBase ui_previews;
-  /** #wmEventHandler. */
-  ListBase handlers;
-  /** Panel categories runtime. */
-  ListBase panels_category;
-
-  /** Gizmo-map of this region. */
-  struct wmGizmoMap *gizmo_map;
-  /** Blend in/out. */
-  struct wmTimer *regiontimer;
-  struct wmDrawBuffer *draw_buffer;
-
-  /** Use this string to draw info. */
-  char *headerstr;
-  /** XXX 2.50, need spacedata equivalent? */
-  void *regiondata;
-
-  ARegion_Runtime runtime;
-} ARegion;'''
 
 class CY_ARegion(Structure):
     @property
@@ -646,11 +585,17 @@ class CY_ARegion(Structure):
 class CyBlStruct(Enum):
     _UI_ITEM = CY_uiItem
     _UI_LAYOUT = CY_uiLayout
+    _UI_LAYOUT_BOX = CY_uiLayoutItemBx
+
     _UI_REGION = CY_ARegion
 
     @classmethod
     def UI_LAYOUT(cls, bl_struct) -> CY_uiLayout:
         return cls._UI_LAYOUT(bl_struct)
+
+    @classmethod
+    def UI_LAYOUT_BOX(cls, bl_struct) -> CY_uiLayoutItemBx:
+        return cls._UI_LAYOUT_BOX(bl_struct)
 
     @classmethod
     def UI_ITEM(cls, bl_struct) -> CY_uiItem:

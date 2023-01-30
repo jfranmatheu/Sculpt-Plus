@@ -43,6 +43,14 @@ def get_toolbar_sculpt_sections_items(self, context):
         ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 3)
     )
 
+
+def get_toolbar_maskfacesets_sections_items(self, context):
+    return (
+        ('MASK', 'Mask', "Mask Settings", 'MOD_MASK', 0),
+        ('FACESETS', 'Face Sets', "Face Sets", Previews.FaceSets.FACE_SETS(), 1) # 'FACE_MAPS'
+    )
+
+
 class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
     show_brush_settings: BoolProperty(default=True)
     show_brush_settings_advanced: BoolProperty(default=False)
@@ -54,6 +62,9 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
     show_mask_facesets_panel: BoolProperty(default=True, name="Show Mask/Face Sets Panel")
     show_sculpt_mesh_panel: BoolProperty(default=True, name="Show Sculpt Mesh Panel")
 
+    show_facesets_panel_initialize_section: BoolProperty(default=False, name="Show Initialize FaceSets Options")
+    show_facesets_panel_createfrom_section: BoolProperty(default=True, name="Show Create FaceSets From Options")
+
     toolbar_brush_sections: EnumProperty(
         name="Section",
         #description="Brush Settings Sections",
@@ -63,11 +74,8 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
     toolbar_maskfacesets_sections: EnumProperty(
         name="Section",
         #description="Brush Settings Sections",
-        items=(
-            ('MASK', 'Mask', "Mask Settings", 'MOD_MASK', 0),
-            ('FACESETS', 'Face Sets', "Face Sets", Previews.FaceSets.FACE_SETS(), 1) # 'FACE_MAPS'
-        ),
-        default='MASK'
+        items=get_toolbar_maskfacesets_sections_items,
+        #default='MASK'
     )
 
     toolbar_sculpt_sections: EnumProperty(
@@ -80,7 +88,7 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
         name="Mask Tabs",
         items=(
             ('MASK_EXPAND', "Expand", "Mask Expand Operators"),
-            ('MASK_EFFECTS', "Effects", "Mask Effect Operators"),
+            ('MASK_EFFECTS', "Generator", "Mask Effect/Generator Operators"),
             ('MASK_FILTERS', "Filters", "Mask Filter Operators"),
             ('MASK_TO_MESH', "To Mesh", "Mask To Mesh Operators"),
         ),

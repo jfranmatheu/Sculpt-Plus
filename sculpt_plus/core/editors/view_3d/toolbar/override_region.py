@@ -226,8 +226,8 @@ def draw_toolbar(self, context):
     # TOOLBAR.
     toolbar = col_1.column(align=True)
     draw_cls(VIEW3D_PT_tools_active, toolbar, context, spacing=1.0) # row, context, detect_layout=False, default_layout='ROW', scale_y=1.35
-    cy_toolbar = CyBlStruct.UI_LAYOUT(toolbar)
-    print(cy_toolbar.x, cy_toolbar.y, cy_toolbar.w, cy_toolbar.h)
+    #cy_toolbar = CyBlStruct.UI_LAYOUT(toolbar)
+    #print(cy_toolbar.x, cy_toolbar.y, cy_toolbar.w, cy_toolbar.h)
 
     if tool_active is None:
         return

@@ -374,4 +374,5 @@ class SCULPTPLUS_OT_cleanup_data(Operator):
         rmtree(app_dir)
         ensure_paths()
         Props.BrushManagerDestroy()
+        Props.BrushManager().load_default_brushes()
         return {'FINISHED'}

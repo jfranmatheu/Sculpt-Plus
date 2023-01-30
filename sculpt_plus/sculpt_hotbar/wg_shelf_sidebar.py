@@ -125,7 +125,7 @@ class ShelfSidebar(VerticalViewWidget):
         DiCage(slot_p, slot_s, 2, color)
         pad = 5 * scale
 
-        def draw_preview_fallback(p, s, act):
+        def draw_preview_fallback(p, s, act: bool):
             # DiRct(p, s, Vector(prefs.theme_shelf_slot)*.8)
             DiIcoCol(p, s, Icon.PENCIL_CASE_1 if self.type == 'BRUSH' else Icon.TEXTURE_SMALL, (.9, .9, .9, .92))
 

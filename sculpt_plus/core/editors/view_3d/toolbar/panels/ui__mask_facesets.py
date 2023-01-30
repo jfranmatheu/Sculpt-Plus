@@ -121,7 +121,7 @@ def draw_mask(layout: UILayout, context):
 
         _draw_mask_filters(_compact_section("Mask Filters"), only_icons=False)
         _draw_mask_expand(_compact_section("Mask Expand", header_inject=_draw_expand_toggles), keep_previous_mask, invert_mask, align=True)
-        _draw_mask_effects(_compact_section("Mask Effects"), align=True)
+        _draw_mask_effects(_compact_section("Mask Generator"), align=True)
         _draw_mask_to_mesh(_compact_section("Mask to Mesh"), align=True)
 
         return
@@ -156,7 +156,7 @@ def draw_mask(layout: UILayout, context):
         mask_mods_col = sections_col.column(align=True)
         header = mask_mods_col.box()
         header.scale_y = 0.8
-        header.label(text="M a s k   E f f e c t s :")
+        header.label(text="M a s k   G e n e r a t o r :")
         mask_mods_col = mask_mods_col.column(align=True)
         mask_mods_col.scale_y = 1.25
         _draw_mask_effects(mask_mods_col.column(align=True), align=True)
@@ -210,8 +210,67 @@ def draw_mask(layout: UILayout, context):
 
 
 def draw_facesets(layout: UILayout, context):
-    pass
+    ui_props = Props.UI(context)
 
+    #split = layout.split(align=True, factor=0.25)
+    #split.prop_tabs_enum(ui_props, 'mask_panel_tabs', icon_only=True)
+    #layout = split.column()
+
+    def _sub(title: str, toggle_prop: str = None, columns: int = 2, align: bool = True, use_content_box: bool = False, scale_y=1.25):
+        sub = layout.column(align=True)
+        header = sub.box()
+        header.scale_y = 0.8
+        if toggle_prop is None:
+            header.label(text=title)
+        else:
+            header = header.row(align=True)
+            header.alignment = 'LEFT'
+            toggle_value = getattr(ui_props, toggle_prop)
+            header.prop(ui_props, toggle_prop, text=title, icon='TRIA_DOWN' if toggle_value else 'TRIA_RIGHT', emboss=False)
+            if not toggle_value:
+                return header, None
+        if use_content_box:
+            sub = sub.box()
+        if columns is not None:
+            content = sub.grid_flow(align=align, columns=columns, even_columns=True, even_rows=True, row_major=True)
+        else:
+            content = sub
+        content.scale_y = scale_y
+        return header, content
+
+    layout.operator('sculpt.face_sets_randomize_colors', text="Random Colors")
+
+    header, content = _sub("T o o l s :", align=True, use_content_box=False, columns=2)
+    content.operator('sculpt_plus.select_tool__face_set_edit', text="Grow", icon_value=Previews.FaceSets.GROW()).mode='GROW'
+    content.operator('sculpt_plus.select_tool__face_set_edit', text="Shrink", icon_value=Previews.FaceSets.SHRINK()).mode='SHRINK'
+
+    header, content = _sub("V i s i b i l i t y :", align=True, use_content_box=False, columns=2)
+    content.operator('sculpt.reveal_all', text='Reveal All', icon='HIDE_OFF')
+    content.operator('sculpt.face_set_change_visibility', text='Invert', icon='HOLDOUT_ON').mode='INVERT'
+
+    header, content = _sub("C r e a t e   F a c e  S e t   f r o m ...", toggle_prop='show_facesets_panel_createfrom_section')
+    if content:
+        content.operator('sculpt.face_sets_create', text="Mask", icon='MOD_MASK').mode='MASKED'
+        content.operator('sculpt.face_sets_create', text="Visible", icon='HIDE_OFF').mode='VISIBLE'
+        content.operator('sculpt.face_sets_create', text="EditMode Selection", icon='RESTRICT_SELECT_OFF').mode='SELECTION'
+    # box = content.box()
+
+    header, content = _sub("I n i t i a l i z e   F a c e  S e t s   B y ...", toggle_prop='show_facesets_panel_initialize_section', columns=2, scale_y=1)
+    if content:
+        content.operator('sculpt.face_sets_init', text="Loose Parts", icon='GP_CAPS_FLAT').mode='LOOSE_PARTS'
+        content.operator('sculpt.face_sets_init', text="Materials", icon='MATERIAL').mode='MATERIALS'
+        content.operator('sculpt.face_sets_init', text="Normals", icon='ORIENTATION_NORMAL').mode='NORMALS'
+        #-
+        content.operator('sculpt.face_sets_init', text="FaceSet Boundaries", icon='CLIPUV_DEHLT').mode='FACE_SET_BOUNDARIES'
+        content.operator('sculpt.face_sets_init', text="Face Maps", icon='FACE_MAPS').mode='FACE_MAPS'
+        content.operator('sculpt.face_sets_init', text="UV Seams", icon='UV').mode='UV_SEAMS'
+        #-
+        content.operator('sculpt.face_sets_init', text="Edge Creases", icon='BRUSH_CREASE').mode='CREASES'
+        content.operator('sculpt.face_sets_init', text="Bevel Weight", icon='MOD_VERTEX_WEIGHT').mode='BEVEL_WEIGHT'
+        content.operator('sculpt.face_sets_init', text="Sharp Edges", icon='SHARPCURVE').mode='SHARP_EDGES'
+
+    header, content = _sub("F a c e  S e t   t o   M e s h :", columns=2)
+    content.operator('mesh.face_set_extract', text="Extract")
 
 
 def draw_mask_facesets(layout: UILayout, context):
@@ -224,7 +283,11 @@ def draw_mask_facesets(layout: UILayout, context):
     header_icon: int = UILayout.enum_item_icon(ui, 'toolbar_maskfacesets_sections', active_section)
 
     panel = layout.column(align=True)
-    header = panel.box().row(align=True)
+    header = panel.box()
+    # cy_box = CyBlStruct.UI_LAYOUT_BOX(header)
+    # print(tuple(cy_box.button.col))
+    # cy_box.button.col = (0, 100, 255, 255)
+    header = header.row(align=True)
     header.scale_y = 1.5
     _header = header.row(align=True)
     _header.scale_y = .5
@@ -242,7 +305,7 @@ def draw_mask_facesets(layout: UILayout, context):
     selector = panel.row(align=True)
     selector.prop(ui_props, 'toolbar_maskfacesets_sections', text="Mask", expand=True)
     selector.scale_y = 1.4
-    selector.ui_units_y = 2
+    # selector.ui_units_y = 2
 
     '''
     cy_layout = CyBlStruct.UI_LAYOUT(selector)

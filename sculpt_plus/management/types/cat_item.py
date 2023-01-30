@@ -76,7 +76,7 @@ class CategoryItem(object):
             self.thumbnail.draw(p, s, act, opacity=opacity)
         elif fallback is not None:
             # error = self.thumbnail.is_error or self.thumbnail.is_unsupported
-            fallback(p, s, act, self.thumbnail)
+            fallback(p, s, act, opacity) # self.thumbnail)
 
 
 class BrushCatItem(CategoryItem):
@@ -101,6 +101,8 @@ class BrushCatItem(CategoryItem):
             if self.thumbnail.is_loading:
                 DiRct(p, s, (0, 0, 0, .5*opacity))
                 DiText(p+Vector((2, 2)), "Loading...", 12, 1, shadow_props={})
+            elif self.use_custom_icon and self.icon_filepath:
+                Thumbnailer.push(self.thumbnail)
 
 
 class TextureCatItem(CategoryItem):

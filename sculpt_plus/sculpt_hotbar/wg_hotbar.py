@@ -219,8 +219,8 @@ class Hotbar(WidgetBase):
         self._press_time = None
 
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        def draw_preview_fallback(p, s, act) -> None:
-            DiBr(p, s, b.sculpt_tool, act)
+        def draw_preview_fallback(p, s, act: bool, opacity: float) -> None:
+            DiBr(p, s, b.sculpt_tool, act, opacity)
 
         p = self.pos.copy()
         s = self.size.copy()

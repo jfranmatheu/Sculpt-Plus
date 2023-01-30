@@ -640,7 +640,7 @@ class ShelfGridItemInfo(WidgetBase):
         item_pos += Vector((pad, -pad))
 
         # DRAW BRUSH PREVIEW.
-        def draw_preview_fallback(p, s, act):
+        def draw_preview_fallback(p, s, act: bool, opacity: float):
             DiBr(p, s, act_brush.sculpt_tool, act, opacity)
 
         if act_brush:
@@ -665,7 +665,7 @@ class ShelfGridItemInfo(WidgetBase):
         # DRAW TEXTURE PREVIEW.
         item_pos -= Vector((0, item_height + mar * 2))
 
-        def draw_preview_fallback(p, s, act):
+        def draw_preview_fallback(p, s, act: bool, opacity: float):
             DiIcoOpGamHl(p, s, Icon.TEXTURE, opacity)
 
         # item_pos = inner_pos

@@ -16,6 +16,7 @@ from sculpt_plus.utils import gpu as gpu_utils
 from sculpt_plus.path import SculptPlusPaths, ThumbnailPaths
 from sculpt_plus.sculpt_hotbar.di import DiImaOpGamHl
 from sculpt_plus.utils.toast import Notify
+from sculpt_plus.utils.gpu import gputex_from_image_file
 
 
 thumb_image_size = (100, 100) # (128, 128)
@@ -213,12 +214,13 @@ class Image(object):
     def load_image(self, input_image: Union[BlImage, str]):
         ''' Load the image. '''
         # print("input:", input_image)
-        if input_image is None:
+        if not input_image:
             print("WARN! Thumbnail::load_image : BlImage or image filepath is null")
             return None
 
         if self.use_optimize:
-            type, id = self.id.split('@')
+            type = self.id_type
+            id = self.id #.split('@')
             if type == 'BRUSH':
                 out_filepath: Path = ThumbnailPaths.BRUSH(id)
             elif type == 'CAT_BRUSH':
@@ -341,11 +343,15 @@ class Image(object):
         if self.use_optimize:
             gputex: GPUTexture = cache_thumbnail.get(self.id, None)
         else:
+            return
             gputex: GPUTexture = cache_tex.get(self.id, None)
         if gputex is not None:
             return gputex
         if self.pixels is None:
-            self.load_image(self.filepath)
+            # self.load_image(self.filepath)
+            if self.filepath:
+                gputex, pixels = gputex_from_image_file(self.filepath, self.image_size, self.id, get_pixels=True)
+                self.pixels = pixels
             return None
         if len(self.pixels) != self.px_size:
             print(f"WARN! Image '{self.id}' at path '{self.filepath}' with invalid pixel size {len(self.pixels)}/{self.px_size}")
