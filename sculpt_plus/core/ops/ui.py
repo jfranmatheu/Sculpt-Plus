@@ -24,12 +24,15 @@ class SCULPTPLUS_OT_expand_toolbar(Operator):
         self.region = region
         self.space_data = context.space_data
         self.cy_region = CyBlStruct.UI_REGION(region)
+        prefs = context.preferences
+        ui_scale = prefs.system.ui_scale
         if not self.use_smooth:
-            self.set_width(320)
+            self.set_width(320*ui_scale)
             del self.cy_region
             return {'FINISHED'}
         self.width = self.cy_region.winx
         #self.velocity = 2
+        self.target_width = 320 * ui_scale
         # self.inc_width = 1 / ((320-self.width) * 0.01) # 10 steps to reach 320
         self.anim_time = .32
         self.start_time = time()
@@ -51,12 +54,12 @@ class SCULPTPLUS_OT_expand_toolbar(Operator):
         return {'PASS_THROUGH'}
 
     def increment_width(self) -> bool:
-        width = map_value(time()-self.start_time, (0, self.anim_time), (0, 1)) * 320
-        if width >= 320:
-            width = 320
+        width = map_value(time()-self.start_time, (0, self.anim_time), (0, 1)) * self.target_width
+        if width >= self.target_width:
+            width = self.target_width
         self.width = width
         self.set_width(int(width))
-        if width == 320:
+        if width == self.target_width:
             return True
         return False
 

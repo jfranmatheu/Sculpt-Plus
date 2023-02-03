@@ -1,5 +1,5 @@
 from bpy.types import PropertyGroup
-from bpy.props import PointerProperty, BoolProperty, EnumProperty
+from bpy.props import PointerProperty, BoolProperty, EnumProperty, FloatVectorProperty
 
 from sculpt_plus.previews import Previews
 
@@ -23,7 +23,7 @@ def get_toolbar_brush_sections_items(self, context):
 def get_toolbar_sculpt_sections_items(self, context):
     if context.sculpt_object.use_dynamic_topology_sculpting:
         return (
-            ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 2),
+            ('DYNTOPO', "Dyntopo", "Dyntopo", 'MESH_ICOSPHERE', 2),
         )
     ob = context.sculpt_object
     md = None
@@ -33,21 +33,21 @@ def get_toolbar_sculpt_sections_items(self, context):
             break
     if md is not None and md.total_levels > 0:
         return (
-            ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 3),
+            ('MULTIRES', "Multires", "Multires", 'MOD_MULTIRES', 3),
         )
 
     return (
-        ('VOXEL_REMESH', "Voxel Remesh", "Voxel Remesh Options", 'FILE_VOLUME', 0),
-        ('QUAD_REMESH', "Quad Remesh", "Quad Remesh Options", 'MOD_REMESH', 1),
-        ('DYNTOPO', "Dyntopo", "Dyntopo Options", 'MESH_ICOSPHERE', 2),
-        ('MULTIRES', "Multires", "Multires Options", 'MOD_MULTIRES', 3)
+        ('VOXEL_REMESH', "Voxel Remesh", "Voxel Remesh", 'FILE_VOLUME', 0),
+        ('QUAD_REMESH', "Quad Remesh", "Quad Remesh", 'MOD_REMESH', 1),
+        ('DYNTOPO', "Dyntopo", "Dyntopo", 'MESH_ICOSPHERE', 2),
+        ('MULTIRES', "Multires", "Multires", 'MOD_MULTIRES', 3)
     )
 
 
 def get_toolbar_maskfacesets_sections_items(self, context):
     return (
-        ('MASK', 'Mask', "Mask Settings", 'MOD_MASK', 0),
-        ('FACESETS', 'Face Sets', "Face Sets", Previews.FaceSets.FACE_SETS(), 1) # 'FACE_MAPS'
+        ('MASK', 'Mask', "Mask Options", 'MOD_MASK', 0),
+        ('FACESETS', 'Face Sets', "Face Sets Options", Previews.FaceSets.FACE_SETS(), 1) # 'FACE_MAPS'
     )
 
 
@@ -94,3 +94,8 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
         ),
         default='MASK_FILTERS'
     )
+
+    color_toolbar_panel_tool: FloatVectorProperty(default=(226/255, 29/255, 106/255), size=3, subtype='COLOR')
+    color_toolbar_panel_maskfacesets: FloatVectorProperty(default=(130/255, 211/255, 60/255), size=3, subtype='COLOR')
+    color_toolbar_panel_sculptmesh: FloatVectorProperty(default=(30/255, 203/255, 225/255), size=3, subtype='COLOR')
+    color_toolbar_panel_emboss_bottom: FloatVectorProperty(default=(.0, .0, .0, 1.0), size=4, subtype='COLOR', name="", description="")

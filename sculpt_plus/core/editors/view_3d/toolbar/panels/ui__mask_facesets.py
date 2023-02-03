@@ -211,19 +211,22 @@ def draw_mask(layout: UILayout, context):
 
 def draw_facesets(layout: UILayout, context):
     ui_props = Props.UI(context)
+    scene_props = Props.Scene(context)
+    use_front_faces_only = scene_props.facesets_op_use_front_faces_only
 
     #split = layout.split(align=True, factor=0.25)
     #split.prop_tabs_enum(ui_props, 'mask_panel_tabs', icon_only=True)
-    #layout = split.column()
+    layout = layout.column()
 
-    def _sub(title: str, toggle_prop: str = None, columns: int = 2, align: bool = True, use_content_box: bool = False, scale_y=1.25):
+    def _sub(title: str, icon: str ='NONE', toggle_prop: str = None, columns: int = 2, align: bool = True, use_content_box: bool = False, scale_y=1.25):
+        layout.separator(factor=0.4)
         sub = layout.column(align=True)
-        header = sub.box()
+        header = sub.box().row(align=True)
         header.scale_y = 0.8
         if toggle_prop is None:
-            header.label(text=title)
+            header.label(text=title, icon=icon)
         else:
-            header = header.row(align=True)
+            #header = header.row(align=True)
             header.alignment = 'LEFT'
             toggle_value = getattr(ui_props, toggle_prop)
             header.prop(ui_props, toggle_prop, text=title, icon='TRIA_DOWN' if toggle_value else 'TRIA_RIGHT', emboss=False)
@@ -239,23 +242,29 @@ def draw_facesets(layout: UILayout, context):
         return header, content
 
     layout.operator('sculpt.face_sets_randomize_colors', text="Random Colors")
+    layout.separator(factor=0.5)
 
-    header, content = _sub("T o o l s :", align=True, use_content_box=False, columns=2)
+    header, content = _sub("T o o l s :", icon='TOOL_SETTINGS', align=True, use_content_box=False, columns=2, )
+    toggles = header.row(align=True)
+    toggles.scale_x = 1.2
+    toggles.prop(scene_props, 'facesets_op_use_front_faces_only', text='', icon_value=Previews.Main.FRONT_FACES())
     content.operator('sculpt_plus.select_tool__face_set_edit', text="Grow", icon_value=Previews.FaceSets.GROW()).mode='GROW'
     content.operator('sculpt_plus.select_tool__face_set_edit', text="Shrink", icon_value=Previews.FaceSets.SHRINK()).mode='SHRINK'
+    content.operator('sculpt.face_set_box_gesture', text="Box Tool", icon_value=Previews.FaceSets.BOX()).use_front_faces_only = use_front_faces_only
+    content.operator('sculpt.face_set_lasso_gesture', text="Lasso Tool", icon_value=Previews.FaceSets.LASSO()).use_front_faces_only = use_front_faces_only
 
-    header, content = _sub("V i s i b i l i t y :", align=True, use_content_box=False, columns=2)
+    header, content = _sub("V i s i b i l i t y :", icon='CAMERA_STEREO', align=True, use_content_box=False, columns=2)
     content.operator('sculpt.reveal_all', text='Reveal All', icon='HIDE_OFF')
     content.operator('sculpt.face_set_change_visibility', text='Invert', icon='HOLDOUT_ON').mode='INVERT'
 
-    header, content = _sub("C r e a t e   F a c e  S e t   f r o m ...", toggle_prop='show_facesets_panel_createfrom_section')
+    header, content = _sub("C r e a t e   F a c e - S e t   f r o m ...", toggle_prop='show_facesets_panel_createfrom_section')
     if content:
         content.operator('sculpt.face_sets_create', text="Mask", icon='MOD_MASK').mode='MASKED'
         content.operator('sculpt.face_sets_create', text="Visible", icon='HIDE_OFF').mode='VISIBLE'
         content.operator('sculpt.face_sets_create', text="EditMode Selection", icon='RESTRICT_SELECT_OFF').mode='SELECTION'
     # box = content.box()
 
-    header, content = _sub("I n i t i a l i z e   F a c e  S e t s   B y ...", toggle_prop='show_facesets_panel_initialize_section', columns=2, scale_y=1)
+    header, content = _sub("I n i t   F a c e - S e t s   B y ...", toggle_prop='show_facesets_panel_initialize_section', columns=2, scale_y=1)
     if content:
         content.operator('sculpt.face_sets_init', text="Loose Parts", icon='GP_CAPS_FLAT').mode='LOOSE_PARTS'
         content.operator('sculpt.face_sets_init', text="Materials", icon='MATERIAL').mode='MATERIALS'
@@ -269,8 +278,8 @@ def draw_facesets(layout: UILayout, context):
         content.operator('sculpt.face_sets_init', text="Bevel Weight", icon='MOD_VERTEX_WEIGHT').mode='BEVEL_WEIGHT'
         content.operator('sculpt.face_sets_init', text="Sharp Edges", icon='SHARPCURVE').mode='SHARP_EDGES'
 
-    header, content = _sub("F a c e  S e t   t o   M e s h :", columns=2)
-    content.operator('mesh.face_set_extract', text="Extract")
+    header, content = _sub("F a c e  S e t   t o   M e s h :", icon='MESH_GRID', columns=2)
+    content.operator('mesh.face_set_extract', text="Extract", icon_value=Previews.Mask.EXTRACT())
 
 
 def draw_mask_facesets(layout: UILayout, context):
@@ -296,7 +305,7 @@ def draw_mask_facesets(layout: UILayout, context):
     # header.label(text=ui_props.toolbar_maskfacesets_sections.capitalize() + " Options", icon='BRUSH_SOFTEN')
     # header.label(text="", icon='BRUSH_SOFTEN')
     tri_icon = 'TRIA_DOWN' if ui_props.show_mask_facesets_panel else 'TRIA_LEFT'
-    header.prop(ui_props, 'show_mask_facesets_panel', expand=True, text=header_label + " Options", emboss=False)
+    header.prop(ui_props, 'show_mask_facesets_panel', expand=True, text=header_label, emboss=False)
     header.prop(ui_props, 'show_mask_facesets_panel', expand=True, text="", icon=tri_icon, emboss=False)
 
     if not ui_props.show_mask_facesets_panel:
@@ -304,8 +313,11 @@ def draw_mask_facesets(layout: UILayout, context):
 
     selector = panel.row(align=True)
     selector.prop(ui_props, 'toolbar_maskfacesets_sections', text="Mask", expand=True)
-    selector.scale_y = 1.4
+    selector.scale_y = 1.35
     # selector.ui_units_y = 2
+
+    selector_line_bot = panel.box()#.column(align=True)
+    selector_line_bot.ui_units_y = 0.1
 
     '''
     cy_layout = CyBlStruct.UI_LAYOUT(selector)

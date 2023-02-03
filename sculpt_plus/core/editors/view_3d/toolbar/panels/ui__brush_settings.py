@@ -31,7 +31,7 @@ def draw_brush_settings_tabs(layout, context):
     # header.label(text="    " + label_text, icon_value=icon_value)
     header.label(text="", icon_value=icon_value)
     tri_icon = 'TRIA_DOWN' if ui_props.show_brush_settings_panel else 'TRIA_LEFT'
-    header.prop(ui_props, 'show_brush_settings_panel', expand=True, text=label_text, emboss=False)
+    header.prop(ui_props, 'show_brush_settings_panel', expand=True, text=label_text+" Brush", emboss=False)
     header.prop(ui_props, 'show_brush_settings_panel', expand=True, text="", icon=tri_icon, emboss=False)
 
     if not ui_props.show_brush_settings_panel:
@@ -39,8 +39,11 @@ def draw_brush_settings_tabs(layout, context):
 
     selector = col_2.grid_flow(align=True, columns=0)
     selector.use_property_split = False
-    selector.scale_y = 1.4
+    selector.scale_y = 1.35
     selector.prop(ui_props, 'toolbar_brush_sections', text="", expand=True)
+
+    selector_line_bot = col_2.box()#.column(align=True)
+    selector_line_bot.ui_units_y = 0.1
 
     content = col_2.box().column(align=False if ui_section in {'BRUSH_SETTINGS', 'BRUSH_SETTINGS_FALLOFF'} else True)
     content.separator()

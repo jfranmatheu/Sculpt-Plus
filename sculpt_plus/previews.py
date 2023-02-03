@@ -38,6 +38,7 @@ class Previews:
         MIRROR = '.Mirror_icon'
         SCALE_UP = '.ScaleUp_icon'
         SCALE_DOWN = '.ScaleDown_icon'
+        FRONT_FACES = '.frontFaces_icon'
 
     class Mask(CallEnum):
         MASK = '.Mask_icon'

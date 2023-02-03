@@ -232,19 +232,48 @@ def draw_toolbar(self, context):
     if tool_active is None:
         return
 
+    ui_props = Props.UI(context)
+
+    color_scale = 0.19
+    color_bot_scale = 0.2
+
     # brush settings sections.
+    panel_tool = col_2.column(align=True)
+    col = panel_tool.row(align=True)
+    col.scale_y = color_scale
+    col.prop(ui_props, 'color_toolbar_panel_tool', text="")
     if tool_active_type == 'builtin_brush':
-        draw_brush_settings_tabs(col_2, context)
+        draw_brush_settings_tabs(panel_tool, context)
     else:
-        draw_tool_settings(col_2, context, tool_active, tool_active_id)
+        draw_tool_settings(panel_tool, context, tool_active, tool_active_id)
+    col = panel_tool.row(align=True)
+    col.scale_y = color_bot_scale
+    col.enabled = False
+    col.prop(ui_props, 'color_toolbar_panel_emboss_bottom', text="")
 
     col_2.separator()
 
-    draw_mask_facesets(col_2, context)
+    panel_maskfacesets = col_2.column(align=True)
+    col = panel_maskfacesets.row(align=True)
+    col.scale_y = color_scale
+    col.prop(ui_props, 'color_toolbar_panel_maskfacesets', text="")
+    draw_mask_facesets(panel_maskfacesets, context)
+    col = panel_maskfacesets.row(align=True)
+    col.scale_y = color_bot_scale
+    col.enabled = False
+    col.prop(ui_props, 'color_toolbar_panel_emboss_bottom', text="")
 
     col_2.separator()
 
-    draw_sculpt_sections(col_2, context)
+    panel_sculptmesh = col_2.column(align=True)
+    col = panel_sculptmesh.row(align=True)
+    col.scale_y = color_scale
+    col.prop(ui_props, 'color_toolbar_panel_sculptmesh', text="")
+    draw_sculpt_sections(panel_sculptmesh, context)
+    col = panel_sculptmesh.row(align=True)
+    col.scale_y = color_bot_scale
+    col.enabled = False
+    col.prop(ui_props, 'color_toolbar_panel_emboss_bottom', text="")
 
 
 

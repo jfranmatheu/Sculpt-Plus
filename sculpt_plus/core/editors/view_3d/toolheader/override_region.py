@@ -1,10 +1,10 @@
 from bl_ui.space_view3d import VIEW3D_HT_tool_header
-from bpy.types import Brush as BlBrush
+from bpy.types import Brush as BlBrush, UILayout
 
 from ...backup_cache import get_attr_from_cache, VIEW3D_PT_tools_active, UnifiedPaintPanel
 
 
-def draw_toolheader(self: VIEW3D_HT_tool_header, context):
+def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
     # Override in Sculpt Mode.
     if context.mode != 'SCULPT':
         # Used cached method.
@@ -23,7 +23,7 @@ def draw_toolheader(self: VIEW3D_HT_tool_header, context):
     if item is None:
         return None
 
-    layout = self.layout
+    layout: UILayout = self.layout
     layout.label(text="    " + item.label, icon_value=icon_value)
 
     if is_brush:
@@ -85,9 +85,35 @@ def draw_toolheader(self: VIEW3D_HT_tool_header, context):
         get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings')(self, context)
 
 
+def draw_toolheader_mode_settings(self, context):
+    # Override in Sculpt Mode.
+    if context.mode != 'SCULPT':
+        # Used cached method.
+        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_mode_settings')(self, context)
+        return
+
+    layout: UILayout = self.layout
+    # layout.separator_spacer()
+
+    row = layout.row(align=True)
+    row.box().label(icon='MOD_MIRROR')
+    sub = row.row(align=True)
+    sub.scale_x = 0.7
+    sub.prop(context.object, "use_mesh_mirror_x", text="X", toggle=True)
+    sub.prop(context.object, "use_mesh_mirror_y", text="Y", toggle=True)
+    sub.prop(context.object, "use_mesh_mirror_z", text="Z", toggle=True)
+    sub = row.row(align=True)
+    sub.popover('VIEW3D_PT_sculpt_symmetry_for_topbar', text="")
+
+    # layout.separator_spacer()
+
+    layout.popover('VIEW3D_PT_sculpt_options', text="Options") # , icon='OPTIONS')
+
+
 def register():
     # Here we override cls methods and properties as we need.
-    VIEW3D_HT_tool_header.draw_tool_settings = draw_toolheader
+    VIEW3D_HT_tool_header.draw_tool_settings = draw_toolheader_tool_settings
+    VIEW3D_HT_tool_header.draw_mode_settings = draw_toolheader_mode_settings
 
 def unregister():
     pass

@@ -35,8 +35,11 @@ def draw_sculpt_sections(layout: UILayout, context):
     if not skip_selector:
         selector = section.grid_flow(align=True, row_major=True, even_columns=True, even_rows=True, columns=0)
         selector.use_property_split = False
-        selector.scale_y = 1.4
+        selector.scale_y = 1.35
         selector.prop(ui, 'toolbar_sculpt_sections', text="", expand=True)
+
+        selector_line_bot = section.box()#.column(align=True)
+        selector_line_bot.ui_units_y = 0.1
 
     content = section.box().column(align=False)
     if not skip_selector:
@@ -135,7 +138,9 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
     layout.use_property_split = False
 
     levels_layout = layout.column(align=True)
-    levels_layout.box().label(text="L e v e l s", icon='ALIASED')
+    header = levels_layout.box()
+    header.scale_y = .8
+    header.label(text="L e v e l s", icon='ALIASED')
     levels_layout = levels_layout.grid_flow(row_major=True, columns=4, even_columns=True, even_rows=True, align=True)
     levels_layout.scale_y = 1.5
     for i in range(mod.total_levels + 1):
@@ -144,7 +149,9 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
     layout.separator(factor=0.25)
 
     ops_layout = layout.column(align=True)
-    ops_layout.box().label(text='L e v e l   U p !  (Subdivide)', icon='SORT_DESC')
+    header = ops_layout.box()
+    header.scale_y = .8
+    header.label(text='L e v e l   U p !  (Subdivide)', icon='SORT_DESC')
     ops_layout = ops_layout.row(align=True)
     ops_layout.scale_y = 1.5
     op = ops_layout.operator('object.multires_subdivide', text='Smooth')
@@ -160,7 +167,9 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
     layout.separator(factor=0.25)
 
     ops_layout = layout.column(align=True)
-    ops_layout.box().label(text='L e v e l   D o w n !', icon='SORT_ASC')
+    header = ops_layout.box()
+    header.scale_y = .8
+    header.label(text='L e v e l   D o w n !', icon='SORT_ASC')
     ops_layout = ops_layout.column(align=True)
     ops_layout.operator('object.multires_unsubdivide', text='Rebuild Lower Level from Base Level')
     ops_layout.operator('object.multires_higher_levels_delete', text='Delete Higher Levels from Level ' + str(mod.sculpt_levels))
@@ -168,7 +177,9 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
     layout.separator(factor=0.25)
 
     ops_layout = layout.column(align=True)
-    ops_layout.box().label(text='S h a p e   M o r p h', icon='MONKEY')
+    header = ops_layout.box()
+    header.scale_y = .8
+    header.label(text='S h a p e   M o r p h', icon='MONKEY')
     ops_layout = ops_layout.column(align=True)
     ops_layout.operator('object.multires_reshape', text='Reshape')
     ops_layout.operator('object.multires_base_apply', text='Apply Base')

@@ -16,6 +16,8 @@ class SCULPTPLUS_PG_scn(PropertyGroup):
     mask_op_clear_previous_mask : BoolProperty(default=False, name="Clear Previous Masks", description="Does not keep previous masks. Clear everything before the expand operation")
     mask_op_invert : BoolProperty(default=False, name="Invert Mask", description="Invert mask effect")
 
+    facesets_op_use_front_faces_only : BoolProperty(default=False, name="Front Faces Only", description="Affect only faces facing towards the view")
+
 # -------------------------------------------------------------------
 
 

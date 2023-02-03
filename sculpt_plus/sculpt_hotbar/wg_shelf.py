@@ -675,7 +675,7 @@ class ShelfGridItemInfo(WidgetBase):
             act_texture.draw_preview(item_pos, item_size, act=False, opacity=opacity)
         else:
             label = "No Texture"
-            draw_preview_fallback(item_pos, item_size, False)
+            draw_preview_fallback(item_pos, item_size, False, opacity=opacity)
 
         item_pos -= Vector((0, line_height))
         DiText(item_pos, label, 12, scale, (.92, .92, .92, opacity))
