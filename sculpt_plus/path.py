@@ -23,9 +23,9 @@ def get_datadir() -> pathlib.Path:
     if sys.platform == "win32":
         return home / "AppData/Roaming/Blender Foundation/Blender"
     elif sys.platform == "linux":
-        return home / ".local/share/blender"
+        return home / ".config/blender" # ".local/share/blender" ## $HOME/.config/blender/3.4/
     elif sys.platform == "darwin":
-        return home / "Library/Application Support/"
+        return home / "Library/Application Support/Blender" ## /Users/$USER/Library/Application Support/Blender/3.4/
 
 addon_data_dir = get_datadir() / "addon_data"
 app_dir = addon_data_dir / __package__
