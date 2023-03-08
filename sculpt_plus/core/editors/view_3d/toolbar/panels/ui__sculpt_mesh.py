@@ -30,7 +30,7 @@ def draw_sculpt_sections(layout: UILayout, context):
         return
 
     mod = get_modifier_by_type(context.sculpt_object, 'MULTIRES')
-    skip_selector = context.sculpt_object.use_dynamic_topology_sculpting or mod is not None 
+    skip_selector = context.sculpt_object.use_dynamic_topology_sculpting or mod is not None
 
     if not skip_selector:
         selector = section.grid_flow(align=True, row_major=True, even_columns=True, even_rows=True, columns=0)
@@ -92,10 +92,13 @@ def draw_sculpt_sections(layout: UILayout, context):
         vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="-33%").value = -33
         vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="-50%").value = -50
 
-        #content.separator()
+        content.separator()
 
         #VIEW3D_PT_sculpt_voxel_remesh.draw(*content_args)
-        
+        row = content.row()
+        row.scale_y = 1.5
+        row.operator('object.voxel_remesh')
+
 
     elif active_section == 'QUAD_REMESH':
         content.scale_y = 1.5
@@ -191,7 +194,7 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
 
     layout.separator()
 
-    actions = layout.column(align=False) 
+    actions = layout.column(align=False)
     row = actions.split(factor=0.33,align=False)
     row.scale_y = 1.5
     row.operator('sculpt_plus.multires_apply', text="Apply").as_shape_key = False

@@ -165,8 +165,8 @@ class SCULPTHOTBAR_OT_set_brush(Operator):
         # if self.index >= len(act_set.brushes):
         #     return {'CANCELLED'}
         # act_set.brushes[self.index].slot = context.tool_settings.sculpt.brush
-        br_index: int = 9 if self.index==0 else self.index - 1
-        Props.SetHotbarSelected(context, br_index)
+        ## br_index: int = 9 if self.index==0 else self.index - 1
+        Props.SetHotbarSelected(context, self.index)
         return {'FINISHED'}
 
 
