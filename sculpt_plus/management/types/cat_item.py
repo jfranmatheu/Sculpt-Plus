@@ -48,6 +48,7 @@ class CategoryItem(object):
         item_copy.id = uuid4().hex
         ## item_copy.save()
         item_copy.save_default()
+        item_copy.cat_id = None
         self.cat.link_item(item_copy)
         return item_copy
 

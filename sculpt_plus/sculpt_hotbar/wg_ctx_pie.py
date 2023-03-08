@@ -43,6 +43,8 @@ class CtxPie(WidgetBase):
     def show(self, cv, m: Vector, item: item_types) -> None:
         self.origin = m
         self.options = self.get_options(item)
+        self.safety_radius: int = 20 * self.cv.scale
+        self.radius: int = self.safety_radius * (3.32 * self.cv.scale)
         if not self.options:
             return
         angle_between = 360 / len(self.options)
@@ -132,8 +134,9 @@ class ShelfGridItemCtxPie(CtxPie):
             ('REMOVE', "Remove", "Remove item"),
             ('SAVE', "Save Default", "Save default state"),
             ('RESET', "Reset to Default", "Reset to default state"),
-            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush"),
+            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush") if type=='BRUSH' else None,
             ('RENAME', "Rename", "Change item name"),
+            ('DUPLICATE', "Duplicate", "Make a brush copy") if type=='BRUSH' else None,
         )
         return tuple(op for op in options if op is not None)
 
@@ -165,6 +168,8 @@ class ShelfGridItemCtxPie(CtxPie):
             #    OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, **kwargs)
             #self.cv.refresh(ctx)
             #self.time_fun(_rename_item, .2, item_type=type, item_id=self.target_item.id, item_name=self.target_item.name)
+        elif option_id == 'DUPLICATE':
+            Props.BrushManager().duplicate_brush(self.target_item)
 
 
 class ShelfSidebarCatCtxPie(CtxPie):

@@ -113,11 +113,10 @@ font_info = {
 def set_font(id):
     font_info['id'] = id
 def DiCircle(_p,_lt,_r,_seg,_co):
-    state.blend_set(A)
     state.line_width_set(_lt)
     draw_circle_2d(_p,_co,_r,segments=_seg)
     state.line_width_set(1.0)
-    state.blend_set('NONE')
+    state.blend_set('ALPHA')
 def DiSilueta(_p,_s,_i,_co,_bco,_op,_use_alpha: float = 1.0, s=sh_silueta):
     if _i is None:
         return
@@ -308,7 +307,6 @@ def DiStar(_p,_size,s=sh_estrellita):
     state.point_size_set(1.0)
     #state.blend_set('NONE')
 def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shadow_props: dict = None, draw_rect_props: dict = None, id:int=None, rotation:float=None):
-    state.blend_set('NONE')
     id=font_info['id'] if id is None else id
     text_color(id, *_co)
     text_size(id, max(7.5, _size), int(72*_scale))

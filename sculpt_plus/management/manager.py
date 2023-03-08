@@ -534,7 +534,7 @@ class Manager:
             return self.duplicate_brush(self.brushes[base_brush_item])
         if not isinstance(base_brush_item, Brush):
             return None
-        base_brush_item.copy()
+        self.add_brush(base_brush_item.copy())
 
     def load_brushes_from_lib(self, cat_name: str, lib_path: str):
         # 1. load brushes (and textures) from lib.
