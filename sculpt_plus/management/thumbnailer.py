@@ -28,7 +28,7 @@ MAX_THUMBNAILS_PER_THREAD = 32
 THUMBNAIL_SIZE = 100, 100
 THUMBNAIL_PIXEL_SIZE = 100 * 100 * 4
 
-USE_DEBUG = True
+USE_DEBUG = False
 
 
 def generate_thumbnail_with_bpy(image_path: str) -> np.ndarray:
@@ -438,7 +438,8 @@ class Thumbnailer(object):
                     #print("\t\t- px_size:", thumbnail.px_size)
                 if thumbnail.pixels is not None:
                     thumbnail.status = 'READY'
-                    print("\t\t - READY!")
+                    if USE_DEBUG:
+                        print("\t\t - READY!")
                 thumbnail.file_format = file_format
 
         # Thread loop.
