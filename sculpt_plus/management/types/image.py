@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 from uuid import uuid4
 from shutil import copyfile, move as movefile
-from os.path import basename, splitext
+from os.path import basename, splitext, exists, isfile
 from PIL import Image as PILImage
 
 import bpy
@@ -59,6 +59,10 @@ class Image(object):
             # **** Blender.
             # self.image_size = tuple(input_image.size)
             # self.px_size = self.image_size[0] * self.image_size[1] * 4
+            self.filepath: str = input_image.filepath_from_user()
+        else:
+            self.filepath: str = input_image
+
         if optimize:
             self.image_size = thumb_image_size
             self.px_size = thumb_px_size
@@ -67,7 +71,6 @@ class Image(object):
             self.image_size = None
             self.px_size = None
 
-        self.filepath: str = input_image.filepath_from_user() if isinstance(input_image, BlImage) else input_image
         if self.filepath:
             # if self.filepath.startswith('//'):
             #     self.filepath = abspath(self.filepath)
@@ -350,6 +353,7 @@ class Image(object):
         if self.pixels is None:
             # self.load_image(self.filepath)
             if self.filepath:
+                print("[Sculpt+] Loading image data from filepath...", self.filepath)
                 gputex, pixels = gputex_from_image_file(self.filepath, self.image_size, self.id, get_pixels=True)
                 self.pixels = pixels
             return None
@@ -367,7 +371,7 @@ class Image(object):
             self.image_size,
             layers=0,
             is_cubemap=False,
-            format='RGBA16F',
+            format='RGBA16F' if self.file_format in {'PNG'} else 'RGB16F',
             data=buff
         )
 
@@ -436,6 +440,12 @@ class Thumbnail(Image):
 
     def set_filepath(self, filepath: str, lazy_generate: bool = True) -> None:
         self.filepath = filepath
+        self.extension: str = Path(self.filepath).suffix
+        self.file_format = self.extension[1:].upper()
+        self.status = 'NONE'
+        if self.id in cache_thumbnail:
+            gputex = cache_thumbnail.pop(self.id)
+            del gputex
         if lazy_generate:
             from ..thumbnailer import Thumbnailer
             Thumbnailer.push(self)

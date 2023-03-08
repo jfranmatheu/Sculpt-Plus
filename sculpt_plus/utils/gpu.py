@@ -97,6 +97,7 @@ def gputex_from_image_file(filepath: str, size: Tuple[int, int] = (128, 128), id
 
     img: Image = load_image_and_scale(filepath, size)
     if img is None:
+        print("[Sculpt+] Error! gputex_from_image_file() -> loaded image is null!")
         if get_pixels:
             return None, None
         return None

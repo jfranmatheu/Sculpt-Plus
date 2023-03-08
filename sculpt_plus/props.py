@@ -97,7 +97,7 @@ class Props:
         return image
 
     @staticmethod
-    def BrushManager() -> Manager:# -> SCULPTPLUS_PG_brush_manager:
+    def BrushManager() -> 'Manager': # -> SCULPTPLUS_PG_brush_manager:
         # return cls.Temporal(context).brush_manager
         return Manager.get()
 

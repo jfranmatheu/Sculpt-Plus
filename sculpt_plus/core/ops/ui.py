@@ -25,14 +25,14 @@ class SCULPTPLUS_OT_expand_toolbar(Operator):
         self.space_data = context.space_data
         self.cy_region = CyBlStruct.UI_REGION(region)
         prefs = context.preferences
-        ui_scale = prefs.system.ui_scale
+        # ui_scale = prefs.system.ui_scale
         if not self.use_smooth:
-            self.set_width(320*ui_scale)
+            self.set_width(320) # *ui_scale # already applied by Blender itself
             del self.cy_region
             return {'FINISHED'}
         self.width = self.cy_region.winx
         #self.velocity = 2
-        self.target_width = 320 * ui_scale
+        self.target_width = 320 # *ui_scale # already applied by Blender itself
         # self.inc_width = 1 / ((320-self.width) * 0.01) # 10 steps to reach 320
         self.anim_time = .32
         self.start_time = time()

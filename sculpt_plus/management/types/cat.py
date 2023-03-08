@@ -19,12 +19,13 @@ class Category(object):
     icon: Thumbnail
     items_count: int
     type: str
+    bl_type: str = 'CAT_'
 
     def __init__(self, name: str = 'Untitled Category', _id: str = None):
         self.id: str = _id if _id else uuid4().hex
         self.name: str = name
         self.index: int = 0
-        self.icon: Thumbnail = None
+        self.icon: Thumbnail = Thumbnail.empty(self)
         self.item_ids: List[str] = []
         print(f"New Category {self.id} with name {self.name}")
         ## self.save()
@@ -69,14 +70,15 @@ class Category(object):
         return self.icon.filepath
 
     def draw_preview(self, p, s, act: bool = False, fallback=None) -> None:
-        if self.icon:
-            self.icon.draw(p, s, act)
+        if self.icon and self.icon.is_valid:
+            self.icon.draw(p, s, act) #, opacity=opacity)
         elif fallback:
             fallback(p, s, act)
 
 
 class BrushCategory(Category):
     type: str = 'BRUSH'
+    bl_type: str = 'CAT_BRUSH_'
 
     @property
     def items(self) -> List[Brush]:
@@ -113,6 +115,7 @@ class BrushCategory(Category):
 
 class TextureCategory(Category):
     type: str = 'TEXTURE'
+    bl_type: str = 'CAT_TEXTURE_'
 
     @property
     def items(self) -> List[Texture]:

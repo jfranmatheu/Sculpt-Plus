@@ -129,7 +129,8 @@ class SCULPTPLUS_OT_rename_item(Operator):
 
 class SCULPTPLUS_OT_import_create_cat(Operator, ImportHelper):
     bl_idname: str = 'sculpt_plus.import_create_cat'
-    bl_label: str = "Import data from library and create a new category"
+    bl_label: str = "Import .blend lib"
+    bl_description: str = "Import brush/texture data from .blend library and create a category for them"
 
     filename_ext = ".blend"
     filter_glob: StringProperty(default=("*.blend;*" + ";*.".join(['png', 'jpg', 'jpeg'])), options={'HIDDEN'}) # bpy.path.extensions_image

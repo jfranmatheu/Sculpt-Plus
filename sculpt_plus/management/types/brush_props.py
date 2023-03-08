@@ -178,6 +178,8 @@ for group_attr in specific_brush_properties.values():
 
 
 brush_properties_minus_specific: Set[str] = set(BaseBrush._attributes).difference(all_specific_brush_properties).difference(exclude_properties)
+# Direction enum items are different per type... Should be managed apart with try except unfortunately :-( ...
+brush_properties_minus_specific.remove('direction')
 
 
 brush_properties_per_sculpt_type: Dict[str, Tuple[str]] = {

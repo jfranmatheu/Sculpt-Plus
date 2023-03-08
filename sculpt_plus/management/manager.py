@@ -625,9 +625,11 @@ class Manager:
             return
         if not path.exists(brushes_db_filepath + '.dat') or not path.isfile(brushes_db_filepath + '.dat'):
             print("WARN! Brush Database not found: " + brushes_db_filepath)
+            self.load_default_brushes()
             return
         if not path.exists(config_filepath) or not path.isfile(config_filepath):
             print("WARN! Config file not found: " + config_filepath)
+            self.load_default_brushes()
             return
 
         print("[SCULPT+] Loading brushes from database...")
@@ -703,7 +705,7 @@ class Manager:
 
         if self.brushes != {}:
             print("[Sculpt+] Saving brushes..")
-            with DBShelfManager.BRUSH_DEFAULTS() as shelf_manager__brushes:
+            with DBShelfManager.BRUSH_SETTINGS() as shelf_manager__brushes:
                 for brush in self.brushes.values():
                     shelf_manager__brushes.write(brush)
                     # brush.save()

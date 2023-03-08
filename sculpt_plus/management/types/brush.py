@@ -82,7 +82,7 @@ class Brush(BrushCatItem, BaseBrush):
     def load_icon(self, filepath: Union[str, Path]) -> str:
         if self.thumbnail is not None:
             del self.thumbnail
-        self.thumbnail = Thumbnail(filepath, self.id, 'BRUSH')
+        self.thumbnail = Thumbnail(filepath, self.id, 'BRUSH_')
         return self.thumbnail.filepath
 
     def update_attr(self, attr, value):
@@ -122,6 +122,8 @@ class Brush(BrushCatItem, BaseBrush):
         for attr in brush_properties_per_sculpt_type[brush.sculpt_tool]:
             update_attr(attr, getattr(brush, attr))
 
+        update_attr('direction', getattr(brush, 'direction'))
+
         self.texture_slot.from_texture_slot(brush.texture_slot)
         return self
 
@@ -143,6 +145,11 @@ class Brush(BrushCatItem, BaseBrush):
         brush.sculpt_tool = self.sculpt_tool
         for attr in brush_properties_per_sculpt_type[self.sculpt_tool]:
             setattr(brush, attr, getattr(self, attr))
+            
+        try:
+            setattr(brush, 'direction', getattr(self, 'direction'))
+        except TypeError as e:
+            pass
 
         self.texture_slot.to_texture_slot(brush.texture_slot)
 

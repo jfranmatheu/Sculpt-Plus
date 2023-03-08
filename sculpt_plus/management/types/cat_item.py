@@ -102,7 +102,8 @@ class BrushCatItem(CategoryItem):
                 DiRct(p, s, (0, 0, 0, .5*opacity))
                 DiText(p+Vector((2, 2)), "Loading...", 12, 1, shadow_props={})
             elif self.use_custom_icon and self.icon_filepath:
-                Thumbnailer.push(self.thumbnail)
+                self.thumbnail.set_filepath(self.icon_filepath, lazy_generate=True)
+                # Thumbnailer.push(self.thumbnail)
 
 
 class TextureCatItem(CategoryItem):

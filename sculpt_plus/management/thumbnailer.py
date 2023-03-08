@@ -28,7 +28,7 @@ MAX_THUMBNAILS_PER_THREAD = 32
 THUMBNAIL_SIZE = 100, 100
 THUMBNAIL_PIXEL_SIZE = 100 * 100 * 4
 
-USE_DEBUG = False
+USE_DEBUG = True
 
 
 def generate_thumbnail_with_bpy(image_path: str) -> np.ndarray:
@@ -47,10 +47,13 @@ def generate_thumbnail_with_bpy(image_path: str) -> np.ndarray:
 def generate_thumbnail_with_pil(image_path: str, format: str) -> np.ndarray:
     image = Image.open(image_path, mode='r')
     # thumbnail preserve aspect ratio, some artists might use non-squared textures.
-    image.thumbnail(THUMBNAIL_SIZE, Image.Resampling.NEAREST)
+    # image.thumbnail(THUMBNAIL_SIZE, Image.Resampling.NEAREST)
+    # NOTE BUG: thumbnail maintain aspect ratio.... which lead to errors... currently... must fix this somehow...
+    image = image.resize(THUMBNAIL_SIZE, Image.Resampling.NEAREST)
     image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     image_size = image.size
-    px_size = image_size[0]*image_size[1]*4
+    bands = len(image.getbands())
+    px_size = image_size[0]*image_size[1]*bands
     pixels = np.array(image, dtype=np.float32).reshape(px_size) / 255
     image.close()
     del image
@@ -304,26 +307,35 @@ class Thumbnailer(object):
     @classmethod
     def push(cls, *input_thumbnails: Thumbnail):
         if USE_DEBUG:
-            print("[Sculpt+][Thumbnailer] Pushing %i thumbnails..." % len(thumbnails))
+            print("[Sculpt+][Thumbnailer] Pushing %i thumbnails..." % len(input_thumbnails))
 
         thumbnails = []
         # FILTER THUMBNAILS. JUST FOR SECURITY.
         for thumbnail in input_thumbnails:
             if thumbnail.status in {'ERROR', 'UNSUPPORTED', 'LOADING'}:
+                print("[Sculpt+][Thumbnailer] thumbnail status is in {'ERROR', 'UNSUPPORTED', 'LOADING'}!")
+                continue
+            if thumbnail.filepath is None:
+                thumbnail.status = 'ERROR'
+                if USE_DEBUG:
+                    print("[Sculpt+][Thumbnailer] thumbnail filepath is null!")
                 continue
             thumbnail.status = 'LOADING'
             filepath = Path(thumbnail.filepath)
             if not filepath.exists() or not filepath.is_file():
                 thumbnail.status = 'ERROR'
+                print("[Sculpt+][Thumbnailer] thumbnail filepath does not exist!")
                 continue
             file_format = filepath.suffix[1:].upper()
             if file_format in {'PSD'}:
                 thumbnail.file_format = file_format
                 thumbnail.status = 'UNSUPPORTED'
+                print("[Sculpt+][Thumbnailer] thumbnail file format is unsupported!")
                 continue
             thumbnails.append(thumbnail)
 
         if thumbnails == []:
+            print("[Sculpt+][Thumbnailer] no thumbnails data to process!")
             return
 
         thumbnailer = cls.get_instance()
@@ -420,8 +432,13 @@ class Thumbnailer(object):
                     thumbnailer.add_fucked_thumbnail(thumbnail)
                 else:
                     thumbnail.pixels, thumbnail.image_size, thumbnail.px_size = generate_thumbnail_with_pil(str(icon_filepath), format=file_format)
+                    #print("\t- thumbnail data:")
+                    #print("\t\t- pixels:", len(thumbnail.pixels))
+                    #print("\t\t- image_size:", thumbnail.image_size)
+                    #print("\t\t- px_size:", thumbnail.px_size)
                 if thumbnail.pixels is not None:
                     thumbnail.status = 'READY'
+                    print("\t\t - READY!")
                 thumbnail.file_format = file_format
 
         # Thread loop.

@@ -114,7 +114,9 @@ class SCULPTPLUST_OT_assign_icon_to_brush(Operator, ImportHelper):
         #    item = Props.GetTexture(self.item_id)
         item = Props.GetBrush(self.brush_id)
         if item is not None:
-            item.load_icon(image_path)
+            item.use_custom_icon = True
+            item.icon_filepath = str(image_path)
+            # item.load_icon(str(image_path))
         return{'FINISHED'}
 
 
@@ -136,11 +138,12 @@ class SCULPTPLUS_OT_assign_icon_to_cat(Operator, ImportHelper):
         if image_path.suffix not in {'.png', '.jpg', 'jpeg'}:
             return {'CANCELLED'}
         if self.cat_type == 'BRUSH':
-            item = Props.GetBrushCat(self.cat_id)
+            cat = Props.GetBrushCat(self.cat_id)
         elif self.cat_type == 'TEXTURE':
-            item = Props.GetTextureCat(self.cat_id)
-        if item is not None:
-            item.load_icon(image_path)
+            cat = Props.GetTextureCat(self.cat_id)
+        if cat is not None:
+            # cat.load_icon(str(image_path))
+            cat.icon.set_filepath(str(image_path), lazy_generate=True)
         return{'FINISHED'}
 
 
