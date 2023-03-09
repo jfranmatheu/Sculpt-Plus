@@ -98,7 +98,7 @@ def draw_mask(layout: UILayout, context):
 
     row = mask_tool_col.row()
     row.use_property_split = True
-    row.prop(scene_props, 'mask_op_use_front_faces_only', text="Affect Front Faces Only")
+    row.prop(scene_props, 'mask_op_use_front_faces_only', text="Front Faces Only")
 
     if prefs.toolbar_panel_mask_layout == 'COMPACT':
         main_col = mask_tool_col.column(align=True)
@@ -130,11 +130,25 @@ def draw_mask(layout: UILayout, context):
     if not use_mask_tabs:
         sections_col = mask_tool_col.column(align=True)
 
+    
+    ''' MASK FILTERS. '''
+    if use_mask_tabs:
+        pass
+    else:
+        filter_col = sections_col.column(align=True)
+        header = filter_col.box()
+        header.scale_y = 0.8
+        header.label(text="M a s k   F i l t e r s :")
+        filter_col = filter_col.column(align=True)
+        filter_col.scale_y = 1.25
+        _draw_mask_filters(filter_col)
+
 
     ''' MASK EXPAND. '''
     if use_mask_tabs:
         pass
     else:
+        sections_col.separator(factor=1.25)
         mask_mod_ops_col = sections_col.column(align=True)
         header = mask_mod_ops_col.box().row()
         header.label(text="M a s k   E x p a n d :")
@@ -160,20 +174,6 @@ def draw_mask(layout: UILayout, context):
         mask_mods_col = mask_mods_col.column(align=True)
         mask_mods_col.scale_y = 1.25
         _draw_mask_effects(mask_mods_col.column(align=True), align=True)
-
-
-    ''' MASK FILTERS. '''
-    if use_mask_tabs:
-        pass
-    else:
-        sections_col.separator(factor=1.25)
-        filter_col = sections_col.column(align=True)
-        header = filter_col.box()
-        header.scale_y = 0.8
-        header.label(text="M a s k   F i l t e r s :")
-        filter_col = filter_col.column(align=True)
-        filter_col.scale_y = 1.25
-        _draw_mask_filters(filter_col)
 
 
     ''' MASK TO MESH. '''

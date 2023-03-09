@@ -28,7 +28,7 @@ MAX_THUMBNAILS_PER_THREAD = 32
 THUMBNAIL_SIZE = 100, 100
 THUMBNAIL_PIXEL_SIZE = 100 * 100 * 4
 
-USE_DEBUG = False
+USE_DEBUG = True
 
 
 def generate_thumbnail_with_bpy(image_path: str) -> np.ndarray:

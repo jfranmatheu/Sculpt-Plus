@@ -15,7 +15,7 @@ bl_info = {
     "name" : "Sculpt +",
     "author" : "J. Fran Matheu (@jfranmatheu)",
     "description" : "",
-    "blender" : (3, 3, 1),
+    "blender" : (3, 4, 0),
     "version" : (1, 0, 1),
     "location" : "3D Viewport > Sculpt Mode",
     "warning" : "BETA VERSION! May be unstable!",

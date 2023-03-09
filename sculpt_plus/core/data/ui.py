@@ -9,7 +9,7 @@ def get_toolbar_brush_sections_items(self, context):
     brush = context.tool_settings.sculpt.brush
     items = [
         ('BRUSH_SETTINGS', "Brush", "Brush Settings", 'BRUSH_DATA', 0),
-        ('BRUSH_SETTINGS_ADVANCED', "Advanced", "Advanced Brush Settings", 'GHOST_ENABLED', 1),
+        ('BRUSH_SETTINGS_ADVANCED', "Advanced", "Advanced Brush Settings", 'OPTIONS', 1), # 'GHOST_ENABLED'
         ('BRUSH_SETTINGS_STROKE', "Stroke", "Brush Stroke Settings", 'GP_SELECT_STROKES', 2),
         ('BRUSH_SETTINGS_FALLOFF', "Falloff", "Brush Falloff Settings", 'SMOOTHCURVE', 3),
     ]
