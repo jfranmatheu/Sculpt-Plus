@@ -2,7 +2,9 @@ import bpy
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active, _defs_transform, _defs_annotate, _defs_sculpt
 from bl_ui.space_toolsystem_common import ToolDef, ToolSelectPanelHelper
 from bpy.app import handlers
+from bpy.app import timers
 
+from functools import partial
 from typing import List, Dict
 
 from .all_brush_tool import SCULPTPLUS_OT_all_brush_tool
@@ -75,8 +77,9 @@ def all_brush_tool():
     )
 '''
 
-
-def set_sculpt_tools():
+@handlers.persistent
+def set_sculpt_tools(dummy=None):
+    print("[SCULPT+] Setting-Up toolbar tools...")
     '''
     from bpy import context as C
 
@@ -110,7 +113,9 @@ def set_sculpt_tools():
             kmi.new(SCULPTPLUS_OT_all_brush_tool.bl_idname, 'MIDDLEMOUSE', 'ANY', any=True)
     '''
 
-    VIEW3D_PT_tools_active._tools['SCULPT'] = [
+    VIEW3D_PT_tools_active._tools['SCULPT_LEGACY'] = list(VIEW3D_PT_tools_active._tools['SCULPT'])
+
+    VIEW3D_PT_tools_active._tools['SCULPT_PLUS'] = [
         #tools['SCULPT_BRUSH'],
         ALL_BRUSH,
         None,
@@ -154,6 +159,8 @@ def set_sculpt_tools():
         *VIEW3D_PT_tools_active._tools_annotate,
     ]
 
+    # VIEW3D_PT_tools_active._tools['SCULPT'] = list(VIEW3D_PT_tools_active._tools['SCULPT_PLUS'])
+
     global hidden_brush_tools
     hidden_brush_tools = tools
 
@@ -162,12 +169,34 @@ def get_hidden_brush_tools() -> Dict[str, ToolDef]:
     return hidden_brush_tools
 
 
+def toggle_toolbar_tools(use_legacy: bool) -> None:
+    if use_legacy:
+        # print("SCULPT", VIEW3D_PT_tools_active._tools['SCULPT'])
+        # print('SCULPT_LEGACY', VIEW3D_PT_tools_active._tools['SCULPT_LEGACY'])
+        VIEW3D_PT_tools_active._tools['SCULPT'] = VIEW3D_PT_tools_active._tools['SCULPT_LEGACY']
+        #func = partial(bpy.ops.wm.tool_set_by_id, 'INVOKE_DEFAULT', False, name="builtin_brush.Mask")
+    else:
+        # print('SCULPT', VIEW3D_PT_tools_active._tools['SCULPT'])
+        # print("SCULPT_PLUS", VIEW3D_PT_tools_active._tools['SCULPT_PLUS'])
+        VIEW3D_PT_tools_active._tools['SCULPT'] = VIEW3D_PT_tools_active._tools['SCULPT_PLUS']
+        #func = partial(bpy.ops.sculpt_plus.all_brush_tool, 'INVOKE_DEFAULT')
+
+    #def _timed_func(_func) -> None:
+    #    _func()
+    #    return None
+
+    #timers.register(partial(_timed_func, func), first_interval=0.5)
+
 def register():
     if 'SCULPT' in VIEW3D_PT_tools_active._tools:
         set_sculpt_tools()
-
+    else:
+        handlers.load_post.append(set_sculpt_tools)
     #bpy.utils.register_tool(MyTool, after={"builtin_brush.Draw"}, separator=True)
+
+
 
 def unregister():
     #bpy.utils.unregister_tool(MyTool)
-    pass
+    if set_sculpt_tools in handlers.load_post:
+        handlers.load_post.remove(set_sculpt_tools)

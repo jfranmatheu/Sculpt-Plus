@@ -6,10 +6,12 @@ from ...backup_cache import get_attr_from_cache, VIEW3D_PT_tools_active, Unified
 
 def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
     # Override in Sculpt Mode.
-    if context.mode != 'SCULPT':
+    if context.mode != 'SCULPT' or 'sculpt_plus' not in context.workspace:
         # Used cached method.
         get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings')(self, context)
         return
+
+    use_legacy_sculpt = 'sculpt_plus' not in context.workspace
 
     space_type = context.space_data.type
     tool_active = VIEW3D_PT_tools_active._tool_active_from_context(context, space_type)
@@ -87,10 +89,12 @@ def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
 
 def draw_toolheader_mode_settings(self, context):
     # Override in Sculpt Mode.
-    if context.mode != 'SCULPT':
+    if context.mode != 'SCULPT' or 'sculpt_plus' not in context.workspace:
         # Used cached method.
         get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_mode_settings')(self, context)
         return
+
+    use_legacy_sculpt = 'sculpt_plus' not in context.workspace
 
     layout: UILayout = self.layout
     # layout.separator_spacer()

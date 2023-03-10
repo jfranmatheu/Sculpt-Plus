@@ -43,19 +43,19 @@ panels_to_override__category = (
 
 @classmethod
 def poll(cls, context):
-    if context.mode == 'SCULPT':
+    if context.mode == 'SCULPT' and ('sculpt_plus' in context.workspace):
         return False
-    return cls._ori_poll(context)
+    return context.object and context.mode == 'SCULPT' # cls._ori_poll(cls, context)
 
-@classmethod
+
 def poll_default(cls, context):
     return True
 
 
 def draw(self, context):
-    if context.mode == 'SCULPT':
+    if context.mode == 'SCULPT' and ('sculpt_plus' in context.workspace):
         return False
-    return self.__class__._ori_draw(context)
+    self.__class__._ori_draw(context)
 
 def draw_default(self, context):
     pass
@@ -63,9 +63,9 @@ def draw_default(self, context):
 
 def register():
     for cls in classes_to_override__poll:
-        cls._ori_poll = get_attr_from_cache(cls, 'poll', poll_default)
+        # cls._ori_poll = classmethod(lambda cls, context: get_attr_from_cache(cls, 'poll', poll_default)(context))
         cls.poll = poll
-    
+
     for cls in classes_to_override__draw:
         cls._ori_draw = get_attr_from_cache(cls, 'draw', draw_default)
         cls.draw = draw

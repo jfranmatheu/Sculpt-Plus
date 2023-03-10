@@ -17,9 +17,15 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
         # print("Holiwiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii toooooolll")
         from .override_tools import accept_brush_tools, ToolSelectPanelHelper
         from sculpt_plus.props import Props
+        
+        if context.space_data is None:
+            return {'CANCELLED'}
 
         prev_active_tool = Props.BrushManager().active_sculpt_tool
-        curr_active_tool = ToolSelectPanelHelper.tool_active_from_context(context)
+        try:
+            curr_active_tool = ToolSelectPanelHelper._tool_active_from_context(context, 'VIEW_3D', mode='SCULPT', create=False)
+        except AttributeError:
+            return {'CANCELLED'}
         if curr_active_tool is None:
             return {'CANCELLED'}
         type, curr_active_tool = curr_active_tool.idname.split('.')

@@ -83,6 +83,7 @@ class SculptPlusPaths(Enum):
     SRC_LIB_SCRIPTS = join(SRC_LIB, 'scripts')
     SRC_LIB_BLEND = join(SRC_LIB, 'blend')
     BLEND_EMPTY = join(SRC_LIB_BLEND, 'empty.blend')
+    BLEND_WORKSPACE = join(SRC_LIB_BLEND, 'sculpt_plus_workspace.blend')
 
     LIB_SHADERS = join(SRC_LIB, 'shaders')
     LIB_SHADERS_VERT = join(LIB_SHADERS, 'vert')

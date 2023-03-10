@@ -1,11 +1,13 @@
 from typing import Union, List, Dict, Set, Tuple
 
 import bpy
-from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush
+from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush, WorkSpace
+from bpy.app import timers
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager
 from sculpt_plus.management.types.fake_item import FakeViewItem_Brush, FakeViewItem_Texture
+from sculpt_plus.path import SculptPlusPaths
 
 #from sculpt_plus.core.data.scn import SCULPTPLUS_PG_scn
 #from sculpt_plus.core.data.wm import SCULPTPLUS_PG_wm
@@ -45,6 +47,40 @@ class Props:
         if image := bpy.data.images.get('.sculpt_plus_thumbnail', None):
             return image
         return bpy.data.image.new('.sculpt_plus_thumbnail', 100, 100)
+
+    @staticmethod
+    def Workspace() -> WorkSpace or None:
+        for workspace in bpy.data.workspaces:
+            if 'sculpt_plus' in workspace:
+                if not workspace.use_filter_by_owner and bpy.context.workspace == workspace:
+                    workspace.use_filter_by_owner = True
+                    def _toggle_addon_workspace():
+                        bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
+                    timers.register(_toggle_addon_workspace, first_interval=.1)
+                return workspace
+        context = bpy.context
+        old_workspace = context.window.workspace    
+
+        bpy.ops.workspace.append_activate(False, idname='Sculpt+', filepath=SculptPlusPaths.BLEND_WORKSPACE())
+        workspace: WorkSpace = bpy.data.workspaces.get('Sculpt+', None)
+        context.window.workspace = workspace
+
+        # Set-up the workspace.
+        if 'sculpt_plus' not in workspace:
+            workspace['sculpt_plus'] = 1
+
+        #workspace.use_filter_by_owner = True
+
+        #for screen in workspace.screens:
+        #    for area in screen.areas:
+        #        print(screen.name, area.type)
+
+        # Only addon enabled in this workspace should be Sculpt+ addon.
+        #with context.temp_override(window=context.window, area=workspace.screens[0].areas[1], screen=workspace.screens[0], workspace=workspace):
+        # bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
+
+        context.window.workspace = old_workspace
+        return workspace
 
     @staticmethod
     def Canvas() -> Union[Canvas, None]:

@@ -25,6 +25,8 @@ def _layout_generator_single_row(layout, scale_y):
 
 def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', scale_y=1.75, spacing=0.25):
     # Use a classmethod so it can be called outside of a panel context.
+    
+    use_legacy_sculpt = 'sculpt_plus' not in context.workspace
 
     # XXX, this UI isn't very nice.
     # We might need to create new button types for this.
@@ -162,9 +164,11 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
 
 timer = time()
 def draw_toolbar(self, context):
-    if context.mode != 'SCULPT':
-        self.draw_cls(self.layout, context)
+    if context.mode != 'SCULPT' or 'sculpt_plus' not in context.workspace:
+        VIEW3D_PT_tools_active.draw_cls(self.layout, context)
         return
+
+    use_legacy_sculpt = 'sculpt_plus' not in context.workspace
 
     prefs = context.preferences
     ui_scale = prefs.system.ui_scale # prefs.view.ui_scale
@@ -172,7 +176,7 @@ def draw_toolbar(self, context):
     sculpt_plus_prefs = get_prefs(context)
 
     # toolbar_is_wide_open
-    if context.region.width <= (96 * ui_scale):
+    if context.region.width <= (96 * ui_scale) or use_legacy_sculpt:
         self.layout.operator('sculpt_plus.expand_toolbar', text="", icon='RIGHTARROW', emboss=False)
         draw_cls(VIEW3D_PT_tools_active, self.layout, context, spacing=0.1)
         return

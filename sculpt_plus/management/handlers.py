@@ -28,7 +28,13 @@ def on_load_post(dummy):
         return
     print("[Sculpt+] Loading database...")
     # print("on_load_post:", Props.BrushManager())
+    
+    # Init Workspace.
+    Props.Workspace()
+    
+    # Load Database.
     Props.BrushManager().load_data()
+
 
 def register():
     load_post.append(on_load_post)

@@ -4,7 +4,7 @@ from bpy.app.timers import register as register_timer, is_registered as is_timer
 sculpt_hotbar_classes = []
 exclude_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}
 def register():
-    print("[SculptHotbar] Registering...")
+    print("[SCULPT+] Registering...")
     from mathutils import Vector
     from sculpt_plus.prefs import get_prefs
     from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
@@ -119,7 +119,7 @@ def register():
             'bl_region_type': 'WINDOW',
             'bl_options': {'PERSISTENT', 'SHOW_MODAL_ALL'},
             'gz': "VIEW3D_GZ_sculpt_hotbar",
-            'poll': classmethod(lambda x, y: dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo),
+            'poll': classmethod(lambda x, y: dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace() == y.workspace),
             'draw_prepare': lambda x,y: update_master(x,y,x.master.cv) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
             'setup': lambda x,y: init_master(x,y,x.gizmos.new(x.__class__.gz)),
             'refresh': lambda x,y: setattr(x.master.cv,'reg',y.region) if on_refresh(x,y) and hasattr(x,'master') and hasattr(x.master,'cv') else None,
@@ -147,7 +147,7 @@ def register():
         bpy.utils.register_class(cls)
     bpy.sculpt_hotbar = master
 def unregister():
-    print("[SculptHotbar] Unregistering...")
+    print("[SCULPT+] Unregistering...")
     for cls in sculpt_hotbar_classes:
         bpy.utils.unregister_class(cls)
     if getattr(bpy, 'sculpt_hotbar', None):
