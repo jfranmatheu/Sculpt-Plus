@@ -1,5 +1,5 @@
 from bpy.types import PropertyGroup, Context, WindowManager as WM
-from bpy.props import PointerProperty
+from bpy.props import PointerProperty, BoolProperty
 
 from .ui import SCULPTPLUS_PG_ui_toggles
 
@@ -9,6 +9,8 @@ class SCULPTPLUS_PG_wm(PropertyGroup):
         return ctx.window_manager.sculpt_plus
 
     ui: PointerProperty(type=SCULPTPLUS_PG_ui_toggles)
+    
+    test_context: BoolProperty()
 
 
 # -------------------------------------------------------------------

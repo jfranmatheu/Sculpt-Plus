@@ -8,8 +8,8 @@ def install():
     '''
     try:
         import PIL
-
-        if not hasattr(PIL, '__version__') or float(PIL.__version__[:-2]) < 9.4:
+        
+        if not hasattr(PIL, '__version__') or float(PIL.__version__[:-2]) < 9.3:
             print("Pillow version is too old! Requires to install a recent version...")
             raise ImportError("Pillow version is too old!")
 
@@ -27,4 +27,8 @@ def install():
         subprocess.call([python_exe, "-m", "pip", "install", "--upgrade", "pip"])
 
         # install required packages
-        subprocess.call([python_exe, "-m", "pip", "install", "Pillow>=9.4.0", "-t", target])
+        try:
+            subprocess.call([python_exe, "-m", "pip", "install", "Pillow>=9.3.0", "-t", target, "--no-binary"])
+        except PermissionError as e:
+            print(e)
+            subprocess.call([python_exe, "-m", "pip", "install", "Pillow>=9.3.0"])

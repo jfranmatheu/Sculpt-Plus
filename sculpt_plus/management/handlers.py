@@ -10,7 +10,7 @@ def goodbye():
     if goodbye_check:
         return
     goodbye_check = True
-    
+
     from sculpt_plus.props import Props
     if Props.BrushManagerExists():
         # print("atexit:", Props.BrushManager())
@@ -28,10 +28,10 @@ def on_load_post(dummy):
         return
     print("[Sculpt+] Loading database...")
     # print("on_load_post:", Props.BrushManager())
-    
+
     # Init Workspace.
     Props.Workspace()
-    
+
     # Load Database.
     Props.BrushManager().load_data()
 

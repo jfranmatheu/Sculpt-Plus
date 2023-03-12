@@ -689,6 +689,9 @@ class Manager:
         if active_texture in self.textures:
             self.active_texture = active_texture
 
+        if not self.brush_cats or not self.brush_list:
+            self.load_default_brushes()
+
     def save_all(self) -> None:
         if not self.brushes and not self.textures and not self.brush_cats and not self.texture_cats:
             return

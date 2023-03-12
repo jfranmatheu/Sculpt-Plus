@@ -119,7 +119,7 @@ def register():
             'bl_region_type': 'WINDOW',
             'bl_options': {'PERSISTENT', 'SHOW_MODAL_ALL'},
             'gz': "VIEW3D_GZ_sculpt_hotbar",
-            'poll': classmethod(lambda x, y: dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace() == y.workspace),
+            'poll': classmethod(lambda x, y: dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace(y) == y.workspace),
             'draw_prepare': lambda x,y: update_master(x,y,x.master.cv) if hasattr(x,'master') and hasattr(x.master,'cv') else None,
             'setup': lambda x,y: init_master(x,y,x.gizmos.new(x.__class__.gz)),
             'refresh': lambda x,y: setattr(x.master.cv,'reg',y.region) if on_refresh(x,y) and hasattr(x,'master') and hasattr(x.master,'cv') else None,

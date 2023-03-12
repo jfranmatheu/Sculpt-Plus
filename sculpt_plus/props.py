@@ -49,7 +49,7 @@ class Props:
         return bpy.data.image.new('.sculpt_plus_thumbnail', 100, 100)
 
     @staticmethod
-    def Workspace() -> WorkSpace or None:
+    def Workspace(context=None) -> WorkSpace or None:
         for workspace in bpy.data.workspaces:
             if 'sculpt_plus' in workspace:
                 if not workspace.use_filter_by_owner and bpy.context.workspace == workspace:
@@ -58,8 +58,15 @@ class Props:
                         bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
                     timers.register(_toggle_addon_workspace, first_interval=.1)
                 return workspace
-        context = bpy.context
+        context = context if context else bpy.context
         old_workspace = context.window.workspace    
+
+        try:
+            # Workaround to ensure context is OK before workspace.append_active.
+            Props.Temporal(context).test_context = True
+        except RuntimeError as e:
+            print(e)
+            return None
 
         bpy.ops.workspace.append_activate(False, idname='Sculpt+', filepath=SculptPlusPaths.BLEND_WORKSPACE())
         workspace: WorkSpace = bpy.data.workspaces.get('Sculpt+', None)

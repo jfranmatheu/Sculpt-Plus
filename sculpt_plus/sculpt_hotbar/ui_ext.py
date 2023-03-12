@@ -1,7 +1,7 @@
 from sculpt_plus.props import Props
 
 def gizmo_display_ext(self, context):
-    if context.mode != 'SCULPT' and Props.Workspace() == context.workspace:
+    if context.mode != 'SCULPT' and Props.Workspace(context) == context.workspace:
         return
     self.layout.prop(context.scene.sculpt_hotbar, 'show_gizmo_sculpt_hotbar', text="Sculpt Hotbar")
 
