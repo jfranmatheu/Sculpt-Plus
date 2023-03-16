@@ -30,7 +30,7 @@ def on_load_post(dummy):
     # print("on_load_post:", Props.BrushManager())
 
     # Init Workspace.
-    Props.Workspace()
+    # Props.Workspace()
 
     # Load Database.
     Props.BrushManager().load_data()

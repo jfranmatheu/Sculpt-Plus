@@ -14,6 +14,9 @@ class SCULPTPLUS_OT_expand_toolbar(Operator):
     use_smooth: BoolProperty(default=True)
 
     def execute(self, context):
+        if context.area is None:
+            print("Bad context to expand toolbar!")
+            return {'CANCELLED'}
         region: Region = None
         for reg in context.area.regions:
             if reg.type == 'TOOLS':

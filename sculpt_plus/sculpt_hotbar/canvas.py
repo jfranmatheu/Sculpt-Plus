@@ -125,7 +125,7 @@ class Canvas:
             ctx.region.tag_redraw()
         else:
             self.reg.tag_redraw()
-        self.tag_redraw = True
+        #self.tag_redraw = True
     def test(self, ctx, m):return 1 if not get_prefs(ctx).first_time and self._on_hover(ctx, m) else -1
     @staticmethod
     def set_cursor(_state=True):
@@ -133,9 +133,9 @@ class Canvas:
         #bpy.context.window.cursor_modal_set('DEFAULT'if not state else 'PAINT_CROSS')
         bpy.context.tool_settings.sculpt.show_brush = _state
     def _on_hover(self, ctx, m):
-        if self.tag_redraw:
-            OffscreenBuffer.tag_redraw(ctx)
-            self.tag_redraw = False
+        #if self.tag_redraw:
+            # OffscreenBuffer.tag_redraw(ctx)
+        #    self.tag_redraw = False
         #scale = get_prefs(ctx).get_scale(ctx)
         #if scale != self.scale:
         #    self.update(self.size, scale, get_prefs(ctx))

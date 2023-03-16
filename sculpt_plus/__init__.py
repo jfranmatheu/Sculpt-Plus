@@ -15,12 +15,14 @@ bl_info = {
     "name" : "Sculpt +",
     "author" : "J. Fran Matheu (@jfranmatheu)",
     "description" : "",
-    "blender" : (3, 4, 0),
-    "version" : (1, 0, 3),
+    "blender" : (3, 4, 1),
+    "version" : (1, 0, 4),
     "location" : "'Sculpt+' WorkSpace",
     "warning" : "BETA VERSION! May be unstable!",
     "category" : "General"
 }
+
+USE_DEV_ENVIRONMENT = True
 
 if __package__ != 'sculpt_plus':
     import sys
@@ -35,7 +37,7 @@ if bpy.app.background:
 else:
     from . import auto_load
 
-    auto_load.init()
+    auto_load.init(USE_DEV_ENVIRONMENT)
 
     def register():
         auto_load.register()

@@ -2,7 +2,6 @@ from typing import Union, List, Dict, Set, Tuple
 
 import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush, WorkSpace
-from bpy.app import timers
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.management.manager import Manager, TextureCategory, BrushCategory, Brush, Texture, HotbarManager
@@ -50,16 +49,15 @@ class Props:
 
     @staticmethod
     def Workspace(context=None) -> WorkSpace or None:
+        context = context if context else bpy.context
         for workspace in bpy.data.workspaces:
             if 'sculpt_plus' in workspace:
-                if not workspace.use_filter_by_owner and bpy.context.workspace == workspace:
-                    workspace.use_filter_by_owner = True
-                    def _toggle_addon_workspace():
-                        bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
-                    timers.register(_toggle_addon_workspace, first_interval=.1)
                 return workspace
-        context = context if context else bpy.context
-        old_workspace = context.window.workspace    
+        return None
+
+    @staticmethod
+    def WorkspaceSetup(context) -> WorkSpace or None:
+        old_workspace = context.window.workspace
 
         try:
             # Workaround to ensure context is OK before workspace.append_active.

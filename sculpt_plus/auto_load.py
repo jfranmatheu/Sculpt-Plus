@@ -4,6 +4,8 @@ import inspect
 import pkgutil
 import importlib
 from pathlib import Path
+import sys
+import importlib
 
 
 __all__ = (
@@ -21,7 +23,7 @@ if __package__ == 'sculpt_plus':
     modules = None
     ordered_classes = None
 
-    def init():
+    def init(USE_DEV_ENVIRONMENT):
         from . import install_deps
         install_deps.install()
 
@@ -29,7 +31,7 @@ if __package__ == 'sculpt_plus':
         global ordered_classes
         global classes
 
-        modules = get_all_submodules(Path(__file__).parent)
+        modules = get_all_submodules(Path(__file__).parent, USE_DEV_ENVIRONMENT)
         ordered_classes = get_ordered_classes_to_register(modules)
         classes = []
 
@@ -61,12 +63,20 @@ if __package__ == 'sculpt_plus':
     # Import modules
     #################################################
 
-    def get_all_submodules(directory):
-        return list(iter_submodules(directory, directory.name))
+    def get_all_submodules(directory, USE_DEV_ENVIRONMENT):
+        return list(iter_submodules(directory, directory.name, USE_DEV_ENVIRONMENT))
 
-    def iter_submodules(path, package_name):
+    def iter_submodules(path, package_name, USE_DEV_ENVIRONMENT):
+        #print(sys.modules.keys())
         for name in sorted(iter_submodule_names(path)):
-            yield importlib.import_module("." + name, package_name)
+            full_name = __package__ + '.' + name
+            print(full_name)
+            if not USE_DEV_ENVIRONMENT and full_name in sys.modules:
+                #print("\t - reload")
+                yield importlib.reload(sys.modules[full_name])
+            else:
+                #print("\t - import")
+                yield importlib.import_module(full_name) # "." + name, package_name)
 
     def iter_submodule_names(path, root=""):
         for _, module_name, is_package in pkgutil.iter_modules([str(path)]):

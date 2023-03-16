@@ -138,7 +138,7 @@ def register():
             'invoke':lambda x,c,e: x.cv.invoke(c,e) if hasattr(x,'cv') else {'FINISHED'},
             'modal':lambda x,c,e,_: x.cv.modal(c,e,_) if hasattr(x,'cv') else {'FINISHED'},
             'exit':lambda x,c,_: x.cv.exit(c,_) if hasattr(x,'cv') else None,
-            'draw':lambda x,c: OffscreenBuffer.draw(c), # x.cv.draw(c) if hasattr(x,'cv') else None,
+            'draw':lambda x,c: x.cv.draw(c) if hasattr(x,'cv') else None, # OffscreenBuffer.draw(c), # 
         }
     )
     global sculpt_hotbar_classes
