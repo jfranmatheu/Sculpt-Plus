@@ -4,7 +4,6 @@ from pathlib import Path
 from uuid import uuid4
 from shutil import copyfile, move as movefile
 from os.path import basename, splitext, exists, isfile
-from PIL import Image as PILImage
 
 import bpy
 from bpy.types import Image as BlImage

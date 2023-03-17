@@ -24,9 +24,11 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
         prev_active_tool = Props.BrushManager().active_sculpt_tool
         try:
             curr_active_tool = ToolSelectPanelHelper._tool_active_from_context(context, 'VIEW_3D', mode='SCULPT', create=False)
-        except AttributeError:
+        except AttributeError as e:
+            print("[SCULPT+] WARN!", e)
             return {'CANCELLED'}
         if curr_active_tool is None:
+            print("[SCULPT+] WARN! Current active tool is NULL")
             return {'CANCELLED'}
         type, curr_active_tool = curr_active_tool.idname.split('.')
         curr_active_tool = curr_active_tool.replace(' ', '_').upper()
@@ -39,12 +41,14 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
 
             # if curr_active_tool == 'ALL_BRUSH':
             print("Sculpt Brush! All for One, One for All!")
+            bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+
             if active_br := Props.GetActiveBrush():
                 Props.SelectBrush(context, active_br)
             elif brushes := list(Props.BrushManager().brushes.values()):
                 Props.SelectBrush(context, brushes[0])
-            else:
-                bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+            #else:
+            #    bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
 
             curr_active_tool = ToolSelectPanelHelper.tool_active_from_context(context)
             curr_active_tool = curr_active_tool.idname.split('.')[1].replace(' ', '_').upper()

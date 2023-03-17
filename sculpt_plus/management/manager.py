@@ -134,6 +134,7 @@ class Manager:
 
     def __init__(self):
         self.initilized: bool = False
+        self.is_data_loaded: bool = False
 
         self._active_brush_cat: str = ''
         self._active_texture_cat: str = ''
@@ -153,6 +154,13 @@ class Manager:
         self._remove_atexit__textures = []
         self._remove_atexit__brush_cats = []
         self._remove_atexit__texture_cats = []
+        
+    def ensure_data(self) -> None:
+        if self.is_data_loaded:
+            if self.brush_cats_count == 0 or self.brushes_count == 0:
+                self.load_default_brushes()
+        else:
+            self.load_data()
 
     ''' Getters. '''
     @property
@@ -616,6 +624,7 @@ class Manager:
 
     ''' Generic methods, load and save. '''
     def load_data(self) -> None:
+        self.is_data_loaded = True
         brushes_db_filepath: str = DBShelfPaths.BRUSH_SETTINGS
         brush_cats_db_filepath: str = DBShelfPaths.BRUSH_CAT
         config_filepath: str = SculptPlusPaths.CONFIG_FILE()
@@ -689,7 +698,7 @@ class Manager:
         if active_texture in self.textures:
             self.active_texture = active_texture
 
-        if not self.brush_cats or not self.brush_list:
+        if self.brushes_count == 0 or self.brush_cats_count == 0:
             self.load_default_brushes()
 
     def save_all(self) -> None:
@@ -744,3 +753,4 @@ class Manager:
                 for remove_texture_cat in self._remove_atexit__texture_cats:
                     shelf_manager__texture_cats.remove(remove_texture_cat)
                 self._remove_atexit__texture_cats.clear()
+

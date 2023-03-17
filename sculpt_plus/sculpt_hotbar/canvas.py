@@ -19,7 +19,7 @@ from .di import set_font
 from sculpt_plus.lib.fonts import Fonts
 from sculpt_plus.utils.gpu import OffscreenBuffer
 from ..utils.gpu import LiveView
-
+from ..management.manager import Manager
 
 start_time = 0
 counter = 0
@@ -108,6 +108,8 @@ class Canvas:
                          )
         global start_time
         start_time = time()
+        
+        Manager.get().ensure_data()
 
     def update(self, off: tuple, dimensions: tuple, scale: float, prefs) -> 'Canvas': # SCULPTPLUS_AddonPreferences
         if dimensions:
@@ -123,6 +125,7 @@ class Canvas:
     def refresh(self, ctx=None):
         if ctx:
             ctx.region.tag_redraw()
+            Manager.get().ensure_data()
         else:
             self.reg.tag_redraw()
         #self.tag_redraw = True

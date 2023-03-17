@@ -36,6 +36,13 @@ if __package__ == 'sculpt_plus':
         classes = []
 
     def register():
+        global modules
+        global ordered_classes
+
+        # When installing new version over... it tends to not run the init LMAO.
+        if ordered_classes is None:
+            init(False)
+
         for cls in ordered_classes:
             bpy.utils.register_class(cls)
 
@@ -46,7 +53,10 @@ if __package__ == 'sculpt_plus':
                 module.register()
 
     def unregister():
+        global modules
+        global ordered_classes
         global sculpt_hotbar_classes
+
         for cls in sculpt_hotbar_classes:
             bpy.utils.unregister_class(cls)
 
@@ -58,6 +68,9 @@ if __package__ == 'sculpt_plus':
                 continue
             if hasattr(module, "unregister"):
                 module.unregister()
+
+        for module in modules:
+            del sys.modules[module.__name__]
 
 
     # Import modules

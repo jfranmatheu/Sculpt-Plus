@@ -5,7 +5,19 @@ from time import time
 from typing import Dict, List, Set, Tuple
 from mathutils import Vector
 from bpy.app import timers
+
+from bpy.app import version
+if version[0] <= 3 and version[1] <= 4:
+    USE_BGL = True
+    from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST
+else:
+    USE_BGL = False
+    from gpu import state
+
+# gpu.stet.scissor has bug lol...
 from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST
+USE_BGL = True
+
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.sculpt_hotbar.di import DiRct, DiText
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
@@ -431,16 +443,29 @@ class WidgetBase:
         self.draw_pre(context, cv, mouse, scale, prefs)
         if self.use_scissor:
             #glDisable(GL_DEPTH_TEST)
-            glEnable(GL_SCISSOR_TEST)
+            if USE_BGL:
+                glEnable(GL_SCISSOR_TEST)
+            else:
+                state.scissor_test_set(True)
             self.draw_scissor_apply(self.pos, self.size)
             DiText(Vector((0,0)), ' ', 1, scale, prefs.theme_text)
         self.draw(context, cv, mouse, scale, prefs)
         if self.use_scissor:
-            glDisable(GL_SCISSOR_TEST)
+            if USE_BGL:
+                glDisable(GL_SCISSOR_TEST)
+            else:
+                state.scissor_test_set(False)
             self.draw_post(context, cv, mouse, scale, prefs)
 
     def draw_scissor_apply(self, _p: Vector, _s: Vector):
-        glScissor(
+        if USE_BGL:
+            glScissor(
+                int(_p.x)-1+int(self.scissor_padding.x),
+                int(_p.y)-1+int(self.scissor_padding.x),
+                int(_s.x)+2-int(self.scissor_padding.x*2),
+                int(_s.y)+2-int(self.scissor_padding.x*2))
+        else:
+            state.scissor_set(
                 int(_p.x)-1+int(self.scissor_padding.x),
                 int(_p.y)-1+int(self.scissor_padding.x),
                 int(_s.x)+2-int(self.scissor_padding.x*2),

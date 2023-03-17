@@ -173,4 +173,6 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
 
 def get_prefs(context: Context) -> SCULPTPLUS_AddonPreferences:
+    if __package__ not in context.preferences.addons:
+        return None
     return context.preferences.addons[__package__].preferences

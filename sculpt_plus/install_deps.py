@@ -28,7 +28,7 @@ def install():
 
         # install required packages
         try:
-            subprocess.call([python_exe, "-m", "pip", "install", "Pillow>=9.3.0", "-t", target, "--no-binary"])
+            subprocess.call([python_exe, "-m", "pip", "install", '--upgrade', "Pillow", "-t", target])
         except PermissionError as e:
             print(e)
             subprocess.call([python_exe, "-m", "pip", "install", "Pillow>=9.3.0"])

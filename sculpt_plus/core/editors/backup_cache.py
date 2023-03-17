@@ -10,6 +10,7 @@ from bpy.types import (
 
 
 classes_to_reset = (
+    VIEW3D_PT_tools_active,
     VIEW3D_HT_tool_header,
     #BrushPanel,
     #BrushSelectPanel,

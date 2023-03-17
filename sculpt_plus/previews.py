@@ -39,6 +39,7 @@ class Previews:
         SCALE_UP = '.ScaleUp_icon'
         SCALE_DOWN = '.ScaleDown_icon'
         FRONT_FACES = '.frontFaces_icon'
+        BRUSH_BROOM = '.icons8-broom-64'
 
     class Mask(CallEnum):
         MASK = '.Mask_icon'

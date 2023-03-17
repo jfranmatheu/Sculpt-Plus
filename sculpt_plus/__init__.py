@@ -16,8 +16,8 @@ bl_info = {
     "author" : "J. Fran Matheu (@jfranmatheu)",
     "description" : "",
     "blender" : (3, 4, 1),
-    "version" : (1, 0, 4),
-    "location" : "'Sculpt+' WorkSpace",
+    "version" : (1, 0, 5),
+    "location" : "Topbar [S+] button > 'Sculpt+' WorkSpace",
     "warning" : "BETA VERSION! May be unstable!",
     "category" : "General"
 }
@@ -31,7 +31,7 @@ if __package__ != 'sculpt_plus':
 
 import bpy
 if bpy.app.background:
-    print("[Sculpt+] Addon doesn't work in background!")
+    print("[Sculpt+] WARN! Addon doesn't work in background!")
     def register(): pass
     def unregister(): pass
 else:

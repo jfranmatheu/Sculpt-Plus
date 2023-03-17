@@ -11,7 +11,6 @@ from collections import defaultdict
 import numpy as np
 import bpy
 from time import sleep, time
-from PIL import Image
 from collections import deque
 
 from sculpt_plus.management.types.image import Thumbnail
@@ -45,6 +44,7 @@ def generate_thumbnail_with_bpy(image_path: str) -> np.ndarray:
 
 
 def generate_thumbnail_with_pil(image_path: str, format: str) -> np.ndarray:
+    from PIL import Image
     image = Image.open(image_path, mode='r')
     # thumbnail preserve aspect ratio, some artists might use non-squared textures.
     # image.thumbnail(THUMBNAIL_SIZE, Image.Resampling.NEAREST)

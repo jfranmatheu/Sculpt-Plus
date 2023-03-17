@@ -1,9 +1,10 @@
-from bpy.types import Operator, Context, Event, WorkSpace
+from bpy.types import Operator, Context, Event, WorkSpace, Menu
 from sculpt_plus.props import Props
 from sculpt_plus.path import SculptPlusPaths
 import bpy
 from bpy.app import timers
 from bl_ui.space_view3d import VIEW3D_HT_header
+from bl_ui.space_topbar import TOPBAR_MT_workspace_menu, TOPBAR_HT_upper_bar
 from sculpt_plus.previews import Previews
 from sculpt_plus.core.data.cy_structs import CyBlStruct
 
@@ -57,12 +58,18 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
         return {'FINISHED'}
 
 
-def draw_workspace_setup_op(self, context):
-    if context.mode == 'SCULPT' and Props.Workspace(context) is None:
-        self.layout.operator(SCULPTPLUS_OT_setup_workspace.bl_idname, text="Sculpt+", icon_value=Previews.Main.BRUSH())
+def draw_workspace_setup_op(self, context: Context):
+    if context.region.alignment == 'RIGHT' and Props.Workspace(context) is None:
+        if issubclass(self.__class__, Menu):
+            self.layout.separator()
+            self.layout.operator(SCULPTPLUS_OT_setup_workspace.bl_idname, text="Sculpt +", icon_value=Previews.Main.BRUSH_BROOM())
+        else:
+            self.layout.operator(SCULPTPLUS_OT_setup_workspace.bl_idname, text="S+", icon_value=Previews.Main.BRUSH_BROOM())
 
 def register():
-    VIEW3D_HT_header.append(draw_workspace_setup_op)
+    TOPBAR_HT_upper_bar.append(draw_workspace_setup_op)
+    # TOPBAR_MT_workspace_menu.append(draw_workspace_setup_op)
 
 def unregister():
-    VIEW3D_HT_header.remove(draw_workspace_setup_op)
+    TOPBAR_HT_upper_bar.remove(draw_workspace_setup_op)
+    # TOPBAR_MT_workspace_menu.remove(draw_workspace_setup_op)
