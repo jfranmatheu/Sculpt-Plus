@@ -59,7 +59,7 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
 
 
 def draw_workspace_setup_op(self, context: Context):
-    if context.region.alignment == 'RIGHT' and Props.Workspace(context) is None:
+    if context.region.alignment != 'RIGHT' and Props.Workspace(context) is None:
         if issubclass(self.__class__, Menu):
             self.layout.separator()
             self.layout.operator(SCULPTPLUS_OT_setup_workspace.bl_idname, text="Sculpt +", icon_value=Previews.Main.BRUSH_BROOM())
