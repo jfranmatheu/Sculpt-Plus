@@ -36,10 +36,6 @@ def draw_tool_settings(layout, context, active_tool, active_tool_id: str):
         draw_settings = getattr(item, 'draw_settings', None)
         break
 
-    if draw_settings is None:
-        # print("nope")
-        return
-
     section = layout.column(align=True)
 
     header = section.box().row(align=True)
@@ -51,6 +47,10 @@ def draw_tool_settings(layout, context, active_tool, active_tool_id: str):
     if item is None:
         return None
     # header.label(text="    " + item.label, icon_value=icon_value)
+    if draw_settings is None:
+        header.label(text="    " + item.label, icon_value=icon_value)
+        return
+    
     header.label(text="", icon_value=icon_value)
     tri_icon = 'TRIA_DOWN' if ui_props.show_brush_settings_panel else 'TRIA_LEFT'
     header.prop(ui_props, 'show_brush_settings_panel', expand=True, text=item.label, emboss=False)

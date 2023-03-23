@@ -1,7 +1,7 @@
 from ._dummy import DummyPanel
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
-from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel
+from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel, SmoothStrokePanel
 from bpy.types import UILayout
 
 from sculpt_plus.props import Props
@@ -55,6 +55,14 @@ def draw_brush_settings_tabs(layout, context):
         brush_settings_advanced(content, context, act_brush)
     elif ui_section == 'BRUSH_SETTINGS_STROKE':
         StrokePanel.draw(DummyPanel(content), context)
+        #SmoothStrokePanel.draw_header(dummy_panel, context)
+        content.separator()
+        content = content.column(align=True)
+        row = content.box().row(align=True)
+        row.use_property_split = False
+        row.alignment = 'LEFT'
+        row.prop(act_brush, "use_smooth_stroke", text="Stabilize Stroke")
+        if act_brush.use_smooth_stroke: SmoothStrokePanel.draw(DummyPanel(content.box()), context)
     elif ui_section == 'BRUSH_SETTINGS_FALLOFF':
         FalloffPanel.draw(DummyPanel(content), context)
     elif ui_section == 'BRUSH_SETTINGS_TEXTURE':
