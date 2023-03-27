@@ -49,7 +49,7 @@ def generate_thumbnail_with_pil(image_path: str, format: str) -> np.ndarray:
     # thumbnail preserve aspect ratio, some artists might use non-squared textures.
     # image.thumbnail(THUMBNAIL_SIZE, Image.Resampling.NEAREST)
     # NOTE BUG: thumbnail maintain aspect ratio.... which lead to errors... currently... must fix this somehow...
-    image = image.resize(THUMBNAIL_SIZE, Image.Resampling.NEAREST)
+    image = image.resize(THUMBNAIL_SIZE, Image.Resampling.NEAREST if hasattr(Image, 'Resampling') else Image.NEAREST)
     image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     image_size = image.size
     bands = len(image.getbands())

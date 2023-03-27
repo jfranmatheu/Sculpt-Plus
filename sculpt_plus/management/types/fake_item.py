@@ -6,7 +6,6 @@ from mathutils import Vector
 from typing import Union
 from os.path import exists, isfile
 import numpy as np
-import PIL
 from pathlib import Path
 from uuid import uuid4
 
@@ -159,8 +158,9 @@ class FakeViewItem_Brush(FakeViewItem):
         return fake_brush
 
     def generate_from_filepath(self, filepath, output, format: str = 'JPEG'):
-        image = PIL.Image.open(filepath)
-        image.thumbnail((100, 100), resample=PIL.Image.Resampling.NEAREST)
+        from PIL import Image as PilImage
+        image = PilImage.open(filepath)
+        image.thumbnail((100, 100), resample=PilImage.Resampling.NEAREST if hasattr(PilImage, 'Resampling') else PilImage.NEAREST)
         image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
         thumb_pixels = np.array(image, dtype=np.float32).reshape(40000) / 255
         if format == 'JPEG':

@@ -26,7 +26,7 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
             Props.Temporal(context).test_context = True
         except RuntimeError as e:
             print(e)
-            return None
+            return {'CANCELLED'}
 
         bpy.ops.workspace.append_activate(False, idname='Sculpt+', filepath=SculptPlusPaths.BLEND_WORKSPACE())
         workspace: WorkSpace = bpy.data.workspaces.get('Sculpt+', None)
@@ -48,6 +48,11 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
         # timers.register(_toggle_addon_workspace, first_interval=.1)
 
         # context.window.workspace = old_workspace
+        #from ...sculpt_hotbar.reg import _reload
+        #_reload()
+        #from ...sculpt_hotbar.km import create_hotbar_km
+        #create_hotbar_km()
+
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
         #return {'FINISHED'}
@@ -55,6 +60,7 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
     def modal(self, context: 'Context', event: 'Event'):
         bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
         # timers.register(delay_expand_toolbar, first_interval=1.0)
+        Props.BrushManager().ensure_data()
         return {'FINISHED'}
 
 

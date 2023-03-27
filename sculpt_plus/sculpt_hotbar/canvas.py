@@ -129,7 +129,7 @@ class Canvas:
         else:
             self.reg.tag_redraw()
         #self.tag_redraw = True
-    def test(self, ctx, m):return 1 if not get_prefs(ctx).first_time and self._on_hover(ctx, m) else -1
+    def test(self, ctx, m):return 1 if self._on_hover(ctx, m) else -1
     @staticmethod
     def set_cursor(_state=True):
         import bpy

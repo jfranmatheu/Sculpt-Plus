@@ -154,11 +154,12 @@ class Manager:
         self._remove_atexit__textures = []
         self._remove_atexit__brush_cats = []
         self._remove_atexit__texture_cats = []
-        
+
     def ensure_data(self) -> None:
         if self.is_data_loaded:
             if self.brush_cats_count == 0 or self.brushes_count == 0:
                 self.load_default_brushes()
+            # print(self.brush_cats_count, self.brushes_count)
         else:
             self.load_data()
 
@@ -702,7 +703,8 @@ class Manager:
             self.load_default_brushes()
 
     def save_all(self) -> None:
-        if not self.brushes and not self.textures and not self.brush_cats and not self.texture_cats:
+        if not self.brushes_count and not self.textures_count and not self.brush_cats_count and not self.texture_cats_count:
+            print("[Sculpt+] No data to save...")
             return
         print("[Sculpt+] Saving UI config...")
         config_data = {
@@ -715,7 +717,7 @@ class Manager:
         with open(SculptPlusPaths.CONFIG_FILE(), 'w') as f:
             json.dump(config_data, f, indent=4, ensure_ascii=True)
 
-        if self.brushes != {}:
+        if self.brushes_count != 0:
             print("[Sculpt+] Saving brushes..")
             with DBShelfManager.BRUSH_SETTINGS() as shelf_manager__brushes:
                 for brush in self.brushes.values():
@@ -724,7 +726,7 @@ class Manager:
                 for remove_brush in self._remove_atexit__brushes:
                     shelf_manager__brushes.remove(remove_brush)
                 self._remove_atexit__brushes.clear()
-        if self.textures != {}:
+        if self.textures_count != 0:
             print("[Sculpt+] Saving textures..")
             with DBShelfManager.TEXTURE() as shelf_manager__textures:
                 for texture in self.textures.values():
@@ -733,7 +735,7 @@ class Manager:
                 for remove_texture in self._remove_atexit__textures:
                     shelf_manager__textures.remove(remove_texture)
                 self._remove_atexit__textures.clear()
-        if self.brush_cats != {}:
+        if self.brush_cats_count != 0:
             print("[Sculpt+] Saving brush_cats..")
             with DBShelfManager.BRUSH_CAT() as shelf_manager__brush_cats:
                 for brush_cat in self.brush_cats.values():
@@ -743,7 +745,7 @@ class Manager:
                 for remove_brush_cat in self._remove_atexit__brush_cats:
                     shelf_manager__brush_cats.remove(remove_brush_cat)
                 self._remove_atexit__brush_cats.clear()
-        if self.texture_cats != {}:
+        if self.texture_cats_count != 0:
             print("[Sculpt+] Saving texture_cats..")
             with DBShelfManager.TEXTURE_CAT() as shelf_manager__texture_cats:
                 for tex_cat in self.texture_cats.values():

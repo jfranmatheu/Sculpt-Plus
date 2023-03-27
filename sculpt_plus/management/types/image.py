@@ -323,7 +323,7 @@ class Image(object):
             from PIL import Image as PilImage
             with PilImage.open(filepath) as pil_img:
                 if self.use_optimize:
-                    pil_img = pil_img.resize(thumb_image_size, PilImage.Resampling.NEAREST)
+                    pil_img = pil_img.resize(thumb_image_size, PilImage.Resampling.NEAREST if hasattr(PilImage, 'Resampling') else PilImage.NEAREST)
                     pil_img.save(out_filepath, format='PNG')
                 else:
                     self.image_size = list(pil_img.size)

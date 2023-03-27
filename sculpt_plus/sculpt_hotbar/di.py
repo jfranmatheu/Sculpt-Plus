@@ -307,6 +307,7 @@ def DiStar(_p,_size,s=sh_estrellita):
     state.point_size_set(1.0)
     #state.blend_set('NONE')
 def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shadow_props: dict = None, draw_rect_props: dict = None, id:int=None, rotation:float=None):
+    state.blend_set('NONE')
     id=font_info['id'] if id is None else id
     text_color(id, *_co)
     text_size(id, max(7.5, _size), int(72*_scale))
@@ -320,13 +321,13 @@ def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shad
         text_enable(id, SHADOW)
         text_shadow(id, blur, *color)
         text_shadow_offset(id, *offset)
-    if not pivot:
+    if not pivot and draw_rect_props is None:
         dim = None
-
     else:
         dim = text_dim(id, _text)
-        _p = (_p.x - dim[0] * pivot[0], # X
-              _p.y - dim[1] * pivot[1]) # Y
+        if pivot:
+            _p = (_p.x - dim[0] * pivot[0], # X
+                  _p.y - dim[1] * pivot[1]) # Y
     text_position(id, *_p, 0)
     if draw_rect_props is not None:
         dim = dim if dim else text_dim(id, _text)

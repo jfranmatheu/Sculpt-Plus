@@ -10,6 +10,13 @@ from bpy.ops import file as file_ops
 
 argv = sys.argv
 
+from PIL import __version__
+PIL_VERSION = float(''.join(__version__.split('.')[:-1]))
+if PIL_VERSION >= 9.0:
+    PIL_RESAMPLING_NEAREST = Image.Resampling.NEAREST
+else:
+    PIL_RESAMPLING_NEAREST = Image.NEAREST
+
 print(argv)
 outpath = argv[6]
 PREVIEWS_PATH = Path(outpath)
@@ -75,7 +82,7 @@ def generate_thumbnail(filename: str, in_image_path: str):
     image = Image.open(in_image_path)
     # out_image_path = str(PREVIEWS_PATH / (filename + image.file_format)) # '.thumbnail'
     # if image.width > 256 or image.height > 256:
-    image = image.resize(THUMBNAIL_SIZE, Image.Resampling.NEAREST) #, Image.Resampling.LANCZOS)
+    image = image.resize(THUMBNAIL_SIZE, PIL_RESAMPLING_NEAREST) #, Image.Resampling.LANCZOS)
     # image.save(out_image_path, image.file_format)
     image_size = (image.width, image.height)
     image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)

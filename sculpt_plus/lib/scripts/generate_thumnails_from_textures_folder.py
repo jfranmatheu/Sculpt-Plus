@@ -11,6 +11,13 @@ import bpy
 from PIL import Image
 import numpy as np
 
+from PIL import __version__
+PIL_VERSION = float(''.join(__version__.split('.')[:-1]))
+if PIL_VERSION >= 9.0:
+    PIL_RESAMPLING_NEAREST = Image.Resampling.NEAREST
+else:
+    PIL_RESAMPLING_NEAREST = Image.NEAREST
+
 
 LEADERBOARD = {
     'IMBUF': 135, # Multithreaded -> ???
@@ -103,7 +110,7 @@ class ResizeImage:
                 'optimize': True,
                 'quality': 80
             }
-        image_pil.thumbnail(THUMBNAIL_SIZE, resample=Image.Resampling.NEAREST)
+        image_pil.thumbnail(THUMBNAIL_SIZE, resample=PIL_RESAMPLING_NEAREST)
         image_pil.save(_get_thumbnail_path(image_path, ext=ext), format=format, **args)
         if IS_WINDOWS_PLATFORM:
             # Windows file management is pure evil.

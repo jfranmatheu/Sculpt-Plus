@@ -6,6 +6,7 @@ goodbye_check = False
 
 @atexit.register
 def goodbye():
+    print("__goodbye__")
     global goodbye_check
     if goodbye_check:
         return

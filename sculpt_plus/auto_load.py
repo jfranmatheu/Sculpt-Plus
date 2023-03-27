@@ -14,8 +14,6 @@ __all__ = (
     "unregister",
 )
 
-global sculpt_hotbar_classes
-sculpt_hotbar_classes = []
 
 if __package__ == 'sculpt_plus':
     blender_version = bpy.app.version
@@ -29,19 +27,20 @@ if __package__ == 'sculpt_plus':
 
         global modules
         global ordered_classes
-        global classes
 
         modules = get_all_submodules(Path(__file__).parent, USE_DEV_ENVIRONMENT)
         ordered_classes = get_ordered_classes_to_register(modules)
-        classes = []
 
     def register():
+        print("[Sculpt+] Starting Register...")
         global modules
         global ordered_classes
+        #from sculpt_plus.sculpt_hotbar.reg import get_classes
 
         # When installing new version over... it tends to not run the init LMAO.
         if ordered_classes is None:
             init(False)
+            print("init modules and classes...")
 
         for cls in ordered_classes:
             bpy.utils.register_class(cls)
@@ -52,25 +51,38 @@ if __package__ == 'sculpt_plus':
             if hasattr(module, "register"):
                 module.register()
 
+        #for cls in get_classes():
+        #    bpy.utils.register_class(cls)
+
+        print("[Sculpt+] Register Complete!")
+
     def unregister():
+        print("[Sculpt+] Starting Unregister...")
         global modules
         global ordered_classes
-        global sculpt_hotbar_classes
+        #from sculpt_plus.sculpt_hotbar.reg import get_classes
 
-        for cls in sculpt_hotbar_classes:
-            bpy.utils.unregister_class(cls)
+        #for cls in get_classes():
+        #    bpy.utils.unregister_class(cls)
 
         for cls in reversed(ordered_classes):
             bpy.utils.unregister_class(cls)
 
+        #print(__name__)
         for module in modules:
             if module.__name__ == __name__:
                 continue
             if hasattr(module, "unregister"):
                 module.unregister()
 
+        sys_modules = sys.modules
         for module in modules:
-            del sys.modules[module.__name__]
+            if module == __name__:
+                continue
+            if module.__name__ in sys_modules:
+                del sys.modules[module.__name__]
+
+        print("[Sculpt+] Unregister Complete!")
 
 
     # Import modules
@@ -83,7 +95,7 @@ if __package__ == 'sculpt_plus':
         #print(sys.modules.keys())
         for name in sorted(iter_submodule_names(path)):
             full_name = __package__ + '.' + name
-            print(full_name)
+            # print(full_name)
             if not USE_DEV_ENVIRONMENT and full_name in sys.modules:
                 #print("\t - reload")
                 yield importlib.reload(sys.modules[full_name])
