@@ -129,10 +129,15 @@ class Brush(BrushCatItem, BaseBrush):
 
     def to_brush(self, brush: Union[BlBrush, bpy.types.Context]) -> None:
         if isinstance(brush, bpy.types.Context):
+            if brush.mode != 'SCULPT':
+                return
             #settings = VIEW3D_PT_sculpt_dyntopo.paint_settings(brush)
             brush: BlBrush = brush.tool_settings.sculpt.brush
             #if brush is None or settings is None:
             #    bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+
+        if brush is None:
+            return
 
         ''' Ensure that the current (now previous one) brush is updated before switching to the new one. '''
         if 'id' in brush and brush['id'] is not None:
@@ -145,7 +150,7 @@ class Brush(BrushCatItem, BaseBrush):
         brush.sculpt_tool = self.sculpt_tool
         for attr in brush_properties_per_sculpt_type[self.sculpt_tool]:
             setattr(brush, attr, getattr(self, attr))
-            
+
         try:
             setattr(brush, 'direction', getattr(self, 'direction'))
         except TypeError as e:

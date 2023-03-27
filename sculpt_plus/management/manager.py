@@ -363,6 +363,7 @@ class Manager:
                     self.add_brush(def_brush)
                     # TODO: if the brush is the current active brush,
                     # we should call to_brush() to ensure it is updated.
+                    def_brush.to_brush(bpy.context)
 
     def reset_brush_cat(self, cat_id: Union[str, BrushCategory]) -> None:
         cat: BrushCategory = cat if isinstance(cat, BrushCategory) else self.get_brush_cat(cat_id)

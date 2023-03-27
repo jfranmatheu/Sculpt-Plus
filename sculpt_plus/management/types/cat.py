@@ -83,7 +83,7 @@ class BrushCategory(Category):
     @property
     def items(self) -> List[Brush]:
         from ..manager import Manager
-        return self.get_items(Manager.get().brushes)
+        return list(Manager.get().brushes.values()) # self.get_items(Manager.get().brushes)
 
     def reset(self) -> None:
         from ..manager import Manager
@@ -120,7 +120,7 @@ class TextureCategory(Category):
     @property
     def items(self) -> List[Texture]:
         from ..manager import Manager
-        return self.get_items(Manager.get().textures)
+        return list(Manager.get().textures.values()) # self.get_items(Manager.get().textures)
 
     def reset(self) -> None:
         from ..manager import Manager
