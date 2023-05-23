@@ -15,6 +15,14 @@ from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
 
+from bpy.app import version
+if version <= (3, 4, 1):
+    USE_BGL = True
+    from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST, GL_POLYGON_SMOOTH
+else:
+    USE_BGL = False
+    from gpu import state
+
 
 SLOT_SIZE = 80
 HEADER_HEIGHT = 32
@@ -100,11 +108,14 @@ class Sidebar(WidgetBase):
         if self.expand:
             out_col = Vector(prefs.theme_sidebar)*.9
             out_col.w = 1.0
-            from bgl import glDisable, GL_POLYGON_SMOOTH, glEnable
-            glDisable(GL_POLYGON_SMOOTH)
-            DiRct(self.pos, self.size, prefs.theme_sidebar)
-            glEnable(GL_POLYGON_SMOOTH)
-            DiCage(self.pos, self.size, 3.2*scale, out_col)
+            if USE_BGL:
+                glDisable(GL_POLYGON_SMOOTH)
+                DiRct(self.pos, self.size, prefs.theme_sidebar)
+                glEnable(GL_POLYGON_SMOOTH)
+                DiCage(self.pos, self.size, 3.2*scale, out_col)
+            else:
+                DiRct(self.pos, self.size, prefs.theme_sidebar)
+                DiCage(self.pos, self.size, 3.2*scale, out_col)
      
     def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if not self.expand:

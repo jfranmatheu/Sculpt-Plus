@@ -7,7 +7,7 @@ from mathutils import Vector
 from bpy.app import timers
 
 from bpy.app import version
-if version[0] <= 3 and version[1] <= 4:
+if version <= (3, 4, 1):
     USE_BGL = True
     from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST
 else:
@@ -15,8 +15,8 @@ else:
     from gpu import state
 
 # gpu.stet.scissor has bug lol...
-from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST
-USE_BGL = True
+# from bgl import glScissor, glEnable, GL_SCISSOR_TEST, glDisable, GL_BLEND, GL_DEPTH_TEST
+# USE_BGL = True
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.sculpt_hotbar.di import DiRct, DiText
