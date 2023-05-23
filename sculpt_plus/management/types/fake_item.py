@@ -161,7 +161,7 @@ class FakeViewItem_Brush(FakeViewItem):
         from PIL import Image as PilImage
         image = PilImage.open(filepath)
         image.thumbnail((100, 100), resample=PilImage.Resampling.NEAREST if hasattr(PilImage, 'Resampling') else PilImage.NEAREST)
-        image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+        image = image.transpose(PilImage.Transpose.FLIP_TOP_BOTTOM if hasattr(PilImage, 'Transpose') else PilImage.FLIP_TOP_BOTTOM)
         thumb_pixels = np.array(image, dtype=np.float32).reshape(40000) / 255
         if format == 'JPEG':
             image.save(output, format=format, optimize=True, quality=80)

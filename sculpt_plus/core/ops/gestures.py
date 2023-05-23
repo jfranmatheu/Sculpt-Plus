@@ -112,7 +112,7 @@ class SCULPTPLUS_OT_gesture_size_strength(Operator):
         origin = self.start_mouse
         # current_mouse = self.current_mouse
         state.blend_set('ALPHA')
-        state.line_width_set(2.0*scale)
+        state.line_width_set(1.8*scale)
         if self.started:
             value = getattr(self.data, self.data_prop)
             value_rad = map_value(value, self.data_range, (0, self.max_radius))
@@ -126,12 +126,12 @@ class SCULPTPLUS_OT_gesture_size_strength(Operator):
                 label = 'Size'
                 color = (0.0, 1.0, 1.0, 1.0)
             # draw_circle_2d(origin, (0.1, 0.1, 0.1, 0.4), mouse_rad, segments=int(64*scale))
-            draw_circle_2d(origin, (.8, .8, .8, 1.0), self.max_radius, segments=int(64*scale))
-            draw_circle_2d(origin, (.6, .6, .6, 1.0), self.max_radius*0.5, segments=int(32*scale))
+            # draw_circle_2d(origin, (.8, .8, .8, 1.0), self.max_radius, segments=int(64*scale))
+            # draw_circle_2d(origin, (.6, .6, .6, 1.0), self.max_radius*0.5, segments=int(32*scale))
 
             draw_circle_2d(origin, color, value_rad, segments=int(64*scale))
             # +Vector((0, -self.safe_radius*2))
-            DiText(origin+Vector((0, self.max_radius*0.5+self.safe_radius)), label, 16, scale, pivot=(0.5, 0), draw_rect_props={}, shadow_props={})
+            DiText(origin+Vector((0, self.safe_radius*2)), label, 16, scale, pivot=(0.5, 0), draw_rect_props={}, shadow_props={})
             DiText(origin, str(value), 14, scale, pivot=(0.5, .5), draw_rect_props={}, shadow_props={})
         else:
             DiText(origin+Vector((0, self.safe_radius*2)), 'Size +', 14, scale, pivot=(0.5, 0), draw_rect_props={}, shadow_props={})
