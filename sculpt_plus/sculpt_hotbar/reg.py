@@ -14,17 +14,6 @@ from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 exclude_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}
 
 
-def init_master(gzg,ctx,gmaster):
-    gzg.roff = (0, 0)
-    gzg.rdim = (ctx.region.width, ctx.region.height)
-    gmaster.reg=ctx.region
-    gmaster.init(ctx)
-    gmaster.use_event_handle_all = True
-    gmaster.use_draw_modal = True
-    gmaster.scale_basis = 1.0
-    gzg.master = gmaster
-
-
 
 def initialize_brush():
     ctx = bpy.context
@@ -46,9 +35,8 @@ def initialize_brush():
             return
         Props.BrushManager().active_sculpt_tool = curr_active_tool
 
-def dummy_poll_view(ctx):
-    if ctx.mode != 'SCULPT':
-        return False
+
+def ensure_brush_manager(ctx):
     manager = Props.BrushManager()
     if not manager.initilized or not manager.active_sculpt_tool:
         # HACK. lol.
@@ -59,10 +47,8 @@ def dummy_poll_view(ctx):
         register_timer(initialize_brush, first_interval=.1)
     return True
 
-def on_refresh(gzg,ctx):
-    return True
 
-def update_master(gzg,ctx,cv):
+def update_transform(gzg,ctx,cv):
     off_left = 0
     off_bot = 0
     off_top = 0
@@ -79,46 +65,24 @@ def update_master(gzg,ctx,cv):
         cv.refresh()
         gzg.roff = (off_left, off_bot)
         gzg.rdim = (width, height)
-        p = get_prefs(ctx)
-        cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
+        return CV.get(ctx).update(ctx, (off_left, off_bot), (width, height))
+        # cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
 
 
 class Master(GZ):
     bl_idname: str = 'VIEW3D_GZ_sculpt_hotbar'
     _cv_instance = None
 
-    @classmethod
-    def get(cls, r) -> CV:
-        if cls._cv_instance is None:
-            cls._cv_instance = CV(r)
-        return cls._cv_instance
+    def init(x, c): CV.get(c).update(c, (0,0), (c.region.width, c.region.height))
+    def setup(x): pass
+    def test_select(x,c,l): return CV.get(c).test(c,l)
+    def invoke(x,c,e): return CV.get(c).invoke(c,e)
+    def modal(x,c,e,t): return CV.get(c).modal(c,e,t)
+    def exit(x,c,ca):
+        return CV.get(c).exit(c,cancel=ca)
+    def draw(x,c): 
+        return CV.get(c).draw(c)
 
-    def init(x, c): x.cv.update((0,0), (c.region.width, c.region.height), get_prefs(c).get_scale(c), get_prefs(c))
-    def setup(x): setattr(x, 'cv', x.__class__.get(bpy.context.region))
-    def test_select(x,c,l):
-        res = x.cv.test(c,l) if hasattr(x,'cv') else -1
-        # print("test result ->", res)
-        return res
-    def invoke(x,c,e): return x.cv.invoke(c,e) if hasattr(x,'cv') else {'FINISHED'}
-    def modal(c,x,e,t): return x.cv.modal(c,e,t) if hasattr(x,'cv') else {'FINISHED'}
-    def exit(x,c,ca): return x.cv.exit(c,ca) if hasattr(x,'cv') else None
-    def draw(x,c): x.cv.draw(c) if hasattr(x,'cv') else None
-
-'''
-class Test(GZG, KM):
-    bl_idname: str = 'VIEW3D_GZG_test_sculpt_plus'
-    bl_label: str = 'Test Sculpt Plus'
-    bl_space_type: str = 'VIEW_3D'
-    bl_region_type: str = 'WINDOW'
-    bl_options: set[str] = {'PERSISTENT', 'SHOW_MODAL_ALL'}
-
-    @classmethod
-    def poll(cls, y) -> bool:
-        return y.mode == 'SCULPT'
-
-    def setup(x, y):
-        pass # x.gizmos.new("GIZMO_GT_button_2d")
-'''
 
 class Controller(GZG, KM):
     bl_idname: str = 'VIEW3D_GZG_sculpt_hotbar'
@@ -126,25 +90,31 @@ class Controller(GZG, KM):
     bl_space_type: str = 'VIEW_3D'
     bl_region_type: str = 'WINDOW'
     bl_options: set[str] = {'PERSISTENT', 'SHOW_MODAL_ALL'} #, 'EXCLUDE_MODAL' , '3D'}
-    gz: GZ = Master
-
-    # setup_keymap = KM.setup_keymap
 
     @classmethod
     def poll(cls, y) -> bool:
-        res = dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace(y) == y.workspace
-        # print("poll result ->", res)
-        return res
+        return y.object is not None and y.mode=='SCULPT' and\
+               y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and\
+               Props.Workspace(y) == y.workspace and CV.get(y).poll_region(y, update_if_missing=True)
 
-    def setup(x, y): init_master(x,y,x.gizmos.new(x.__class__.gz.bl_idname))
+    def setup(x, y):
+        ensure_brush_manager(y)
+        x.init_master(y,x.gizmos.new(Master.bl_idname))
 
-    def draw_prepare(x, y):
-        # create_hotbar_km()
-        if hasattr(x,'master') and hasattr(x.master,'cv'):
-            update_master(x,y,x.master.cv)
+    def init_master(gzg,ctx,gmaster:GZ):
+        gzg.roff = (0, 0)
+        gzg.rdim = (ctx.region.width, ctx.region.height)
+        gmaster.init(ctx)
+        gmaster.use_event_handle_all = True
+        gmaster.use_draw_modal = True
+        gmaster.scale_basis = 1.0
+        gzg.master = gmaster
+
+    def draw_prepare(x, y): x.refresh(y)
 
     def refresh(x, y):
-        if on_refresh(x,y) and hasattr(x,'master') and hasattr(x.master,'cv'):
-            setattr(x.master.cv,'reg',y.region)
+        cv = CV.get(y)
+        cv.poll_region(y, update_if_missing=False)
+        update_transform(x,y,cv)
 
 bpy.sculpt_hotbar = Master

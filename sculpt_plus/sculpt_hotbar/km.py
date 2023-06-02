@@ -70,6 +70,14 @@ def unregister():
 class WidgetKM:
     @classmethod
     def setup_keymap(cls, keyconfig: KeyConfig):
+        # <= 1.0.5 beta
+        #km = keyconfig.keymaps.get(cls.bl_idname, None)
+        #if km and km.keymap_items and len(km.keymap_items) > 1: return km
+        #km = keyconfig.keymaps.new(name=cls.bl_idname, space_type='VIEW_3D', region_type='WINDOW')
+        #for key in hotkeys: km.keymap_items.new(op, key, 'ANY', any=True);km.keymap_items.new(op, key, 'RELEASE', any=True)
+        #km.keymap_items.new(op, 'LEFT_ALT', 'ANY', alt=True)
+        #return km
+        # >= 1.0.6-7 beta
         return create_hotbar_km(cls, keyconfig) # bpy.context.window_manager.keyconfigs.active.keymaps.get(master.bl_idname, None)
 
 
@@ -87,7 +95,11 @@ def create_hotbar_km(cls=None, keyconfig=None):
         km = bpy.context.window_manager.keyconfigs.addon.keymaps.new(cls.bl_idname, space_type='VIEW_3D', region_type='WINDOW')
         print("\t- INVALID! -> CREATE!", km, cls.bl_idname)
         for key in hotkeys:
-            km.keymap_items.new(op, key, 'ANY', any=True);km.keymap_items.new(op, key, 'RELEASE', any=True)
+            km.keymap_items.new(op, key, 'PRESS', any=True);km.keymap_items.new(op, key, 'RELEASE', any=True)
+        #km.keymap_items.new(op, 'LEFTMOUSE', 'CLICK', any=True)
+        #km.keymap_items.new(op, 'LEFTMOUSE', 'CLICK_DRAG', any=True)
+        #km.keymap_items.new(op, 'PEN', 'CLICK', any=True)
+        #km.keymap_items.new(op, 'PEN', 'CLICK_DRAG', any=True)
         km.keymap_items.new(op, 'LEFT_ALT', 'ANY', alt=True)
         return km
 
@@ -104,5 +116,9 @@ def create_hotbar_km(cls=None, keyconfig=None):
     print("\t - CREATE!", km, cls.bl_idname)
     for key in hotkeys:
         km.keymap_items.new(op, key, 'ANY', any=True);km.keymap_items.new(op, key, 'RELEASE', any=True)
+    #km.keymap_items.new(op, 'LEFTMOUSE', 'CLICK', any=True)
+    #km.keymap_items.new(op, 'LEFTMOUSE', 'CLICK_DRAG', any=True)
+    #km.keymap_items.new(op, 'PEN', 'CLICK', any=True)
+    #km.keymap_items.new(op, 'PEN', 'CLICK_DRAG', any=True)
     km.keymap_items.new(op, 'LEFT_ALT', 'ANY', alt=True)
     return km

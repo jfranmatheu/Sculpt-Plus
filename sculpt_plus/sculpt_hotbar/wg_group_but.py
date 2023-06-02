@@ -154,6 +154,7 @@ class ButtonGroup(WidgetBase):
         if self.hovered_item is None:
             return
         item = self.items[self.hovered_item]
+        print("hovered item to trigger:", item)
         if 'pre_func_ctx' in item:
             item['pre_func_ctx'](ctx)
         item['func'](*item['args'], **item['kwargs'])

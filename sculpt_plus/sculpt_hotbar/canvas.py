@@ -10,7 +10,7 @@ from bpy.app import timers
 import bpy
 from bpy.app import timers
 from bpy import ops as OP
-from bpy.types import Brush
+from bpy.types import Brush, Context
 import functools
 from sculpt_plus.utils.math import distance_between, ease_quad_in_out, lerp, lerp_smooth, map_value, point_inside_circle, smoothstep, vector
 from .types import Return
@@ -26,20 +26,48 @@ counter = 0
 fps_count = 0
 
 class Canvas:
+    _singleton: 'Canvas' = None
+
+    @classmethod
+    def get(cls, region=None) -> 'Canvas':
+        if cls._singleton is None:
+            if isinstance(region, Context):
+                region = region.region
+            cls._singleton = Canvas(region)
+        return cls._singleton
+
     def __init__(self, reg) -> None:
         self.size = Vector((reg.width,reg.height))
         self.pos = Vector((0, 0))
         self.scale = 1.0
-        self.reg = reg
         self.mouse = Vector((0, 0))
         self.hover_ctx = None
         self.tag_redraw = False
         self.modal_override_all = False
+        self.update_region(reg)
         self.init_ui()
         set_font(Fonts.NUNITO)
         self.draw_progress = False
         self.progress = 0
         self.progress_label = ''
+
+    def update_region(self, reg):
+        self.reg = reg
+        self.last_reg_pointer = reg.as_pointer()
+
+    def poll_region(self, ctx, update_if_missing: bool = False) -> bool:
+        if self.last_reg_pointer == ctx.region.as_pointer():
+            return True
+        for wnd in ctx.window_manager.windows:
+            for area in wnd.screen.areas:
+                if area == 'VIEW_3D':
+                    for reg in area.regions:
+                        if reg.type == 'WINDOW':
+                            if reg.as_pointer() == self.last_reg_pointer:
+                                return False
+        if update_if_missing:
+            self.update_region(ctx.region)
+        return False
 
     def progress_start(self, label: str = ''):
         self.progress = 0
@@ -108,15 +136,16 @@ class Canvas:
                          )
         global start_time
         start_time = time()
-        
+
         Manager.get().ensure_data()
 
-    def update(self, off: tuple, dimensions: tuple, scale: float, prefs) -> 'Canvas': # SCULPTPLUS_AddonPreferences
+    def update(self, ctx, off: tuple, dimensions: tuple) -> 'Canvas': # SCULPTPLUS_AddonPreferences
         if dimensions:
             self.size = Vector(dimensions)
         if off:
             self.pos = Vector(off)
-        self.scale = scale
+        prefs = get_prefs(ctx)
+        self.scale = prefs.get_scale(ctx)
         for child in self.children: child.update(self, prefs)
         #self.hotbar.update(self, prefs)
         #self.shelf.update(self, prefs)
@@ -188,7 +217,7 @@ class Canvas:
         if evt.type == 'LEFT_ALT':
             from sculpt_plus.props import Props
             if evt.alt and evt.value == 'PRESS':
-                Props.Hotbar().use_alt = True 
+                Props.Hotbar().use_alt = True
             elif not evt.alt and evt.value == 'RELEASE':
                 Props.Hotbar().use_alt = False
             self.refresh(ctx)
