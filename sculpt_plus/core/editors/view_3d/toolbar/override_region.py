@@ -1,11 +1,12 @@
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
-from bl_ui.space_toolsystem_common import ToolSelectPanelHelper, ToolDef
+from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
 from time import time
 
 from sculpt_plus.props import Props, toolbar_hidden_brush_tools
 from sculpt_plus.prefs import get_prefs
-from sculpt_plus.core.data.cy_structs import CyBlStruct
+# from sculpt_plus.core.data.cy_structs import CyBlStruct
+
 from .panels import *
 from ...backup_cache import get_attr_from_cache
 
@@ -44,7 +45,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
         "idname", None,
     )
     # active_tool_label = getattr(active_tool, 'label', None)
-    manager_active_sculpt_tool = Props.BrushManager().active_sculpt_tool
+    manager_active_sculpt_tool = Props.SculptTool.get_stored()
     toolbar_active_sculpt_tool = tool_active_id.split('.')[1].replace(' ', '_').upper()
 
     active_is_brush = tool_active_id.split('.')[0] == 'builtin_brush'

@@ -7,7 +7,9 @@ from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.path import SculptPlusPaths
 from sculpt_plus.management.manager import HotbarManager
 
-from brush_manager.api import BM, bm_types
+from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
+
+from brush_manager.api import BM, bm_types, BM_UI
 
 
 
@@ -20,6 +22,9 @@ manager_exclude_brush_tools: Set[str] = {'MASK', 'DRAW_FACE_SETS', 'SIMPLIFY', '
 toolbar_hidden_brush_tools: Set[str] = {sculpt_tool for sculpt_tool in sculpt_tool_brush_name.keys() if sculpt_tool not in manager_exclude_brush_tools}
 exclude_brush_names: Set[str] = {sculpt_tool_brush_name[sculpt_tool] for sculpt_tool in manager_exclude_brush_tools}
 filtered_builtin_brush_names = tuple(b for b in builtin_brush_names if b not in exclude_brush_names)
+
+
+stored_sculpt_tool: str = 'NULL'
 
 
 
@@ -86,6 +91,42 @@ class Props:
     @staticmethod
     def BrushManager(context: Context | None = None) -> bm_types.AddonDataByMode:
         return BM.SCULPT(context)
+
+
+    class SculptTool:
+        @staticmethod
+        def get_stored() -> str:
+            global stored_sculpt_tool
+            return stored_sculpt_tool
+        
+        @staticmethod
+        def clear_stored() -> None:
+            global stored_sculpt_tool
+            stored_sculpt_tool = 'NULL'
+
+        @staticmethod
+        def get_from_context(context: Context) -> tuple[str, str]:
+            try:
+                curr_active_tool = ToolSelectPanelHelper._tool_active_from_context(context, 'VIEW_3D', mode='SCULPT', create=False)
+            except AttributeError as e:
+                print("[SCULPT+] WARN!", e)
+                return None
+            if curr_active_tool is None:
+                print("[SCULPT+] WARN! Current active tool is NULL")
+                return {'CANCELLED'}
+            type, curr_active_tool = curr_active_tool.idname.split('.')
+            curr_active_tool = curr_active_tool.replace(' ', '_').upper()
+            return curr_active_tool, type
+
+        @classmethod
+        def update_stored(cls, context : Context) -> str:
+            global stored_sculpt_tool
+            stored_sculpt_tool = cls.get_from_context(context)
+
+        @classmethod
+        def has_changed(cls, context: Context) -> bool:
+            global stored_sculpt_tool
+            return stored_sculpt_tool != cls.get_from_context(context)
 
 
     ''' Categories Common. '''
@@ -231,7 +272,7 @@ class Props:
     @classmethod
     def GetActiveTexture(cls, context: Context) -> bm_types.Texture:
         return cls.GetTexture(context, cls.BrushManager(context).active_texture)
-    
+
     @classmethod
     def GetActiveBrushIndex(cls, context: Context) -> int:
         return cls.GetBrushIndex(context, cls.GetActiveBrush(context).uuid)
@@ -243,7 +284,7 @@ class Props:
     @classmethod
     def SetActiveBrush(cls, context: Context, brush: Union[int, str]) -> None:
         cls.BrushManager(context).select_brush(context, brush)
-        
+
     @classmethod
     def SetActiveTexture(cls, context: Context, brush: Union[int, str]) -> None:
         cls.BrushManager(context).select_texture(context, brush)
@@ -306,8 +347,7 @@ class Props:
             return
         # print("--------------------------------------------------------------------------------------")
         # print("Selecting brush..", brush.name)
-        cls.SetActiveBrush(brush.id)
-        SculptToolUtils.select_brush_tool(ctx, brush)
+        cls.SetActiveBrush(ctx, brush.id)
         # brush.to_brush(ctx)
         if brush.texture_id is not None:
             if texture := cls.GetTexture(brush.texture_id):

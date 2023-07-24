@@ -13,6 +13,8 @@ from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
 exclude_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}
 
+initialized = False
+
 
 def init_master(gzg,ctx,gmaster):
     gzg.roff = (0, 0)
@@ -28,34 +30,27 @@ def init_master(gzg,ctx,gmaster):
 
 def initialize_brush():
     ctx = bpy.context
-    if active_br := Props.GetActiveBrush():
+    if active_br := Props.GetActiveBrush(ctx):
         Props.SelectBrush(ctx, active_br)
-    elif brushes := list(Props.BrushManager().brushes.values()):
+    elif brushes := list(Props.BrushManager(ctx).brushes):
         Props.SelectBrush(ctx, brushes[0])
     else:
         if ctx.space_data is None:
-            Props.BrushManager().active_sculpt_tool = 'NULL'
+            Props.SculptTool.clear_stored()
             return None
         bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
-        curr_active_tool = ToolSelectPanelHelper.tool_active_from_context(ctx)
-        if curr_active_tool is None:
-            return
-        type, curr_active_tool = curr_active_tool.idname.split('.')
-        curr_active_tool = curr_active_tool.replace(' ', '_').upper()
-        if curr_active_tool in exclude_brush_tools or type != 'builtin_brush':
-            return
-        Props.BrushManager().active_sculpt_tool = curr_active_tool
+        Props.SculptTool.update_stored(ctx)
 
 def dummy_poll_view(ctx):
     if ctx.mode != 'SCULPT':
         return False
-    manager = Props.BrushManager()
-    if not manager.initilized or not manager.active_sculpt_tool:
+    global initialized
+    if not initialized or Props.SculptTool.get_stored() == 'NULL':
         # HACK. lol.
         # print("NOT ACTIVE BRUSH, LET'S CHANGE THAT!")
         if is_timer_registered(initialize_brush):
             return True
-        manager.initilized = True
+        initialized = True
         register_timer(initialize_brush, first_interval=.1)
     return True
 

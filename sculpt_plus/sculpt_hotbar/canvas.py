@@ -1,25 +1,17 @@
-from math import floor
 import functools
 from time import time
 from datetime import datetime
 
-from .di import DiCage, DiRct,DiBr,DiText
+from .di import DiCage, DiRct, DiBr, DiText
 from mathutils import Vector
-from gpu import state
 from bpy.app import timers
 import bpy
 from bpy.app import timers
-from bpy import ops as OP
-from bpy.types import Brush
 import functools
-from sculpt_plus.utils.math import distance_between, ease_quad_in_out, lerp, lerp_smooth, map_value, point_inside_circle, smoothstep, vector
 from .types import Return
 from sculpt_plus.prefs import get_prefs
 from .di import set_font
 from sculpt_plus.lib.fonts import Fonts
-from sculpt_plus.utils.gpu import OffscreenBuffer
-from ..utils.gpu import LiveView
-from ..management.manager import Manager
 
 start_time = 0
 counter = 0
@@ -68,10 +60,6 @@ class Canvas:
         from .wg_ctx_switcher import SidebarContextSwitcher
         from .wg_ctx_pie import ShelfGridItemCtxPie, ShelfSidebarCatCtxPie
 
-        from ..management.wg_modal_importer import (
-            AssetImporterModal, AssetImporterGrid_Inputs, AssetImporterGrid_Outputs,
-            AssetImporterActions, AssetImporterCatSelector)
-
         self.wg_on_hover: WidgetBase = None
         self.active_wg: WidgetBase = None
         self.active_ctx_widget: WidgetBase = None
@@ -91,11 +79,6 @@ class Canvas:
         self.shelf_ctx_switcher: SidebarContextSwitcher = SidebarContextSwitcher(self)
         self.ctx_shelf_item: ShelfGridItemCtxPie = ShelfGridItemCtxPie(self)
         self.ctx_shelf_sidebar_item: ShelfSidebarCatCtxPie = ShelfSidebarCatCtxPie(self)
-        self.mod_asset_importer: AssetImporterModal = AssetImporterModal(self)
-        self.mod_asset_importer_inputs: AssetImporterGrid_Inputs = AssetImporterGrid_Inputs(self, (0, .5, .0, .85))
-        self.mod_asset_importer_outputs: AssetImporterGrid_Outputs = AssetImporterGrid_Outputs(self, (.5, 1, .0, .85))
-        self.mod_asset_importer_actions: AssetImporterActions = AssetImporterActions(self, text_size=16, but_spacing=32, separator_color=None)
-        # self.mod_asset_importer_catselector: AssetImporterCatSelector = AssetImporterCatSelector(self)
 
         self.children = (self.hotbar,#self.sidebar, self.sidebar_grid,
                          self.shelf,
@@ -103,13 +86,11 @@ class Canvas:
                          self.shelf_sidebar, self.shelf_sidebar_actions, self.shelf_ctx_switcher,
                          self.group_mask, self.group_t,
                          self.ctx_shelf_item, self.ctx_shelf_sidebar_item,
-                         self.mod_asset_importer, self.mod_asset_importer_inputs, self.mod_asset_importer_outputs,
-                         self.mod_asset_importer_actions, # self.mod_asset_importer_catselector
                          )
         global start_time
         start_time = time()
-        
-        Manager.get().ensure_data()
+
+        ## Manager.get().ensure_data()
 
     def update(self, off: tuple, dimensions: tuple, scale: float, prefs) -> 'Canvas': # SCULPTPLUS_AddonPreferences
         if dimensions:
@@ -125,7 +106,7 @@ class Canvas:
     def refresh(self, ctx=None):
         if ctx:
             ctx.region.tag_redraw()
-            Manager.get().ensure_data()
+            ## Manager.get().ensure_data()
         else:
             self.reg.tag_redraw()
         #self.tag_redraw = True
@@ -188,7 +169,7 @@ class Canvas:
         if evt.type == 'LEFT_ALT':
             from sculpt_plus.props import Props
             if evt.alt and evt.value == 'PRESS':
-                Props.Hotbar().use_alt = True 
+                Props.Hotbar().use_alt = True
             elif not evt.alt and evt.value == 'RELEASE':
                 Props.Hotbar().use_alt = False
             self.refresh(ctx)

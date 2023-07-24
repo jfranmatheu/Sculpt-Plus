@@ -14,7 +14,9 @@ from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage
 from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import Props, Brush, Texture
+from sculpt_plus.props import Props
+
+from brush_manager.api import bm_types, BM_UI
 
 
 SLOT_SIZE = 56
@@ -60,7 +62,9 @@ class Shelf(WidgetBase):
             self._expand = True
             self.cv.shelf_grid_item_info.enabled = True
             self.cv.shelf_grid_item_info.update(self.cv, None)
-            if self.cv.shelf_grid.type == 'TEXTURE':
+            
+            item_type: str = BM_UI.get_ctx_item()
+            if item_type == 'TEXTURE':
                 self.cv.shelf_grid_item_info.expand = True
 
             def _enable():
@@ -113,8 +117,8 @@ class Shelf(WidgetBase):
 class ShelfGrid(ViewWidget):
     use_scissor: bool = True
     grid_slot_size: int = 56
-    hovered_item: Union[Brush, Texture]
-    selected_item: Union[Brush, Texture]
+    hovered_item: Union[bm_types.Brush, bm_types.Texture]
+    selected_item: Union[bm_types.Brush, bm_types.Texture]
     type: str
 
     def init(self) -> None:
@@ -175,7 +179,7 @@ class ShelfGrid(ViewWidget):
             else:
                 Props.SelectBrush(ctx, self.hovered_item)
         elif self.type == 'TEXTURE':
-            texture: Texture = self.hovered_item
+            texture: bm_types.Texture = self.hovered_item
             texture.to_brush(ctx)
 
         # Close shelf.
@@ -197,7 +201,6 @@ class ShelfGrid(ViewWidget):
         #if not cv.shelf.expand:
         #    return
         list_index = 9 if number==0 else number-1
-        # ctx.scene.sculpt_hotbar.set_brush(list_index, self.selected_item)
         Props.SetHotbarBrush(list_index, self.selected_item)
         self.selected_item = None
 
@@ -206,7 +209,7 @@ class ShelfGrid(ViewWidget):
         #if self.show_all_brushes:
         #    brushes = bpy.data.brushes
         #else:
-        items: List[Union[Brush, Texture]] = Props.GetActiveCatItems(self.type)
+        items: List[Union[bm_types.Brush, bm_types.Texture]] = Props.GetActiveCatItems(self.type)
         if items is None:
             return []
 
@@ -228,20 +231,20 @@ class ShelfGrid(ViewWidget):
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         # brushes = context.scene.sculpt_hotbar.get_brushes()
-        act_cat_id = Props.GetActiveCat(self.type)
-        if act_cat_id is None:
+        act_cat = Props.GetActiveCat(context, self.type)
+        if act_cat is None:
             return None
         slot_color = Vector(prefs.theme_shelf_slot)
         # if not brushes:
         #     return slot_color, None
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
-        act_item = Props.GetActiveBrush() if self.type == 'BRUSH' else Props.GetActiveTexture()
-        return slot_color, act_cat_id.id, act_item.id if act_item else None, Props.GetHotbarBrushIds()
+        act_item = Props.GetActiveBrush(context) if self.type == 'BRUSH' else Props.GetActiveTexture(context)
+        return slot_color, act_cat.uuid, act_item.uuid if act_item else None, Props.GetHotbarBrushIds(context)
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,
-                  item: Union[Brush, Texture], #brush_idx_rel: dict,
+                  item: Union[bm_types.Brush, bm_types.Texture], #brush_idx_rel: dict,
                   is_hovered: bool,
                   slot_color: Vector,
                   act_cat_id: str,

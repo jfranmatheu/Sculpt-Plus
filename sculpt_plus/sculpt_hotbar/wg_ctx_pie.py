@@ -7,10 +7,13 @@ from mathutils import Vector
 from sculpt_plus.sculpt_hotbar.di import DiRct, DiText, DiCircle, DiTri, get_text_dim
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.math import rotate_point_around_point, point_inside_circle, distance_between
-from sculpt_plus.props import Props, Brush, Texture, BrushCategory, TextureCategory
+from sculpt_plus.props import Props
+
+from brush_manager.api import bm_types, BM_UI, BM_OPS, BM
 
 
-item_types = Union[Brush, Texture, BrushCategory, TextureCategory]
+item_types = Union[bm_types.Brush, bm_types.Texture, bm_types.BrushCategory, bm_types.TextureCategory]
+
 
 class CtxPie(WidgetBase):
     interactable: bool = True
@@ -115,103 +118,98 @@ class CtxPie(WidgetBase):
                 })
 
 class ShelfGridItemCtxPie(CtxPie):
-    def get_options(self, item: Union[Brush, Texture]) -> Tuple[Tuple[str, str, str]]:
-        type: str = self.cv.shelf_grid.type
-        if type == 'BRUSH':
-            act_cat_id: str = Props.ActiveBrushCat().id
+    def get_options(self, item: Union[bm_types.Brush, bm_types.Texture]) -> Tuple[Tuple[str, str, str]]:
+        item_type: str = BM_UI.get_ctx_item()
+        if item_type == 'BRUSH':
+            # act_cat_id: str = Props.ActiveBrushCat().uuid
             cat_count: int = Props.BrushCatsCount()
-        elif type == 'TEXTURE':
-            act_cat_id: str = Props.ActiveTextureCat().id
+        elif item_type == 'TEXTURE':
+            # act_cat_id: str = Props.ActiveTextureCat().uuid
             cat_count: int = Props.TextureCatsCount()
         else:
             return ()
         options = (
             ('MOVE', "Move", "Move item to another category") if cat_count > 1 else None,
             # if item.cat_id == act_cat_id else
-            ('UNFAV', "Unmark Favourite", "Unmark item as favourite")
-            if item.fav else
-            ('FAV', "Mark Favourite", "Mark brush as favourite"),
-            ('REMOVE', "Remove", "Remove item"),
-            ('SAVE', "Save Default", "Save default state"),
-            ('RESET', "Reset to Default", "Reset to default state"),
-            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush") if type=='BRUSH' else None,
+            ## ('UNFAV', "Unmark Favourite", "Unmark item as favourite")
+            ## if item.fav else
+            ## ('FAV', "Mark Favourite", "Mark brush as favourite"),
+            ('REMOVE', "Remove", "Remove item from category"),
+            ('SAVE', "Save Default", "Save default state of the brush") if item_type=='BRUSH' else None,
+            ('RESET', "Reset to Default", "Reset brush to default state") if item_type=='BRUSH' else None,
+            ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush") if item_type=='BRUSH' else None,
             ('RENAME', "Rename", "Change item name"),
-            ('DUPLICATE', "Duplicate", "Make a brush copy") if type=='BRUSH' else None,
+            ## ('DUPLICATE', "Duplicate", "Make a brush copy") if item_type=='BRUSH' else None,
         )
         return tuple(op for op in options if op is not None)
 
     def execute_pie_option(self, ctx, option_id: str) -> None:
         # print(option_id)
-        type: str = self.cv.shelf_grid.type
+        item_type: str = BM_UI.get_ctx_item(ctx)
+        target_item_uuid = self.target_item.uuid
         if option_id == 'REMOVE':
-            if type == 'BRUSH':
-                Props.BrushManager().remove_brush_item(self.target_item)
+            if item_type == 'BRUSH':
+                Props.BrushManager(ctx).remove_brush(self.target_item)
                 # Props.ActiveBrushCat().unlink_item(self.target_item)
-            elif type == 'TEXTURE':
-                Props.BrushManager().remove_texture_item(self.target_item)
+            elif item_type == 'TEXTURE':
+                Props.BrushManager(ctx).remove_texture(self.target_item)
                 # Props.ActiveTextureCat().unlink_item(self.target_item)
         elif option_id == 'MOVE':
-            OPS.sculpt_plus.move_item_to_another_cat('INVOKE_DEFAULT', False, cat_type=type, item_id=self.target_item.id)
-            # Props.ActiveBrushCat(ctx).add_brush(self.target_item)
+            BM_OPS.move_selected_to_category(uuid=target_item_uuid)
         elif option_id == 'ASSIGN_ICON':
-            # brush: bpy.types.Brush = self.target_item
-            # brush.use_custom_icon = True
-            # TODO: operator should open browser window to select custom icon.
-            OPS.sculpt_plus.assign_icon_to_brush('INVOKE_DEFAULT', False, brush_id=self.target_item.id)
-        elif option_id == 'FAV':
-            self.target_item.fav = True
-        elif option_id == 'UNFAV':
-            self.target_item.fav = False
+            BM_OPS.asign_icon_to_active_brush(uuid=target_item_uuid)
+        ## elif option_id == 'FAV':
+        ##     self.target_item.fav = True
+        ## elif option_id == 'UNFAV':
+        ##     self.target_item.fav = False
         elif option_id == 'RENAME':
-            OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, item_type=type, item_id=self.target_item.id, item_name=self.target_item.name)
-            #def _rename_item(**kwargs):
-            #    OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, **kwargs)
-            #self.cv.refresh(ctx)
-            #self.time_fun(_rename_item, .2, item_type=type, item_id=self.target_item.id, item_name=self.target_item.name)
-        elif option_id == 'DUPLICATE':
-            Props.BrushManager().duplicate_brush(self.target_item)
+            BM_OPS.rename_item(uuid=target_item_uuid)
+        ## elif option_id == 'DUPLICATE':
+        ##     Props.BrushManager(ctx).duplicate_brush(self.target_item)
 
 
 class ShelfSidebarCatCtxPie(CtxPie):
-    def get_options(self, item: Union[BrushCategory, TextureCategory]) -> Tuple[Tuple[str, str, str]]:
-        type: str = self.cv.shelf_grid.type
-        if type == 'BRUSH':
-            act_cat: str = Props.ActiveBrushCat()
-            max_index: int = Props.BrushCatsCount() -1 
-        elif type == 'TEXTURE':
-            act_cat: str = Props.ActiveTextureCat()
-            max_index: int = Props.TextureCatsCount() -1
-        else:
-            return ()
-        item_is_active = item == act_cat
+    def get_options(self, item: Union[bm_types.BrushCategory, bm_types.TextureCategory]) -> Tuple[Tuple[str, str, str]]:
+        item_type: str = BM_UI.get_ctx_item()
+        # if type == 'BRUSH':
+        #     act_cat: str = Props.ActiveBrushCat()
+        #     max_index: int = Props.BrushCatsCount() -1 
+        # elif type == 'TEXTURE':
+        #     act_cat: str = Props.ActiveTextureCat()
+        #     max_index: int = Props.TextureCatsCount() -1
+        # else:
+        #     return ()
+        # item_is_active = item == act_cat
         options = (
-            #('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index < max_index else None,
-            #('MOVE_DOWN', "Move Down", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
-            # ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
+            ## ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index < max_index else None,
+            ## ('MOVE_DOWN', "Move Down", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
+            ##  ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
             ('REMOVE', "Remove", "Remove category"),
-            ('SAVE', "Save Brushes Defaults", "Save default state for every brush") if type=='BRUSH' else None,
-            ('RESET', "Reset Brushes to Defaults", "Reset to default state for every brush") if type=='BRUSH' else None,
+            ('SAVE', "Save Brushes Defaults", "Save default state for every brush") if item_type=='BRUSH' else None,
+            ('RESET', "Reset Brushes to Defaults", "Reset to default state for every brush") if item_type=='BRUSH' else None,
             ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the category"),
             ('RENAME', "Rename", "Change item name"),
         )
         return tuple(op for op in options if op is not None)
 
     def execute_pie_option(self, ctx, option_id: str) -> None:
-        type: str = self.cv.shelf_grid.type
+        item_type: str = BM_UI.get_ctx_item(ctx)
+        target_item_uuid: str = self.target_item.uuid
         if option_id == 'REMOVE':
             if type == 'BRUSH':
-                Props.BrushManager().remove_brush_cat(self.target_item)
+                Props.BrushManager(ctx).remove_brush_cat(self.target_item)
             elif type == 'TEXTURE':
-                Props.BrushManager().remove_texture_cat(self.target_item)
-        elif option_id == 'MOVE_UP':
-            pass
-        elif option_id == 'MOVE_DOWN':
-            pass
+                Props.BrushManager(ctx).remove_texture_cat(self.target_item)
+        ## elif option_id == 'MOVE_UP':
+        ##     pass
+        ## elif option_id == 'MOVE_DOWN':
+        ##     pass
         elif option_id == 'ASSIGN_ICON':
-            OPS.sculpt_plus.assign_icon_to_cat('INVOKE_DEFAULT', False, cat_type=type, cat_id=self.target_item.id)
+            BM_OPS.asign_icon_to_active_category(uuid=target_item_uuid)
         elif option_id == 'SAVE':
             pass
         elif option_id == 'RESET':
-            Props.BrushManager().reset_brush_cat(self.hovered_option)
+            BM_OPS.reset_cat(uuid=target_item_uuid)
+            pass
         elif option_id == 'RENAME':
-            OPS.sculpt_plus.rename_item('INVOKE_DEFAULT', False, item_type='CAT_'+type, item_id=self.target_item.id, item_name=self.target_item.name)
+            BM_OPS.rename_cat(uuid=target_item_uuid)

@@ -125,7 +125,6 @@ class Hotbar(WidgetBase):
         if cv.shelf.expand:
             ''' Assign brush from grid to hotbar. '''
             if cv.shelf_grid.selected_item:
-                # ctx.scene.sculpt_hotbar.set_brush(self.slot_on_hover, cv.shelf_grid.selected_item)
                 Props.SetHotbarBrush(self.slot_on_hover, cv.shelf_grid.selected_item)
                 cv.shelf_grid.selected_item = None
             return

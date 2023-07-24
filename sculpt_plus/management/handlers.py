@@ -14,7 +14,6 @@ def goodbye():
 
     from sculpt_plus.props import Props
     if Props.HotbarExists():
-        # print("atexit:", Props.BrushManager())
         Props.HotbarSave()
         Props.HotbarDestroy()
         print("Goodbye!")
@@ -24,11 +23,9 @@ def goodbye():
 def on_load_post(dummy):
     from sculpt_plus.props import Props
     if Props.HotbarExists():
-        # print("on_load_post:", Props.BrushManager())
         print("[Sculpt +] Skipping database load. Brush Manager already exists!")
         return
     print("[Sculpt+] Loading database...")
-    # print("on_load_post:", Props.BrushManager())
 
     # Init Workspace.
     # Props.Workspace()

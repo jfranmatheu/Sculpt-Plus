@@ -2,12 +2,8 @@ import bpy
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active, _defs_transform, _defs_annotate, _defs_sculpt
 from bl_ui.space_toolsystem_common import ToolDef, ToolSelectPanelHelper
 from bpy.app import handlers
-from bpy.app import timers
 
-from functools import partial
 from typing import List, Dict
-
-from .all_brush_tool import SCULPTPLUS_OT_all_brush_tool
 
 
 unregistered_tools: List[ToolDef] = []
@@ -16,9 +12,6 @@ hidden_brush_tools: Dict[str, ToolDef] = {}
 
 accept_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}
 
-
-def draw_settings__sculpt_brush_tool(self, context, tool):
-    props = tool.operator_properties("SCULPT_OT_brush_stroke")
 
 
 def generate_from_brushes(dummy=None):

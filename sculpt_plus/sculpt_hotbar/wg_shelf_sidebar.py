@@ -163,7 +163,7 @@ class ShelfSidebar(VerticalViewWidget):
         DiRct(p, self.item_size, (.08,0.05,.1,.8))
 
         if act_item is None:
-            # print("None active brush cat", Props.BrushManager().brush_cats_count)
+            # print("None active brush cat", Props.BrushManager(context).brush_cats_count)
             DiText(p+Vector((10, 10))*scale, 'No Active Category', 14, scale, (.95, .4, .2, .9)) # RESET.
             DiCage(p, self.item_size, 2, Vector(prefs.theme_sidebar))
             DiLine(p, p+Vector((self.item_size.x, 0)), 3.0, (.08, .08, .08, .8))
@@ -237,13 +237,12 @@ class ShelfSidebarActions(ButtonGroup):
         self.new_button(
             "New",
             Icon.ADD_ROW,
-            lambda ctx, cv: BM_OPS.new_category(cat_name=None, ui_context_mode='SCULPT', ui_context_type=cv.shelf_sidebar.type) # Props.NewCat(ctx, cat_type=cv.shelf_sidebar.type, cat_name=None), # bpy.ops.sculpt_plus.new_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type)
+            lambda ctx, cv: BM_OPS.new_category(cat_name=None, ui_context_mode='SCULPT')
         )
         self.new_button(
             "Import",
             Icon.DOWNLOAD,
-            # lambda ctx, cv: bpy.ops.sculpt_plus.new_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type),
-            lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT') #  bpy.ops.sculpt_plus.import_create_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type),
+            lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT')
         )
 
 

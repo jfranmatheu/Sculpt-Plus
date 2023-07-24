@@ -2,11 +2,8 @@ from bpy.types import Operator, Context, Event, WorkSpace, Menu
 from sculpt_plus.props import Props
 from sculpt_plus.path import SculptPlusPaths
 import bpy
-from bpy.app import timers
-from bl_ui.space_view3d import VIEW3D_HT_header
-from bl_ui.space_topbar import TOPBAR_MT_workspace_menu, TOPBAR_HT_upper_bar
+from bl_ui.space_topbar import TOPBAR_HT_upper_bar
 from sculpt_plus.previews import Previews
-from sculpt_plus.core.data.cy_structs import CyBlStruct
 
 
 # OPERATOR
@@ -39,28 +36,12 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
 
         workspace.use_filter_by_owner = True
 
-        # def _toggle_addon_workspace():
-        #     if bpy.context.workspace == Props.Workspace():
-        #         bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
-        #         bpy.ops.sculpt_plus.expand_toolbar()
-        #         return None
-        #     return .1
-        # timers.register(_toggle_addon_workspace, first_interval=.1)
-
-        # context.window.workspace = old_workspace
-        #from ...sculpt_hotbar.reg import _reload
-        #_reload()
-        #from ...sculpt_hotbar.km import create_hotbar_km
-        #create_hotbar_km()
-
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
-        #return {'FINISHED'}
 
     def modal(self, context: 'Context', event: 'Event'):
         bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
-        # timers.register(delay_expand_toolbar, first_interval=1.0)
-        Props.BrushManager().ensure_data()
+        ## Props.BrushManager(context).ensure_data()
         return {'FINISHED'}
 
 
@@ -74,8 +55,6 @@ def draw_workspace_setup_op(self, context: Context):
 
 def register():
     TOPBAR_HT_upper_bar.append(draw_workspace_setup_op)
-    # TOPBAR_MT_workspace_menu.append(draw_workspace_setup_op)
 
 def unregister():
     TOPBAR_HT_upper_bar.remove(draw_workspace_setup_op)
-    # TOPBAR_MT_workspace_menu.remove(draw_workspace_setup_op)
