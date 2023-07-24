@@ -14,8 +14,10 @@ from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, 
 from .wg_base import WidgetBase
 from .wg_view import VerticalViewWidget
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import Props, BrushCategory, TextureCategory
+from sculpt_plus.props import Props
 from .wg_but import ButtonGroup
+
+from brush_manager.api import BM, bm_types, BM_OPS
 
 
 SLOT_SIZE = 80
@@ -25,7 +27,7 @@ class ShelfSidebar(VerticalViewWidget):
     interactable: bool = True
     use_scissor: bool = True
     scissor_padding: Vector = Vector((3, 3))
-    hovered_item: Union[BrushCategory, TextureCategory]
+    hovered_item: Union[bm_types.BrushCategory, bm_types.TextureCategory]
 
     item_aspect_ratio: float = 1 / 3.5
 
@@ -116,7 +118,7 @@ class ShelfSidebar(VerticalViewWidget):
     def draw_item(self,
                   slot_p,
                   slot_s,
-                  item: Union[BrushCategory, TextureCategory],
+                  item: Union[bm_types.BrushCategory, bm_types.TextureCategory],
                   is_hovered: bool,
                   thumb_size: Vector,
                   color: Vector,
@@ -226,7 +228,7 @@ class ShelfSidebar(VerticalViewWidget):
         DiCage(self.pos, self.size, 3.2*scale, color*.9)
 
     def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        pass
+        cv.ctx_shelf_sidebar_item
 
 
 class ShelfSidebarActions(ButtonGroup):
@@ -235,31 +237,15 @@ class ShelfSidebarActions(ButtonGroup):
         self.new_button(
             "New",
             Icon.ADD_ROW,
-            lambda ctx, cv: bpy.ops.sculpt_plus.new_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type),
+            lambda ctx, cv: BM_OPS.new_category(cat_name=None, ui_context_mode='SCULPT', ui_context_type=cv.shelf_sidebar.type) # Props.NewCat(ctx, cat_type=cv.shelf_sidebar.type, cat_name=None), # bpy.ops.sculpt_plus.new_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type)
         )
         self.new_button(
             "Import",
             Icon.DOWNLOAD,
             # lambda ctx, cv: bpy.ops.sculpt_plus.new_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type),
-            lambda ctx, cv: bpy.ops.sculpt_plus.import_create_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type),
+            lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT') #  bpy.ops.sculpt_plus.import_create_cat('INVOKE_DEFAULT', cat_type=cv.shelf_sidebar.type),
         )
-        '''
-        self.new_button(
-            None,
-            Icon.MOVE_UP_ROW,
-            # lambda ctx, cv: Props.MoveCat(cv.shelf_sidebar.type, direction=1),
-        )
-        self.new_button(
-            None,
-            Icon.MOVE_DOWN_ROW,
-            # lambda ctx, cv: Props.MoveCat(cv.shelf_sidebar.type, direction=-1),
-        )
-        self.new_button(
-            None,
-            Icon.REMOVE_TRASH,
-            lambda ctx, cv: Props.RemoveActiveCat(cv.shelf_sidebar.type),
-        )
-        '''
+
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         shelf_sidebar = cv.shelf_sidebar

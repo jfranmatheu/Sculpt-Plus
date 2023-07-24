@@ -95,7 +95,7 @@ class SculptPlusPaths(Enum):
     APP__TEMP = str(temp_dir)
 
     CONFIG_FILE = str(data_dir / 'config.json')
-    HOTBAR_CONFIG = str(data_brush_dir / "hotbar.txt")
+    HOTBAR_CONFIG = str(data_brush_dir / "hotbar.json")
 
     DATA_BRUSH_SETTINGS = str(data_brush_dir / "settings")
     DATA_BRUSH_DEFAULTS = str(data_brush_dir / "settings" / "defaults")

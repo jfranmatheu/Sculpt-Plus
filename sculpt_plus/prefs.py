@@ -164,13 +164,6 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
         #col.label(text="Slot size: "+str(int(self.scale*SLOT_SIZE))+'px')
 
 
-        # DESTRUCTION AND CHAOS....
-        layout.separator()
-
-        row = layout.row()
-        row.scale_y = 2
-        row.operator('sculpt_plus.cleanup_data', text="Clean-up ALL data", icon='ERROR')
-
 
 def get_prefs(context: Context) -> SCULPTPLUS_AddonPreferences:
     if __package__ not in context.preferences.addons:
