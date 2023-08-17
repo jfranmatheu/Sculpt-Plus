@@ -10,7 +10,8 @@ from sculpt_plus.management.manager import HotbarManager as HM
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
-from brush_manager.api import BM, bm_types, BM_UI
+from brush_manager.api import BM_DATA, bm_types, BM_UI, get_bm_data
+from brush_manager.globals import GLOBALS, CM_UIContext
 
 
 
@@ -32,132 +33,7 @@ IN_BRUSH_CTX = lambda _type: _type == 'BRUSH'
 IN_TEXTURE_CTX = lambda _type: _type == 'TEXTURE'
 
 
-class BrushManager:
-    @staticmethod
-    def get(context: Context | None) -> tuple[bm_types.AddonDataByMode, str]:
-        return BM.SCULPT(context), BM_UI.get_ctx_item(context)
-
-    class Context:
-        def __init__(self, context: Context, item_type: str | None = None) -> None:
-            self.context = context
-            if item_type is not None and item_type in {'BRUSH', 'TEXTURE'}:
-                self.ctx_item_type = item_type
-                self.prev_item_type = BM_UI.get_ctx_item(context)
-
-        def __enter__(self) -> None:
-            BM_UI.set_ctx_mode__sculpt(self.context)
-            if hasattr(self, 'ctx_item_type'):
-                BM_UI._set_ctx_item(self.context, self.ctx_item_type)
-
-        def __exit__(self, exc_type, exc_value, trace):
-            if hasattr(self, 'prev_item_type'):
-                BM_UI._set_ctx_item(self.context, self.prev_item_type)
-
-        @staticmethod
-        def ensure_mode(context: Context) -> None:
-            if context.mode != 'SCULPT':
-                # Bad Mode.
-                return
-            if Props.Workspace(context) != context.workspace:
-                # Bad WorkSpace.
-                return
-            if not context.space_data.show_gizmo:
-                # Hidden.
-                return
-            if not Props.Scene(context).show_gizmo_sculpt_hotbar:
-                # Hidden.
-                return
-            if Props.Canvas() is None:
-                # Canvas not initialized.
-                return
-            BM_UI.set_ctx_mode__sculpt(context)
-
-        @staticmethod
-        def get_item_type(context: Context) -> str:
-            return BM_UI.get_ctx_item(context)
-
-        @staticmethod
-        def set_item_type(context: Context, item_type: str = 'BRUSH') -> str:
-            ''' item_type: 'BRUSH' or 'TEXTURE'. '''
-            return BM_UI._set_ctx_item(context, item_type)
-
-
-
-    ''' Categories Common. '''
-    class Cats(Enum):
-
-        @classmethod
-        def Count(cls, context: Context) -> int:
-            return len(cls.GetAll(context))
-
-        @classmethod
-        def New(cls, context: Context, cat_name: str = None) -> bm_types.Category:
-            bm, item_type = BrushManager.get(context)
-            new_cat = bm.new_brush_cat if IN_BRUSH_CTX(item_type) else bm.new_texture_cat
-            new_cat('Untitled Cat ' + str(cls.Count(context)) if cat_name is None else cat_name)
-
-        @classmethod
-        def SetActive(cls, context: Context, cat: Union[bm_types.BrushCategory, bm_types.TextureCategory, str, int]) -> None:
-            bm, item_type = BrushManager.get(context)
-            select_cat = bm.select_brush_category if IN_BRUSH_CTX(item_type) else bm.select_texture_category
-            select_cat(cat)
-
-        @classmethod
-        def GetActive(cls, context: Context) -> Union[bm_types.BrushCategory, bm_types.TextureCategory, None]:
-            bm, item_type = BrushManager.get(context)
-            return bm.active_brush_cat if IN_BRUSH_CTX(item_type) else bm.active_texture_cat
-
-        @classmethod
-        def RemoveActive(cls, context: Context) -> None:
-            bm, item_type = BrushManager.get(context)
-            remove_cat = bm.remove_brush_cat if IN_BRUSH_CTX(item_type) else bm.remove_texture_cat
-            act_cat = cls.GetActive(context, item_type)
-            remove_cat(act_cat)
-
-        @classmethod
-        def GetAll(cls, context: Context, skip_active: bool = False) -> Union[List[Union[bm_types.BrushCategory, bm_types.TextureCategory]], None]:
-            bm, item_type = BrushManager.get(context)
-            cats = bm.brush_cats if IN_BRUSH_CTX(item_type) else bm.texture_cats
-            if skip_active:
-                act_cat = cls.GetActive(context)
-                cats = [cat for cat in cats if cat != act_cat]
-            return cats
-
-        @classmethod
-        def GetActiveItems(cls, context: Context) -> Union[list[bm_types.Brush], list[bm_types.Texture]]:
-            return cls.GetActive(context).get_items(BM.SCULPT(context))
-
-
-    ''' Brush Catagories. '''
-
-    class Items:
-
-        @classmethod
-        def Count(cls, context: Context) -> int:
-            return len(cls.GetAll(context))
-
-        @classmethod
-        def SetActive(cls, context: Context, item: Union[bm_types.Brush, bm_types.Texture, str, int]) -> None:
-            bm, item_type = BrushManager.get(context)
-            select_item = bm.select_brush if IN_BRUSH_CTX(item_type) else bm.select_texture
-            select_item(context, item)
-
-        @classmethod
-        def GetActive(cls, context: Context) -> Union[bm_types.Brush, bm_types.Texture, None]:
-            bm, item_type = BrushManager.get(context)
-            return bm.active_brush if IN_BRUSH_CTX(item_type) else bm.active_texture
-
-        @classmethod
-        def RemoveActive(cls, context: Context) -> None:
-            bm, item_type = BrushManager.get(context)
-            remove_item = bm.remove_brush if IN_BRUSH_CTX(item_type) else bm.remove_texture
-            act_item = cls.GetActive(context, item_type)
-            remove_item(act_item)
-
-        @classmethod
-        def GetAll(cls, context: Context) -> Union[List[Union[bm_types.BrushCategory, bm_types.TextureCategory]], None]:
-            bm, item_type = BrushManager.get(context)
-            return bm.brushes if IN_BRUSH_CTX(item_type) else bm.textures
+bm_data = BM_DATA.SCULPT
 
 
 
@@ -285,7 +161,6 @@ class HotbarManager:
         selected_id: str = cls.GetHotbarSelectedId()
         if selected_id is None:
             return None
-        bm, item_type = BrushManager.get(context)
         return bm.get_brush(selected_id)
 
     @classmethod
