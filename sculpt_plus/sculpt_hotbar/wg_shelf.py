@@ -14,7 +14,7 @@ from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage
 from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import Props
+from sculpt_plus.props import Props, BrushManager, HotbarManager
 
 from brush_manager.api import bm_types, BM_UI
 
@@ -119,11 +119,9 @@ class ShelfGrid(ViewWidget):
     grid_slot_size: int = 56
     hovered_item: Union[bm_types.Brush, bm_types.Texture]
     selected_item: Union[bm_types.Brush, bm_types.Texture]
-    type: str
 
     def init(self) -> None:
         super().init()
-        self.type: str = 'BRUSH' # 'TEXTURE'
         self.show_all_brushes: bool = True
 
     def get_max_width(self, cv: Canvas, scale) -> float:
@@ -164,32 +162,26 @@ class ShelfGrid(ViewWidget):
     def on_leftmouse_release(self, ctx, cv: Canvas, m: Vector) -> None:
         # IF SELECT ON RELEASE.
         super().on_leftmouse_release(ctx, cv, m)
-        #if self.type == 'TEXTURE' and self.selected_item:
-        #    texture: Texture = self.selected_item
-        #    texture.to_brush(ctx)
+
         return False
 
-    def on_double_click(self, ctx, cv: Canvas, m: Vector) -> None:
+    def on_double_click(self, context, cv: Canvas, m: Vector) -> None:
         if self.hovered_item is None:
             return
         # IF SELECT ON DOUBLE CLICK.
-        if self.type == 'BRUSH':
-            if self.hovered_item.id in Props.GetHotbarBrushIds():
-                Props.SetHotbarSelected(ctx, self.hovered_item)
-            else:
-                Props.SelectBrush(ctx, self.hovered_item)
-        elif self.type == 'TEXTURE':
-            texture: bm_types.Texture = self.hovered_item
-            texture.to_brush(ctx)
+        BrushManager.Items.SetActive(context, self.hovered_item)
+
+        if self.hovered_item.uuid in HotbarManager.GetHotbarBrushIds():
+            HotbarManager.SetHotbarSelected(context, self.hovered_item)
 
         # Close shelf.
         cv.shelf.expand = False
 
     # def on_right_click(self, ctx, cv: Canvas, m: Vector) -> None:
-    def on_rightmouse_press(self, ctx, cv: Canvas, m: Vector) -> int:
+    def on_rightmouse_press(self, context, cv: Canvas, m: Vector) -> int:
         if self.hovered_item is None:
             return 0
-        if Props.GetActiveCat(self.type) is None:
+        if BrushManager.Cats.GetActive(context) is None:
             return 0
         cv.ctx_shelf_item.show(cv, m, self.hovered_item)
         self.hovered_item = None
@@ -201,15 +193,11 @@ class ShelfGrid(ViewWidget):
         #if not cv.shelf.expand:
         #    return
         list_index = 9 if number==0 else number-1
-        Props.SetHotbarBrush(list_index, self.selected_item)
+        HotbarManager.SetHotbarBrush(list_index, self.selected_item)
         self.selected_item = None
 
     def get_data(self, cv: Canvas) -> list:
-        # Get brushes from source.
-        #if self.show_all_brushes:
-        #    brushes = bpy.data.brushes
-        #else:
-        items: List[Union[bm_types.Brush, bm_types.Texture]] = Props.GetActiveCatItems(self.type)
+        items: List[Union[bm_types.Brush, bm_types.Texture]] = BrushManager.Cats.GetActiveItems(context)
         if items is None:
             return []
 
@@ -231,7 +219,7 @@ class ShelfGrid(ViewWidget):
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         # brushes = context.scene.sculpt_hotbar.get_brushes()
-        act_cat = Props.GetActiveCat(context, self.type)
+        act_cat = BrushManager.Cats.GetActive(context)
         if act_cat is None:
             return None
         slot_color = Vector(prefs.theme_shelf_slot)
@@ -239,8 +227,8 @@ class ShelfGrid(ViewWidget):
         #     return slot_color, None
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
-        act_item = Props.GetActiveBrush(context) if self.type == 'BRUSH' else Props.GetActiveTexture(context)
-        return slot_color, act_cat.uuid, act_item.uuid if act_item else None, Props.GetHotbarBrushIds(context)
+        act_item = BrushManager.Items.GetActive(context)
+        return slot_color, act_cat.uuid, act_item.uuid if act_item else None, HotbarManager.GetHotbarBrushIds(context)
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,

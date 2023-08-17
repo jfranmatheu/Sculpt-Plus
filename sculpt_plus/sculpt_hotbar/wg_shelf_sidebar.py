@@ -87,7 +87,7 @@ class ShelfSidebar(VerticalViewWidget):
             return
         if not self.hovered_item:
             return False
-        Props.SetActiveCat(self.type, self.hovered_item)
+        Props.BrushManager.SetActiveCat(ctx, self.type, self.hovered_item)
         cv.refresh(ctx)
 
     def on_left_click_drag(self, ctx, cv: Canvas, m: Vector) -> bool:

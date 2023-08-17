@@ -6,7 +6,7 @@ from sculpt_plus.prefs import get_prefs
 from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
 from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
 from sculpt_plus.utils.gpu import LiveView
-from sculpt_plus.props import Props
+from sculpt_plus.props import Props, BrushManager
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 # from .km import create_hotbar_km
@@ -29,17 +29,20 @@ def init_master(gzg,ctx,gmaster):
 
 
 def initialize_brush():
-    ctx = bpy.context
-    if active_br := Props.GetActiveBrush(ctx):
-        Props.SelectBrush(ctx, active_br)
-    elif brushes := list(Props.BrushManager(ctx).brushes):
-        Props.SelectBrush(ctx, brushes[0])
-    else:
-        if ctx.space_data is None:
-            Props.SculptTool.clear_stored()
-            return None
-        bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
-        Props.SculptTool.update_stored(ctx)
+    context = bpy.context
+
+    with BrushManager.Context(context, item_type='BRUSH'):
+        if active_br := BrushManager.Items.GetActive(context):
+            BrushManager.Items.SetActive(context, active_br)
+        elif brushes := list(BrushManager.Items.GetAll(context)):
+            BrushManager.Items.SetActive(context, brushes[0])
+        else:
+            if context.space_data is None:
+                Props.SculptTool.clear_stored()
+                return None
+            bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+            Props.SculptTool.update_stored(context)
+
 
 def dummy_poll_view(ctx):
     if ctx.mode != 'SCULPT':

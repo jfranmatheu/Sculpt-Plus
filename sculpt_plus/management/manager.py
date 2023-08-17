@@ -104,7 +104,7 @@ class HotbarManager:
 
 
     def load(self) -> None:
-        print("[SCULPT+] Loading config file...")
+        print("[SCULPT+] Loading hotbar config...")
         self.is_data_loaded = True
         hotbar_config: dict = {}
         config_filepath: str = SculptPlusPaths.HOTBAR_CONFIG()
