@@ -90,33 +90,33 @@ class SculptPlusPaths(Enum):
     LIB_SHADERS_FRAG = join(LIB_SHADERS, 'frag')
     LIB_SHADERS_BUILTIN = join(LIB_SHADERS, 'builtin')
 
-    APP = str(app_dir)
-    APP__DATA = str(data_dir)
-    APP__TEMP = str(temp_dir)
+    APP = app_dir
+    APP__DATA = data_dir
+    APP__TEMP = temp_dir
 
-    CONFIG_FILE = str(data_dir / 'config.json')
-    HOTBAR_CONFIG = str(data_brush_dir / "hotbar.json")
+    CONFIG_FILE = data_dir / 'config.json'
+    HOTBAR_DATA = data_brush_dir / "hotbar"
 
-    DATA_BRUSH_SETTINGS = str(data_brush_dir / "settings")
-    DATA_BRUSH_DEFAULTS = str(data_brush_dir / "settings" / "defaults")
-    DATA_BRUSH_CATS = str(data_brush_dir / "cats")
-    DATA_BRUSH_PREVIEWS = str(data_brush_dir / "previews")
-    DATA_BRUSH_CAT_ICONS = str(data_brush_dir / "cats")
+    DATA_BRUSH_SETTINGS = data_brush_dir / "settings"
+    DATA_BRUSH_DEFAULTS = data_brush_dir / "settings" / "defaults"
+    DATA_BRUSH_CATS = data_brush_dir / "cats"
+    DATA_BRUSH_PREVIEWS = data_brush_dir / "previews"
+    DATA_BRUSH_CAT_ICONS = data_brush_dir / "cats"
 
-    DATA_TEXTURE_SETTINGS = str(data_texture_dir / "settings")
+    DATA_TEXTURE_SETTINGS = data_texture_dir / "settings"
     # DATA_TEXTURE_DEFAULTS = str(data_texture_dir / "settings" / "default")
-    DATA_TEXTURE_CATS = str(data_texture_dir / "cats")
-    DATA_TEXTURE_PREVIEWS = str(data_texture_dir / "previews")
-    DATA_TEXTURE_IMAGES = str(data_texture_dir / "images")
-    DATA_TEXTURE_CAT_ICONS = str(data_texture_dir / "cats")
+    DATA_TEXTURE_CATS = data_texture_dir / "cats"
+    DATA_TEXTURE_PREVIEWS = data_texture_dir / "previews"
+    DATA_TEXTURE_IMAGES = data_texture_dir / "images"
+    DATA_TEXTURE_CAT_ICONS = data_texture_dir / "cats"
 
-    TEMP_FAKE_ITEMS = str(temp_dir / "fake_items")
-    TEMP_THUMBNAILS = str(temp_dir / "thumbnails")
+    TEMP_FAKE_ITEMS = temp_dir / "fake_items"
+    TEMP_THUMBNAILS = temp_dir / "thumbnails"
 
-    def __call__(self, *path):
+    def __call__(self, *path, as_path: bool = False):
         if not path:
-            return self.value
-        return join(self.value, *path)
+            return self.value if as_path else str(self.value)
+        return self.value.joinpath(*path) if as_path else join(str(self.value), *path)
 
     def read(self, *path) -> str:
         with open(self(*path), mode='r') as f:
