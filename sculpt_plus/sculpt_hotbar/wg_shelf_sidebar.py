@@ -185,40 +185,6 @@ class ShelfSidebar(VerticalViewWidget):
         if cv.active_ctx_widget:
             DiRct(self.pos, self.size, (.24, .24, .24, .64))
 
-    '''
-    def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        bg_color = Vector(prefs.theme_shelf)
-        bg_color.w *= 0.5
-        isize = Vector((self.size.x, self.size.x / 3))
-        pad = 3 * scale
-        isize_thumb = Vector((isize.y - pad*2, isize.y - pad*2))
-        ioff = Vector((0, self.size.x / 3))
-        p = self.get_pos_by_relative_point(Vector((0.0, 1.0))) - ioff
-
-        # apply scroll
-        brushes = context.scene.sculpt_hotbar.get_brushes()
-        br_count: int = len(brushes)
-        max_cats_in_view: int = floor(self.size.y / isize.y)
-        max_scroll: int = br_count * isize.y - max_cats_in_view * isize.y
-        if self.scroll > max_scroll:
-            self.scroll = max_scroll
-        p += Vector((0, self.scroll))
-        for idx, br in enumerate(brushes):
-            if p.y > self.size.y:
-                p -= ioff
-                continue
-
-            #DiRct(p, isize, bg_color)
-            DiCage(p, isize, 2, bg_color)
-            DiBr(p+Vector((pad, pad)), isize_thumb, br)
-            DiText(p+Vector((pad + isize_thumb.x, isize.y/2+pad)), "Brush Category %i" % idx, 12, scale, pivot=(0, 0))
-            DiText(p+Vector((pad + isize_thumb.x, pad*3)), br.name, 11, scale, (.5, .5, .5, .5), pivot=(0, 0))
-            p -= ioff
-
-            if p.y < (-isize.y+5):
-                break
-    '''
-
     def draw_pre(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         p, s = self.pos, self.size
         DiText(p, '.', 1, 1) # RESET.

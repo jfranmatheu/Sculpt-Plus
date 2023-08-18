@@ -218,7 +218,6 @@ class ShelfGrid(ViewWidget):
         return cv.shelf.expand and cv.shelf.size.y > self.slot_size
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
-        # brushes = context.scene.sculpt_hotbar.get_brushes()
         act_cat = BrushManager.Cats.GetActive(context)
         if act_cat is None:
             return None
