@@ -110,7 +110,6 @@ class Hotbar(WidgetBase):
         return None
 
     def update_active_brush(self, ctx) -> None:
-        # br = ctx.scene.sculpt_hotbar.get_brush(self.slot_on_hover)
         br = Props.GetHotbarBrushAtIndex(self.slot_on_hover)
         if not br:
             return
@@ -200,7 +199,6 @@ class Hotbar(WidgetBase):
             curr_slot = self.get_slot_at_pos(m)
             if prev_slot == curr_slot or curr_slot == None:
                 return True
-            # brushes = ctx.scene.sculpt_hotbar.active_brushes
             #print(brushes[prev_slot], brushes[curr_slot])
             #brushes[prev_slot].slot, brushes[curr_slot].slot = brushes[curr_slot].slot, brushes[prev_slot].slot
             Props.SwitchHotbarBrushIndices(prev_slot, curr_slot)
@@ -230,7 +228,6 @@ class Hotbar(WidgetBase):
         pad = Vector((sep,sep))
         isize = self.item_size
 
-        # hotbar = context.scene.sculpt_hotbar
         max_idx = 10 # len(hotbar.brushes)
 
         DiRct(p,s,prefs.theme_hotbar)
@@ -338,7 +335,6 @@ class Hotbar(WidgetBase):
 
         replace_brush = cv.shelf.expand and self.slot_on_hover is not None and cv.shelf_grid.selected_item
         if replace_brush:
-            # hotbar = ctx.scene.sculpt_hotbar
             idx = self.slot_on_hover
             b_bar = Props.GetHotbarBrushAtIndex(idx) # hotbar.get_brush(idx)
             b_shelf = cv.shelf_grid.selected_item
@@ -351,7 +347,6 @@ class Hotbar(WidgetBase):
             pos = self.get_pos_by_relative_point(Vector(alignment))
 
         elif self.slot_on_hover is not None:
-            # hotbar = ctx.scene.sculpt_hotbar
             idx = self.slot_on_hover
             slot_pos = self.slot_pos[idx]
             b_bar = Props.GetHotbarBrushAtIndex(idx) # hotbar.get_brush(idx)
