@@ -248,7 +248,7 @@ class HotbarManager:
     @property
     def brushes(self) -> list[str]:
         if self.use_alt:
-            return self.brush_sets.active.alt_brushes
+            return self.brush_sets.active.brushes_alt
         return self.brush_sets.active.brushes
 
 
