@@ -152,7 +152,7 @@ class ShelfSidebar(VerticalViewWidget):
             DiRct(slot_p, slot_s, (.6,.6,.6,.25))
 
         if item == act_item:
-            DiCage(slot_p+Vector((pad, pad)), slot_s-Vector((pad, pad))*2, 3.2*scale, Vector(prefs.theme_active_slot_color))
+            DiCage(slot_p+Vector((pad, pad)), slot_s-Vector((pad, pad))*2, 2.4*scale, Vector(prefs.theme_active_slot_color))
 
     def get_draw_item_args(self, _context, _cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         pad = 5 * scale
