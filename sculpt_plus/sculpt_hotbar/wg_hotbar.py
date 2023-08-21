@@ -5,7 +5,7 @@ from typing import Set, Tuple
 from bpy import ops as OP
 from mathutils import Vector
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
-from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiText
+from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiText, DiBMType
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth, map_value
 from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
@@ -226,9 +226,6 @@ class Hotbar(WidgetBase):
         self._press_time = None
 
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        def draw_preview_fallback(p, s, act: bool, opacity: float) -> None:
-            DiBr(p, s, b.sculpt_tool, act, opacity)
-
         p = self.pos.copy()
         s = self.size.copy()
 
@@ -268,11 +265,15 @@ class Hotbar(WidgetBase):
                     if (not cv.shelf.expand and act_br_id == b.id) or (replace_brush and idx == self.slot_on_hover):
                         DiRct(slot_pos+Vector((0,isize.y)),Vector((isize.x,int(5*scale))),prefs.theme_active_slot_color)
                     #DiBr(slot_pos+pad,isize-pad*2,b,idx==self.slot_on_hover)
-                    b.draw_preview(
+                    
+                    DiBMType(
+                        
+                    )
+                    DiBMType(
                         slot_pos+pad,
                         isize-pad*2,
-                        idx==self.slot_on_hover,
-                        fallback=draw_preview_fallback
+                        b,
+                        idx==self.slot_on_hover
                     )
 
             text = str(idx+1)
@@ -285,11 +286,11 @@ class Hotbar(WidgetBase):
             slot_pos = self._press_slot
             DiRct(slot_pos, isize,(.4,.4,.4,.25))
             # DiBr(slot_pos+pad,isize-pad*2,b)
-            b.draw_preview(
+            DiBMType(
                 slot_pos+pad,
                 isize-pad*2,
-                True,
-                fallback=draw_preview_fallback
+                b,
+                True
             )
             DiCage(slot_pos, isize, 2.2*scale, (.2, .6, 1.0, 1.0))
             text = str(idx+1)

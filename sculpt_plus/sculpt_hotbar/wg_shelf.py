@@ -10,13 +10,14 @@ from sculpt_plus.utils.cursor import Cursor, CursorIcon
 from sculpt_plus.utils.math import ease_quad_in_out
 
 from sculpt_plus.utils.math import clamp, point_inside_circle
-from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim, DiTriCorner, DiStar, DiIcoOpGamHl
+from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim, DiTriCorner, DiStar, DiIcoOpGamHl, DiBMType
 from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
 from sculpt_plus.props import hm_data, bm_data
 
-from brush_manager.api import bm_types, BM_UI
+from brush_manager.api import bm_types
+from brush_manager.globals import GLOBALS
 
 
 SLOT_SIZE = 56
@@ -62,9 +63,8 @@ class Shelf(WidgetBase):
             self._expand = True
             self.cv.shelf_grid_item_info.enabled = True
             self.cv.shelf_grid_item_info.update(self.cv, None)
-            
-            item_type: str = BM_UI.get_ctx_item()
-            if item_type == 'TEXTURE':
+
+            if GLOBALS.is_context_texture_item:
                 self.cv.shelf_grid_item_info.expand = True
 
             def _enable():
@@ -251,12 +251,12 @@ class ShelfGrid(ViewWidget):
             DiRct(slot_p, slot_s, Vector(prefs.theme_hotbar_slot)+Vector((.2, .2, .2, 0))) # (.6,.6,.6,.25))
 
 
-        item.draw_preview(
+        DiBMType(
             slot_p,
             slot_s,
+            item,
             is_hovered,
             view_widget=self
-            # fallback=draw_preview_fallback
         )
 
         #if brush_idx_rel is not None and brush in brush_idx_rel:
@@ -631,16 +631,14 @@ class ShelfGridItemInfo(WidgetBase):
         item_pos += Vector((pad, -pad))
 
         # DRAW BRUSH PREVIEW.
-        def draw_preview_fallback(p, s, act: bool, opacity: float):
-            DiBr(p, s, act_brush.sculpt_tool, act, opacity)
 
         if act_brush:
-            act_brush.draw_preview(
+            DiBMType(
                 item_pos,
                 item_size,
+                act_brush,
                 False,
-                fallback=draw_preview_fallback,
-                opacity=opacity
+                opacity
             )
             label = act_brush.name
 
@@ -656,17 +654,17 @@ class ShelfGridItemInfo(WidgetBase):
         # DRAW TEXTURE PREVIEW.
         item_pos -= Vector((0, item_height + mar * 2))
 
-        def draw_preview_fallback(p, s, act: bool, opacity: float):
+        def draw_fallback(p, s, tex, act: bool, opacity: float):
             DiIcoOpGamHl(p, s, Icon.TEXTURE, opacity)
 
         # item_pos = inner_pos
         act_texture = bm_data.active_texture
         if act_texture: # act_brush and act_brush.texture_id and (act_texture := bm_data.get_texture(act_brush.texture_id)):
             label = act_texture.name
-            act_texture.draw_preview(item_pos, item_size, act=False, opacity=opacity)
+            DiBMType(item_pos, item_size, act_texture, False, opacity, draw_fallback=draw_fallback)
         else:
             label = "No Texture"
-            draw_preview_fallback(item_pos, item_size, False, opacity=opacity)
+            draw_fallback(item_pos, item_size, None, False, opacity)
 
         item_pos -= Vector((0, line_height))
         DiText(item_pos, label, 12, scale, (.92, .92, .92, opacity))

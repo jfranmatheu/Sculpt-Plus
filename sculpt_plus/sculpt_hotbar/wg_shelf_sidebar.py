@@ -10,7 +10,7 @@ from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.cursor import Cursor, CursorIcon
 
 from sculpt_plus.utils.math import clamp, point_inside_circle
-from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim, DiIco, DiIcoCol
+from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim, DiIco, DiIcoCol, DiBMType
 from .wg_base import WidgetBase
 from .wg_view import VerticalViewWidget
 from sculpt_plus.lib.icons import Icon
@@ -127,14 +127,16 @@ class ShelfSidebar(VerticalViewWidget):
         DiCage(slot_p, slot_s, 2, color)
         pad = 5 * scale
 
-        def draw_preview_fallback(p, s, act: bool):
+        def draw_fallback(p, s, cat, act: bool, op: float):
             # DiRct(p, s, Vector(prefs.theme_shelf_slot)*.8)
             DiIcoCol(p, s, Icon.PENCIL_CASE_1 if self.type == 'BRUSH' else Icon.TEXTURE_SMALL, (.9, .9, .9, .92))
 
-        item.draw_preview(
+        DiBMType(
             slot_p+Vector((pad, pad)),
             thumb_size,
-            fallback=draw_preview_fallback
+            item,
+            is_hovered,
+            draw_fallback=draw_fallback
         )
 
         DiText(slot_p+Vector((pad*2 + thumb_size.x, slot_s.y/2+pad)), item.name, 13, scale, pivot=(0, 0))
