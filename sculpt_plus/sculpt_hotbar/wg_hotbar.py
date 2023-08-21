@@ -115,6 +115,8 @@ class Hotbar(WidgetBase):
     def get_brush_item_at_index(self, index: int) -> bm_types.BrushItem | None:
         if index < 0 or index > 9:
             return None
+        if hm_data.brush_sets.active is None:
+            return None
         return hm_data.brushes[index]
 
     def update_active_brush(self, ctx) -> None:
