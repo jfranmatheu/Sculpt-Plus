@@ -133,8 +133,11 @@ class Hotbar(WidgetBase):
             return
         if cv.shelf.expand:
             ''' Assign brush from grid to hotbar. '''
-            if cv.shelf_grid.selected_item:
-                hm_data.brush_sets.active.asign_brush(cv.shelf_grid.selected_item, self.slot_on_hover)
+            if cv.shelf_grid.selected_item is not None:
+                bar_index = self.slot_on_hover
+                bar_index = 9 if bar_index==0 else bar_index-1
+                if brush_set := hm_data.brush_sets.active:
+                    brush_set.asign_brush(cv.shelf_grid.selected_item, bar_index)
                 cv.shelf_grid.selected_item = None
             return
 
