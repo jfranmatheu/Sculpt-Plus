@@ -240,8 +240,8 @@ class ShelfGrid(ViewWidget):
                   hotbar_ids: List[str],
                   scale: float,
                   prefs: SCULPTPLUS_AddonPreferences):
-        
-        is_active = item.id == act_item
+
+        is_active = item.uuid == act_item
         is_selected = item == self.selected_item
 
         #if brush is None or brush_idx_rel is None:
@@ -264,8 +264,8 @@ class ShelfGrid(ViewWidget):
         #    idx = idx+1 if idx!=9 else 0
         #    DiText(slot_p+Vector((1,3)), str(idx), 12, scale)
         if self.type == 'BRUSH':
-            if item.id in hotbar_ids:
-                DiText(slot_p+Vector((1,3)), str(hotbar_ids.index(item.id)), 12, scale)
+            if item.uuid in hotbar_ids:
+                DiText(slot_p+Vector((1,3)), str(hotbar_ids.index(item.uuid)), 12, scale)
 
         cat_id = item.cat_id
         if cat_id == act_cat_id:
@@ -535,6 +535,8 @@ class ShelfGridItemInfo(WidgetBase):
     @expand.setter
     def expand(self, value: bool) -> None:
         cv = self.cv
+        if value == self._expand:
+            return
         def _update():
             self.cv.refresh()
             # self.update(cv, None)
