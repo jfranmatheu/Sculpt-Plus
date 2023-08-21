@@ -129,8 +129,19 @@ class BrushSet_Collection:
         return len(self.sets)
 
     @property
-    def active(self) -> BrushSet:
-        return self.get(self._active)
+    def active(self) -> BrushSet | None:
+        if act_brush_set := self.get(self._active):
+            return act_brush_set
+        # No active brush set :-(
+        # There's a valid active category???
+        if act_cat := bm_data.brush_cats.active:
+            # Look for the brush-set associated to this active category.
+            if act_brush_set := self.get(act_cat.uuid):
+                self._active = act_cat.uuid
+                return act_brush_set
+            # IF not... Create a new brush set for this category!
+            return self.add(act_cat)
+        return None
 
     @property
     def active_id(self) -> str:
@@ -187,7 +198,7 @@ class BrushSet_Collection:
         brush_set = BrushSet(self, cat_id)
         # Link the brush_set to this category.
         self.sets[brush_set.uuid] = brush_set
-        self.active = brush_set
+        self._active = brush_set.uuid
         return brush_set
 
     def remove(self, brush_set: BrushSet | str) -> None | BrushSet:
@@ -281,7 +292,7 @@ class HotbarManager:
 
     @property
     def brushes_ids(self) -> List[str]:
-        return [b.uuid for b in self.brushes]
+        return [b.uuid if b else '' for b in self.brushes]
 
     ## @property
     ## def active_brush(self) -> bm_types.BrushItem | None:

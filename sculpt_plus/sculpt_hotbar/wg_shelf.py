@@ -201,7 +201,7 @@ class ShelfGrid(ViewWidget):
         bar_index = 9 if number==0 else number-1
         if brush_set := hm_data.brush_sets.active:
             brush_set.asign_brush(self.selected_item, bar_index)
-        print("Asign to BrushSet:", brush_set, self.selected_item, bar_index)
+        print("Asign to BrushSet:", brush_set, self.selected_item, bar_index, hm_data.brush_sets.count, hm_data.active_brush_cat)
         self.selected_item = None
 
     def get_data(self, cv: Canvas) -> list:
