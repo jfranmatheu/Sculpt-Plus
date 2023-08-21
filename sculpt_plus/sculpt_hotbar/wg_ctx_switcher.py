@@ -3,6 +3,7 @@ from .wg_but import ButtonGroup
 from sculpt_plus.lib.icons import Icon
 
 from brush_manager.globals import GLOBALS
+from brush_manager.api import BM_UI
 
 
 class SidebarContextSwitcher(ButtonGroup):
@@ -19,14 +20,9 @@ class SidebarContextSwitcher(ButtonGroup):
 
         self.style['separator_color'] = None
 
-        def _toggle(cv: Canvas, ctx_type: str, target_button):
-            if GLOBALS.ui_context_item == ctx_type:
-                return
-            
-            if GLOBALS.ui_context_item == 'BRUSH':
-                GLOBALS.ui_context_item = 'TEXTURE'
-            else:
-                GLOBALS.ui_context_item = 'BRUSH'
+        def _toggle(cv: Canvas, ctx, ctx_type: str, target_button):
+            ui_props = BM_UI.get_data(ctx)
+            ui_props.ui_context_item = ctx_type
 
             if GLOBALS.is_context_texture_item:
                 cv.shelf_grid_item_info.expand = True
@@ -36,16 +32,18 @@ class SidebarContextSwitcher(ButtonGroup):
             for but in self.buttons:
                 but.set_state('ENABLED', remove=True)
             target_button.set_state('ENABLED')
+            
+            cv.refresh(ctx)
 
         self.but_ctx_brush = self.new_button(
             "",
             icon=Icon.PAINT_BRUSH,
-            on_click_callback=lambda ctx, cv: _toggle(cv, 'BRUSH', self.but_ctx_brush),
+            on_click_callback=lambda ctx, cv: _toggle(cv, ctx, 'BRUSH', self.but_ctx_brush),
         )
         self.but_ctx_texture = self.new_button(
             "",
             icon=Icon.TEXTURE_OPACITY,
-            on_click_callback=lambda ctx, cv: _toggle(cv, 'TEXTURE', self.but_ctx_texture),
+            on_click_callback=lambda ctx, cv: _toggle(cv, ctx, 'TEXTURE', self.but_ctx_texture),
         )
 
         self.but_ctx_brush.set_state('ENABLED')
