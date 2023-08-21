@@ -480,30 +480,53 @@ class CY_SmoothView2DStore(Structure):
 
 class CY_View2D(Structure):
     _fields_ = [
+        # Tot - area that data can be drawn in; cur - region of tot that is visible in viewport.
         ('tot', CY_rectf),
         ('cur', CY_rectf),
+        # Vert - vertical scroll-bar region; hor - horizontal scroll-bar region.
         ('vert', CY_recti),
         ('hor', CY_recti),
+        # Mask - region (in screen-space) within which 'cur' can be viewed.
         ('mask', CY_recti),
+        # Min/max sizes of 'cur' rect (only when keepzoom not set).
         ('min', c_float * 2),
         ('max', c_float * 2),
+        # Allowable zoom factor range (only when (keepzoom & V2D_LIMITZOOM)) is set.
         ('minzoom', c_float),
         ('maxzoom', c_float),
+        # Scroll - scroll-bars to display (bit-flag).
         ('scroll', c_short),
+        # Scroll_ui - temp settings used for UI drawing of scrollers.
         ('scroll_ui', c_short),
+        # Keeptot - 'cur' rect cannot move outside the 'tot' rect?
         ('keeptot', c_short),
+        # Keepzoom - axes that zooming cannot occur on, and also clamp within zoom-limits.
         ('keepzoom', c_short),
+        # Keepofs - axes that translation is not allowed to occur on.
         ('keepofs', c_short),
+        # Settings.
         ('flag', c_short),
+        # Alignment of content in totrect.
         ('align', c_short),
+        # Storage of current winx/winy values, set in UI_view2d_size_update.
         ('winx', c_short),
         ('winy', c_short),
+        # Storage of previous winx/winy values encountered by #UI_view2d_curRect_validate(),
+        # for keep-aspect.
         ('oldwinx', c_short),
         ('oldwiny', c_short),
+        # Pivot point for transforms (rotate and scale).
         ('around', c_short),
+        # Usually set externally (as in, not in view2d files).
+        # Alpha of vertical and horizontal scroll-bars (range is [0, 255]).
         ('alpha_vert', c_char),
         ('alpha_hor', c_char),
-        ('_pad', c_char * 6),
+        # Mem Spacing.
+        ('_pad', c_char * 2),
+        # When set (not 0), determines how many pixels to scroll when scrolling an entire page.
+        # Otherwise the height of #View2D.mask is used.
+        ('page_size_y', c_float),
+        # Animated smooth view.
         ('sms', POINTER(CY_SmoothView2DStore)),
         ('smooth_timer', c_longlong) # POINTER(wmTimer)
     ]
