@@ -69,7 +69,7 @@ class Canvas:
         self.shelf_drag: ShelfDragHandle = ShelfDragHandle(self)
         self.shelf_search: ShelfSearch = ShelfSearch(self)
         self.shelf_grid: ShelfGrid = ShelfGrid(self)
-        self.shelf_grid_item_info: ShelfGridItemInfo = ShelfGridItemInfo(self)
+        # self.shelf_grid_item_info: ShelfGridItemInfo = ShelfGridItemInfo(self)
         self.group_mask: MaskMultiGroup = MaskMultiGroup(self)
         self.group_t: TransformGroup = TransformGroup(self)
         #self.sidebar: Sidebar = Sidebar(self)
@@ -82,7 +82,7 @@ class Canvas:
 
         self.children = (self.hotbar,#self.sidebar, self.sidebar_grid,
                          self.shelf,
-                         self.shelf_drag, self.shelf_search, self.shelf_grid, self.shelf_grid_item_info,
+                         self.shelf_drag, self.shelf_search, self.shelf_grid, # self.shelf_grid_item_info,
                          self.shelf_sidebar, self.shelf_sidebar_actions, self.shelf_ctx_switcher,
                          self.group_mask, self.group_t,
                          self.ctx_shelf_item, self.ctx_shelf_sidebar_item,
