@@ -262,7 +262,7 @@ class Hotbar(WidgetBase):
                 # b=hotbar.get_brush(idx)
                 b = self.get_brush_item_at_index(idx)
                 if b:
-                    if (not cv.shelf.expand and act_br_id == b.id) or (replace_brush and idx == self.slot_on_hover):
+                    if (not cv.shelf.expand and act_br_id == b.uuid) or (replace_brush and idx == self.slot_on_hover):
                         DiRct(slot_pos+Vector((0,isize.y)),Vector((isize.x,int(5*scale))),prefs.theme_active_slot_color)
                     #DiBr(slot_pos+pad,isize-pad*2,b,idx==self.slot_on_hover)
 
