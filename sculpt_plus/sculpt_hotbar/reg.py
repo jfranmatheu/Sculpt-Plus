@@ -22,16 +22,22 @@ initialized = False
 
 def initialize_brush():
     if GLOBALS.is_importing_a_library:
-        return
+        return 0.5
 
     context = bpy.context
+
+    if context != 'SCULPT':
+        return 1.0
 
     with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
         if active_br := bm_data.active_brush:
             active_br.set_active(context)
         elif active_cat := bm_data.active_category:
             if active_cat.items.count > 0:
-                active_cat.items[0].set_active(context)
+                try:
+                    active_cat.items[0].set_active(context)
+                except Exception:
+                    return 1.0
         else:
             if context.space_data is None:
                 Props.SculptTool.clear_stored()
@@ -41,8 +47,6 @@ def initialize_brush():
 
 
 def dummy_poll_view(ctx):
-    if ctx.mode != 'SCULPT':
-        return False
     global initialized
     if not initialized or Props.SculptTool.get_stored() == 'NULL':
         # HACK. lol.
@@ -58,7 +62,7 @@ def dummy_poll_view(ctx):
 class Master(GZ):
     bl_idname: str = 'VIEW3D_GZ_sculpt_hotbar'
     _cv_instance = None
-    
+
     cv: CV
     reg: Region
 
@@ -91,6 +95,8 @@ class Controller(GZG, KM):
         # dummy_poll_view(y) and
         res = y.object is not None and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace(y) == y.workspace
         # print("poll result ->", res)
+        if res:
+            dummy_poll_view(y)
         return res
 
     def setup(gzg, ctx):
@@ -98,7 +104,7 @@ class Controller(GZG, KM):
         gzg.roff = (0, 0)
 
         gzg.init_master(ctx, gzg.gizmos.new(Master.bl_idname))
-    
+
     def draw_prepare(gzg, ctx: Context):
         gzg.update_master(ctx)
 
