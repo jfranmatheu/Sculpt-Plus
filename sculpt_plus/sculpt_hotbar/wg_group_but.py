@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Set, Tuple
 from uuid import uuid4
 from bpy import ops as OP
 from mathutils import Vector
+
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.sculpt_hotbar.di import DiCage, DiIma, DiImaco, DiRct, DiText
 from sculpt_plus.lib.icons import BrushIcon, Icon

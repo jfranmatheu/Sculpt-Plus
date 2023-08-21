@@ -1,6 +1,6 @@
 from bpy.types import Operator
 from bpy.props import BoolProperty
-from sculpt_plus.props import Props
+from sculpt_plus.props import hm_data
 
 
 class SCULPTPLUS_OT_toggle_hotbar_alt(Operator):
@@ -8,7 +8,7 @@ class SCULPTPLUS_OT_toggle_hotbar_alt(Operator):
     bl_label: str = "Toggle Hotbar Alt Brush-Set"
 
     def execute(self, context):
-        Props.ToggleHotbarAlt()
+        hm_data.use_alt = not hm_data.use_alt
         return {'FINISHED'}
 
 
@@ -19,5 +19,5 @@ class SCULPTPLUS_OT_set_hotbar_alt(Operator):
     enabled: BoolProperty()
 
     def execute(self, context):
-        Props.Hotbar().use_alt = self.enabled
+        hm_data.use_alt = self.enabled
         return {'FINISHED'}

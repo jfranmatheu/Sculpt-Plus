@@ -39,12 +39,19 @@ class BrushSet:
     def __init__(self, collection: 'BrushSet_Collection', cat_id: str) -> None:
         self.owner = collection
         self.uuid = cat_id
-        self.brushes = [None] * 10
-        self.brushes_alt = [None] * 10
+        self.brushes: List[bm_types.BrushItem] = [None] * 10
+        self.brushes_alt: List[bm_types.BrushItem] = [None] * 10
 
     def __del__(self) -> None:
         self.brushes.clear()
         self.brushes_alt.clear()
+
+    def switch(self, index_A: int, index_B: int) -> None:
+        ''' Switch brushes at specified indices. '''
+        if self.collection.hotbar_manager.use_alt:
+            self.brushes_alt[index_A], self.brushes_alt[index_B] = self.brushes_alt[index_B], self.brushes_alt[index_A]
+        else:
+            self.brushes[index_A], self.brushes[index_B] = self.brushes[index_B], self.brushes[index_A]
 
     def asign_brush(self, brush: bm_types.BrushItem | str, at_index: int) -> None:
         cat = self.cat
@@ -236,6 +243,7 @@ class HotbarManager:
     # Properties
     # ------------------------------------------
     brush_sets: BrushSet_Collection
+    ## active_brush: bm_types.BrushItem
 
     use_alt: bool
 
@@ -246,16 +254,33 @@ class HotbarManager:
         return bm_data.get_brush_cat(self.brush_sets.active.cat_id)
 
     @property
-    def brushes(self) -> list[str]:
+    def brushes(self) -> List[bm_types.BrushItem]:
         if self.use_alt:
             return self.brush_sets.active.brushes_alt
         return self.brush_sets.active.brushes
+
+    @property
+    def brushes_ids(self) -> List[str]:
+        return [b.uuid for b in self.brushes]
+
+    ## @property
+    ## def active_brush(self) -> bm_types.BrushItem | None:
+    ##     cat_id, brush_id = self._active_brush
+    ##     if cat_id == '' or brush_id == '':
+    ##         return None
+    ##     if cat := bm_data.brush_cats.get(cat_id):
+    ##         return cat.items.get(brush_id)
+
+    ## @active_brush.setter
+    ## def active_brush(self, brush_item: bm_types.BrushItem) -> None:
+    ##     self._active_brush = brush_item.cat_id, brush_item.uuid
 
 
     # Constructor and free.
     # ------------------------------------------
     def __init__(self):
         self.active_cat_id = ''
+        ## self._active_brush = '', ''
         self.brush_sets = BrushSet_Collection(self)
 
         self.use_alt: bool = False

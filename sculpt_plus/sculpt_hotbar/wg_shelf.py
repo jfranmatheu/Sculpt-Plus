@@ -14,7 +14,7 @@ from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage
 from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import Props, BrushManager, HotbarManager
+from sculpt_plus.props import hm_data, bm_data
 
 from brush_manager.api import bm_types, BM_UI
 
@@ -117,8 +117,8 @@ class Shelf(WidgetBase):
 class ShelfGrid(ViewWidget):
     use_scissor: bool = True
     grid_slot_size: int = 56
-    hovered_item: Union[bm_types.Brush, bm_types.Texture]
-    selected_item: Union[bm_types.Brush, bm_types.Texture]
+    hovered_item: Union[bm_types.BrushItem, bm_types.TextureItem]
+    selected_item: Union[bm_types.BrushItem, bm_types.TextureItem]
 
     def init(self) -> None:
         super().init()
@@ -169,10 +169,7 @@ class ShelfGrid(ViewWidget):
         if self.hovered_item is None:
             return
         # IF SELECT ON DOUBLE CLICK.
-        BrushManager.Items.SetActive(context, self.hovered_item)
-
-        if self.hovered_item.uuid in HotbarManager.GetHotbarBrushIds():
-            HotbarManager.SetHotbarSelected(context, self.hovered_item)
+        bm_data.active_item = self.hovered_item
 
         # Close shelf.
         cv.shelf.expand = False
@@ -181,7 +178,7 @@ class ShelfGrid(ViewWidget):
     def on_rightmouse_press(self, context, cv: Canvas, m: Vector) -> int:
         if self.hovered_item is None:
             return 0
-        if BrushManager.Cats.GetActive(context) is None:
+        if bm_data.active_category is None:
             return 0
         cv.ctx_shelf_item.show(cv, m, self.hovered_item)
         self.hovered_item = None
@@ -192,12 +189,13 @@ class ShelfGrid(ViewWidget):
             return
         #if not cv.shelf.expand:
         #    return
-        list_index = 9 if number==0 else number-1
-        HotbarManager.SetHotbarBrush(list_index, self.selected_item)
+        bar_index = 9 if number==0 else number-1
+        if brush_set := hm_data.brush_sets.active:
+            brush_set.asign_brush(self.selected_item, bar_index)
         self.selected_item = None
 
     def get_data(self, cv: Canvas) -> list:
-        items: List[Union[bm_types.Brush, bm_types.Texture]] = BrushManager.Cats.GetActiveItems(context)
+        items: List[Union[bm_types.BrushItem, bm_types.TextureItem]] = bm_data.active_item
         if items is None:
             return []
 
@@ -218,7 +216,7 @@ class ShelfGrid(ViewWidget):
         return cv.shelf.expand and cv.shelf.size.y > self.slot_size
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
-        act_cat = BrushManager.Cats.GetActive(context)
+        act_cat = bm_data.active_category
         if act_cat is None:
             return None
         slot_color = Vector(prefs.theme_shelf_slot)
@@ -226,12 +224,12 @@ class ShelfGrid(ViewWidget):
         #     return slot_color, None
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
-        act_item = BrushManager.Items.GetActive(context)
-        return slot_color, act_cat.uuid, act_item.uuid if act_item else None, HotbarManager.GetHotbarBrushIds(context)
+        act_item = bm_data.active_item
+        return slot_color, act_cat.uuid, act_item.uuid if act_item else None, hm_data.brushes_ids
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,
-                  item: Union[bm_types.Brush, bm_types.Texture], #brush_idx_rel: dict,
+                  item: Union[bm_types.BrushItem, bm_types.TextureItem], #brush_idx_rel: dict,
                   is_hovered: bool,
                   slot_color: Vector,
                   act_cat_id: str,
@@ -614,7 +612,7 @@ class ShelfGridItemInfo(WidgetBase):
             (.1, .1, .1, .64 * opacity)
         )
 
-        act_brush = Props.GetActiveBrush()
+        act_brush = bm_data.active_brush
         # if act_item is None:
         #     return
 
@@ -659,8 +657,8 @@ class ShelfGridItemInfo(WidgetBase):
             DiIcoOpGamHl(p, s, Icon.TEXTURE, opacity)
 
         # item_pos = inner_pos
-        act_texture = Props.GetActiveTexture()
-        if act_texture: # act_brush and act_brush.texture_id and (act_texture := Props.GetTexture(act_brush.texture_id)):
+        act_texture = bm_data.active_texture
+        if act_texture: # act_brush and act_brush.texture_id and (act_texture := bm_data.get_texture(act_brush.texture_id)):
             label = act_texture.name
             act_texture.draw_preview(item_pos, item_size, act=False, opacity=opacity)
         else:

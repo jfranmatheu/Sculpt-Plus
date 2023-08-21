@@ -6,7 +6,7 @@ from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture,
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.path import SculptPlusPaths
-from sculpt_plus.management.manager import HotbarManager as HM
+from sculpt_plus.management.manager import HotbarManager
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
@@ -34,6 +34,7 @@ IN_TEXTURE_CTX = lambda _type: _type == 'TEXTURE'
 
 
 bm_data = BM_DATA.SCULPT
+hm_data = HotbarManager.get()
 
 
 

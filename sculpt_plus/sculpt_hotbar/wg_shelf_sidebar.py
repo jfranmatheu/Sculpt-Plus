@@ -14,10 +14,10 @@ from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, 
 from .wg_base import WidgetBase
 from .wg_view import VerticalViewWidget
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import Props
+from sculpt_plus.props import bm_data
 from .wg_but import ButtonGroup
 
-from brush_manager.api import BM, bm_types, BM_OPS
+from brush_manager.api import bm_types, BM_OPS
 
 
 SLOT_SIZE = 80
@@ -27,7 +27,7 @@ class ShelfSidebar(VerticalViewWidget):
     interactable: bool = True
     use_scissor: bool = True
     scissor_padding: Vector = Vector((3, 3))
-    hovered_item: Union[bm_types.BrushCategory, bm_types.TextureCategory]
+    hovered_item: Union[bm_types.BrushCat, bm_types.TextureCat]
 
     item_aspect_ratio: float = 1 / 3.5
 
@@ -76,7 +76,7 @@ class ShelfSidebar(VerticalViewWidget):
         # BUG. Add the margin between sidebar and shelf to avoid cursor flickering.
         if super().on_hover(m, self.pos, Vector((self.size.x+self.margin+1, self.size.y + self.item_size.y))):
             if not self._is_on_hover_view and super().on_hover(m, self.get_pos_by_relative_point(Vector((0, 1))), self.item_size):
-                self.hovered_item = Props.GetActiveCat(self.type)
+                self.hovered_item = bm_data.active_category
             else:
                 self.hovered_item = None
             return True
@@ -87,7 +87,7 @@ class ShelfSidebar(VerticalViewWidget):
             return
         if not self.hovered_item:
             return False
-        Props.BrushManager.SetActiveCat(ctx, self.type, self.hovered_item)
+        bm_data.active_category = self.hovered_item
         cv.refresh(ctx)
 
     def on_left_click_drag(self, ctx, cv: Canvas, m: Vector) -> bool:
@@ -102,7 +102,7 @@ class ShelfSidebar(VerticalViewWidget):
         if self._is_on_hover_view:
             hovered_cat = self.hovered_item
         else:
-            hovered_cat = Props.GetActiveCat(self.type)
+            hovered_cat = bm_data.active_category
         if hovered_cat is None:
             return 0
         cv.ctx_shelf_sidebar_item.show(cv, m, hovered_cat)
@@ -110,7 +110,7 @@ class ShelfSidebar(VerticalViewWidget):
         return 1
 
     def get_data(self, _cv: Canvas) -> list:
-        return Props.GetAllCats(self.type, skip_active=True)
+        return bm_data.get_cats(skip_active=True)
 
     def poll(self, _context, cv: Canvas) -> bool:
         return cv.shelf.expand and self.size.y > self.item_size.y
@@ -118,7 +118,7 @@ class ShelfSidebar(VerticalViewWidget):
     def draw_item(self,
                   slot_p,
                   slot_s,
-                  item: Union[bm_types.BrushCategory, bm_types.TextureCategory],
+                  item: Union[bm_types.BrushCat, bm_types.TextureCat],
                   is_hovered: bool,
                   thumb_size: Vector,
                   color: Vector,
@@ -155,7 +155,7 @@ class ShelfSidebar(VerticalViewWidget):
         )
 
     def draw_post(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        act_item = Props.GetActiveCat(self.type)
+        act_item = bm_data.active_category
 
         p = self.get_pos_by_relative_point(Vector((0.0, 1.0)))
         DiText(p, '.', 1, 1) # RESET.
@@ -163,7 +163,7 @@ class ShelfSidebar(VerticalViewWidget):
         DiRct(p, self.item_size, (.08,0.05,.1,.8))
 
         if act_item is None:
-            # print("None active brush cat", Props.BrushManager(context).brush_cats_count)
+            # print("None active brush cat", bm_data.brush_cats.count)
             DiText(p+Vector((10, 10))*scale, 'No Active Category', 14, scale, (.95, .4, .2, .9)) # RESET.
             DiCage(p, self.item_size, 2, Vector(prefs.theme_sidebar))
             DiLine(p, p+Vector((self.item_size.x, 0)), 3.0, (.08, .08, .08, .8))

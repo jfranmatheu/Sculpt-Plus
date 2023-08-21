@@ -9,7 +9,7 @@ from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiTe
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth, map_value
 from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
-from sculpt_plus.props import Props
+from sculpt_plus.props import bm_data, bm_types, GLOBALS, hm_data
 
 
 SLOT_SIZE = 48
@@ -108,23 +108,31 @@ class Hotbar(WidgetBase):
             if self.on_hover_slot(m, pos, self.slot_size):
                 return idx
         return None
+    
+    def get_brush_item_on_hover(self) -> bm_types.BrushItem | None:
+        return self.get_brush_item_at_index(self.slot_on_hover)
+    
+    def get_brush_item_at_index(self, index: int) -> bm_types.BrushItem | None:
+        if index < 0 or index > 9:
+            return None
+        return hm_data.brushes[index]
 
     def update_active_brush(self, ctx) -> None:
-        br = Props.GetHotbarBrushAtIndex(self.slot_on_hover)
-        if not br:
-            return
-        OP.wm.tool_set_by_id(name="builtin_brush." + br.sculpt_tool.replace('_', ' ').title())
-        Props.SetHotbarSelected(ctx, br)
+        brush_item = self.get_brush_item_on_hover()
+        # NOTE: brush_item.type == bl_brush.sculpt_tool
+        OP.wm.tool_set_by_id(name="builtin_brush." + brush_item.type.replace('_', ' ').title())
+        hm_data.active_brush = brush_item
+        brush_item.set_active(ctx)
 
     def on_leftmouse_press(self, ctx, cv: Canvas, m: Vector) -> bool:
-        if self.slot_on_hover is None or Props.GetHotbarBrushAtIndex(self.slot_on_hover) is None:
+        if self.slot_on_hover is None or self.get_brush_item_on_hover() is None:
             self.moving_slot = False
             self._press_time = None
             return
         if cv.shelf.expand:
             ''' Assign brush from grid to hotbar. '''
             if cv.shelf_grid.selected_item:
-                Props.SetHotbarBrush(self.slot_on_hover, cv.shelf_grid.selected_item)
+                hm_data.brush_sets.active.asign_brush(cv.shelf_grid.selected_item, self.slot_on_hover)
                 cv.shelf_grid.selected_item = None
             return
 
@@ -201,7 +209,7 @@ class Hotbar(WidgetBase):
                 return True
             #print(brushes[prev_slot], brushes[curr_slot])
             #brushes[prev_slot].slot, brushes[curr_slot].slot = brushes[curr_slot].slot, brushes[prev_slot].slot
-            Props.SwitchHotbarBrushIndices(prev_slot, curr_slot)
+            hm_data.brush_sets.active.switch(prev_slot, curr_slot)
             self._press_slot.x = self.slot_pos[curr_slot].x
             self.slot_on_hover = curr_slot
         #cv.refresh()
@@ -234,7 +242,7 @@ class Hotbar(WidgetBase):
         DiCage(p, s, 3.2*scale, Vector(prefs.theme_hotbar)*.9)
         DiCage(p, s, 2.0*scale, Vector(prefs.theme_hotbar_slot)*.9)
 
-        act_br = context.tool_settings.sculpt.brush # Props.GetHotbarSelectedId() # context.tool_settings.sculpt.brush
+        act_br = context.tool_settings.sculpt.brush
         act_br_id = act_br['id'] if act_br and 'id' in act_br else None
 
         if self.moving_slot:
@@ -253,7 +261,7 @@ class Hotbar(WidgetBase):
                 #DiCage(slot_pos, isize, 2.0*scale, Vector(prefs.theme_hotbar_slot)*.9)
             if idx < max_idx:
                 # b=hotbar.get_brush(idx)
-                b = Props.GetHotbarBrushAtIndex(idx)
+                b = self.get_brush_item_at_index(idx)
                 if b:
                     if (not cv.shelf.expand and act_br_id == b.id) or (replace_brush and idx == self.slot_on_hover):
                         DiRct(slot_pos+Vector((0,isize.y)),Vector((isize.x,int(5*scale))),prefs.theme_active_slot_color)
@@ -270,7 +278,7 @@ class Hotbar(WidgetBase):
 
         if self.moving_slot:
             idx = self.slot_on_hover
-            b = Props.GetHotbarBrushAtIndex(idx)
+            b = self.get_brush_item_at_index(idx)
             # b=hotbar.get_brush(idx)
             slot_pos = self._press_slot
             DiRct(slot_pos, isize,(.4,.4,.4,.25))
@@ -336,7 +344,7 @@ class Hotbar(WidgetBase):
         replace_brush = cv.shelf.expand and self.slot_on_hover is not None and cv.shelf_grid.selected_item
         if replace_brush:
             idx = self.slot_on_hover
-            b_bar = Props.GetHotbarBrushAtIndex(idx) # hotbar.get_brush(idx)
+            b_bar = self.get_brush_item_at_index(idx) # hotbar.get_brush(idx)
             b_shelf = cv.shelf_grid.selected_item
             if not b_bar:
                 slot_numkey = 0 if idx==9 else idx+1
@@ -349,7 +357,7 @@ class Hotbar(WidgetBase):
         elif self.slot_on_hover is not None:
             idx = self.slot_on_hover
             slot_pos = self.slot_pos[idx]
-            b_bar = Props.GetHotbarBrushAtIndex(idx) # hotbar.get_brush(idx)
+            b_bar = self.get_brush_item_at_index(idx) # hotbar.get_brush(idx)
             if b_bar:
                 text = b_bar.name
             else:

@@ -6,7 +6,7 @@ from sculpt_plus.prefs import get_prefs
 from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
 from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
 from sculpt_plus.utils.gpu import LiveView
-from sculpt_plus.props import Props, BrushManager
+from sculpt_plus.props import Props, CM_UIContext, bm_data
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 # from .km import create_hotbar_km
@@ -31,11 +31,12 @@ def init_master(gzg,ctx,gmaster):
 def initialize_brush():
     context = bpy.context
 
-    with BrushManager.Context(context, item_type='BRUSH'):
-        if active_br := BrushManager.Items.GetActive(context):
-            BrushManager.Items.SetActive(context, active_br)
-        elif brushes := list(BrushManager.Items.GetAll(context)):
-            BrushManager.Items.SetActive(context, brushes[0])
+    with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
+        if active_br := bm_data.active_brush:
+            active_br.set_active(context)
+        elif active_cat := bm_data.active_category:
+            if active_cat.items.count > 0:
+                active_cat.items[0].set_active(context)
         else:
             if context.space_data is None:
                 Props.SculptTool.clear_stored()

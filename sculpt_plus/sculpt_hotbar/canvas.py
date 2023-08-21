@@ -167,11 +167,11 @@ class Canvas:
         ## print("Canvas::invoke - Event:", evt.type, evt.value)
         # print(evt.alt)
         if evt.type == 'LEFT_ALT':
-            from sculpt_plus.props import Props
+            from sculpt_plus.props import hm_data
             if evt.alt and evt.value == 'PRESS':
-                Props.Hotbar().use_alt = True
+                hm_data.use_alt = True
             elif not evt.alt and evt.value == 'RELEASE':
-                Props.Hotbar().use_alt = False
+                hm_data.use_alt = False
             self.refresh(ctx)
             return Return.FINISH()
         if not self.wg_on_hover:

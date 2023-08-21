@@ -13,7 +13,7 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
     def execute(self, context):
         # print("Holiwiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii toooooolll")
         from .override_tools import accept_brush_tools
-        from sculpt_plus.props import Props, BrushManager
+        from sculpt_plus.props import Props, CM_UIContext, bm_data
 
         if context.space_data is None:
             return {'CANCELLED'}
@@ -35,11 +35,12 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
             print("Sculpt Brush! All for One, One for All!")
             bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
 
-            with BrushManager.Context(context, item_type='BRUSH'):
-                if active_br := BrushManager.Items.GetActive(context):
-                    BrushManager.Items.SetActive(context, active_br)
-                elif brushes := list(BrushManager.Items.GetAll(context)):
-                    BrushManager.Items.SetActive(context, brushes[0])
+            with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
+                if active_br := bm_data.active_brush:
+                    active_br.set_active(context)
+                elif active_cat := bm_data.active_category:
+                    if active_cat.items.count > 0:
+                        active_cat.items[0].set_active(context)
                 #else:
                 #    bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
 

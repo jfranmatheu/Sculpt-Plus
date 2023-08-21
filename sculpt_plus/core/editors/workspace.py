@@ -41,7 +41,6 @@ class SCULPTPLUS_OT_setup_workspace(Operator):
 
     def modal(self, context: 'Context', event: 'Event'):
         bpy.ops.wm.owner_enable('INVOKE_DEFAULT', False, owner_id="sculpt_plus")
-        ## Props.BrushManager(context).ensure_data()
         return {'FINISHED'}
 
 

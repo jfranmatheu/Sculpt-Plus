@@ -2,7 +2,7 @@ from .wg_base import WidgetBase, Canvas, Vector, SCULPTPLUS_AddonPreferences
 from .wg_but import ButtonGroup
 from sculpt_plus.lib.icons import Icon
 
-from brush_manager.api import BM, BM_UI
+from brush_manager.globals import GLOBALS
 
 
 class SidebarContextSwitcher(ButtonGroup):
@@ -20,12 +20,15 @@ class SidebarContextSwitcher(ButtonGroup):
         self.style['separator_color'] = None
 
         def _toggle(cv: Canvas, ctx_type: str, target_button):
-            if BM_UI.get_ctx_item() == ctx_type:
+            if GLOBALS.ui_context_item == ctx_type:
                 return
             
-            item_type: str = BM_UI.toggle_ctx_item()
+            if GLOBALS.ui_context_item == 'BRUSH':
+                GLOBALS.ui_context_item = 'TEXTURE'
+            else:
+                GLOBALS.ui_context_item = 'BRUSH'
 
-            if item_type == 'TEXTURE':
+            if GLOBALS.is_context_texture_item:
                 cv.shelf_grid_item_info.expand = True
             else:
                 cv.shelf_grid_item_info.expand = False
