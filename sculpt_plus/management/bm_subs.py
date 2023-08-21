@@ -12,11 +12,19 @@ def on_addon_data_save(bm_data: bm_types.AddonDataByMode) -> None:
 BM_SUB.AddonData.SAVE += on_addon_data_save
 
 
+def on_cats_add(new_cat: bm_types.Category) -> None:
+    if isinstance(new_cat, bm_types.BrushCat):
+        # Initialize new BrushSet for the new BrushCat.
+        hm_data.brush_sets.add(new_cat)
+
+
 def on_cats_remove(cat_to_remove: bm_types.Category) -> None:
     if isinstance(cat_to_remove, bm_types.BrushCat):
+        # Ensure that we remove the BrushSet associated with the removed BrushCat.
         hm_data.brush_sets.remove(cat_to_remove.uuid)
 
 
+BM_SUB.Cats.ADD += on_cats_add
 BM_SUB.Cats.REMOVE += on_cats_remove
 
 
