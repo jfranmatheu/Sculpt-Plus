@@ -167,8 +167,10 @@ class ButtonGroup(WidgetBase):
     def init(self) -> None:
         pass
 
-    def new_button(self, label: str = '', icon: Icon = None, on_click_callback: callable = None) -> Button:
+    def new_button(self, label: str = '', icon: Icon = None, on_click_callback: callable = None, draw_poll: callable = None) -> Button:
         button = Button(self.cv, Vector((0, 0)), Vector((0, 0)), on_click_callback=on_click_callback, label=label, icon=icon, **self.button_style)
+        if draw_poll is not None:
+            button.draw_poll = lambda but, ctx, cv: draw_poll(but, ctx, cv)
         self.add_button(button)
         return button
 
@@ -237,7 +239,8 @@ class ButtonGroup(WidgetBase):
         DiText(self.pos, '.', 1, 1, (0, 0, 0, .1))
         for button in self.buttons:
             # is_hovered = button==self.hovered_button
-            button.draw(scale, prefs)
+            if button.draw_poll(context, cv):
+                button.draw(scale, prefs)
 
         if self.style['separator_color']:
             for button in (self.buttons[:-1] if self.but_spacing != 0 else self.buttons):

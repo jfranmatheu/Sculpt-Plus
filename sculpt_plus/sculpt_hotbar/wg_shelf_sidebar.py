@@ -18,6 +18,7 @@ from sculpt_plus.props import bm_data
 from .wg_but import ButtonGroup
 
 from brush_manager.api import bm_types, BM_OPS
+from brush_manager.globals import GLOBALS
 
 
 SLOT_SIZE = 80
@@ -188,15 +189,15 @@ class ShelfSidebar(VerticalViewWidget):
             DiRct(self.pos, self.size, (.24, .24, .24, .64))
 
     def draw_pre(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        p, s = self.pos, self.size
-        DiText(p, '.', 1, 1) # RESET.
+        #p, s = self.pos, self.size
+        #DiText(p, '.', 1, 1) # RESET.
         color = Vector(prefs.theme_shelf)
         color.w *= 0.5
         DiRct(self.pos, self.size, color)
         DiCage(self.pos, self.size, 3.2*scale, color*.9)
 
     def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        cv.ctx_shelf_sidebar_item
+        pass
 
 
 class ShelfSidebarActions(ButtonGroup):
@@ -210,7 +211,8 @@ class ShelfSidebarActions(ButtonGroup):
         self.new_button(
             "Import",
             Icon.DOWNLOAD,
-            lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT')
+            lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT'),
+            draw_poll=lambda but, ctx, cv: GLOBALS.is_context_brush_item
         )
 
 
