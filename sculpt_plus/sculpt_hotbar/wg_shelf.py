@@ -195,9 +195,11 @@ class ShelfGrid(ViewWidget):
         self.selected_item = None
 
     def get_data(self, cv: Canvas) -> list:
-        items: List[Union[bm_types.BrushItem, bm_types.TextureItem]] = bm_data.active_item
-        if items is None:
+        act_cat = bm_data.active_category
+        if act_cat is None or act_cat.items.count == 0:
             return []
+
+        items = act_cat.items
 
         # Apply filter (if exist).
         filt = cv.shelf_search.search
@@ -206,7 +208,8 @@ class ShelfGrid(ViewWidget):
             startswith = {item for item in items if item.name.lower().startswith(filt)}
             contains = [item for item in items if item not in startswith and filt in item.name.lower()]
             items = list(startswith) + contains
-        #else:
+        else:
+            items = list(items)
         #    if self.show_all_brushes:
         #        brushes = [br for br in brushes if br.use_paint_sculpt]
         items.sort(key=lambda item: item.fav, reverse=True) # Favs first.

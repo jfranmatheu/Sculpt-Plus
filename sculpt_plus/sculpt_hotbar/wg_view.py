@@ -1,5 +1,5 @@
 from math import floor, ceil
-from bpy.types import Brush, Texture, ImageTexture, Image
+from bpy.types import Brush as BlBrush, Texture as BlTexture, ImageTexture, Image
 from mathutils import Vector
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
@@ -8,6 +8,8 @@ from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.cursor import Cursor, CursorIcon
 from sculpt_plus.utils.math import clamp
 from .wg_base import WidgetBase
+
+from brush_manager.api import bm_types
 
 
 HEADER_HEIGHT = 32
@@ -54,7 +56,7 @@ class ViewWidget(WidgetBase):
     def get_max_width(self, cv: Canvas, scale) -> float:
         return self.grid_slot_size * scale
 
-    def iter_slots(self, scale: float, mouse: Vector = None, loop_callback: callable = None) -> Brush or Texture or None:
+    def iter_slots(self, scale: float, mouse: Vector = None, loop_callback: callable = None) -> bm_types.BrushItem or bm_types.TextureItem or None:
         self.update(self.cv, None)
 
         p = self.pos.copy()
@@ -145,7 +147,7 @@ class ViewWidget(WidgetBase):
 
         return hovered_item
 
-    def get_slot_at_pos(self, m) -> Brush or Texture or None:
+    def get_slot_at_pos(self, m) -> bm_types.BrushItem or bm_types.TextureItem or None:
         return self.iter_slots(self.cv.scale, m)
 
     def on_hover_exit(self) -> None:

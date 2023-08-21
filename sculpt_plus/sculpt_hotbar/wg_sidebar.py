@@ -3,7 +3,7 @@ from time import time
 from typing import Set
 
 import bpy
-from bpy.types import Brush, Texture
+from bpy.types import Brush as BlBrush, Texture as BlTexture
 from mathutils import Vector
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences

@@ -2,14 +2,11 @@ import sys
 from pathlib import Path
 import numpy as np
 from time import time
-#import multiprocessing
 
 import bpy
 from bpy.types import Image as BlImage
 
-#from sculpt_plus.core.sockets.pbar_client import PBarClient
-#from sculpt_plus.management.manager import Manager, Brush, Texture, BrushCategory, TextureCategory
-from sculpt_plus.path import SculptPlusPaths, DBShelfManager #, DBShelfPaths, DBShelf
+from sculpt_plus.path import SculptPlusPaths
 
 
 ''' Get Command Arguments. '''
