@@ -212,7 +212,7 @@ class ShelfSidebarActions(ButtonGroup):
             "Import",
             Icon.DOWNLOAD,
             lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT'),
-            draw_poll=lambda but, ctx, cv: GLOBALS.is_context_brush_item
+            draw_poll=lambda ctx, cv: GLOBALS.is_context_brush_item
         )
 
 

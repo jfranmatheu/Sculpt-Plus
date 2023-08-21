@@ -170,7 +170,7 @@ class ButtonGroup(WidgetBase):
     def new_button(self, label: str = '', icon: Icon = None, on_click_callback: callable = None, draw_poll: callable = None) -> Button:
         button = Button(self.cv, Vector((0, 0)), Vector((0, 0)), on_click_callback=on_click_callback, label=label, icon=icon, **self.button_style)
         if draw_poll is not None:
-            button.draw_poll = lambda but, ctx, cv: draw_poll(but, ctx, cv)
+            button.draw_poll = lambda ctx, cv: draw_poll(ctx, cv)
         self.add_button(button)
         return button
 
