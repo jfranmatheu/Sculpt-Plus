@@ -141,7 +141,7 @@ class ShelfSidebar(VerticalViewWidget):
         )
 
         DiText(slot_p+Vector((pad*2 + thumb_size.x, slot_s.y/2+pad)), item.name, 13, scale, pivot=(0, 0))
-        DiText(slot_p+Vector((pad*2 + thumb_size.x, pad*2)), '( ' + str(item.items.count) + ' )', 11, scale, (.5, .5, .5, .5), pivot=(0, 0))
+        # DiText(slot_p+Vector((pad*2 + thumb_size.x, pad*2)), '( ' + str(item.items.count) + ' )', 11, scale, (.5, .5, .5, .5), pivot=(0, 0))
 
         if is_hovered:
             DiRct(slot_p, slot_s, (.6,.6,.6,.25))
@@ -161,7 +161,7 @@ class ShelfSidebar(VerticalViewWidget):
         act_item = bm_data.active_category
 
         p = self.get_pos_by_relative_point(Vector((0.0, 1.0)))
-        DiText(p, '.', 1, 1) # RESET.
+        ## DiText(p, '.', 1, 1) # RESET.
         # p -= Vector((0, self.item_size.y))
         DiRct(p, self.item_size, (.08,0.05,.1,.8))
 
@@ -189,12 +189,12 @@ class ShelfSidebar(VerticalViewWidget):
             DiRct(self.pos, self.size, (.24, .24, .24, .64))
 
     def draw_pre(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        #p, s = self.pos, self.size
-        #DiText(p, '.', 1, 1) # RESET.
+        p, s = self.pos, self.size
+        ## DiText(p,'.',2,1,(0,0,0,0))
         color = Vector(prefs.theme_shelf)
         color.w *= 0.5
-        DiRct(self.pos, self.size, color)
-        DiCage(self.pos, self.size, 3.2*scale, color*.9)
+        DiRct(p, s, color)
+        DiCage(p, s, 3.2*scale, color*.9)
 
     def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
