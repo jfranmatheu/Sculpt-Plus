@@ -24,10 +24,11 @@ class SidebarContextSwitcher(ButtonGroup):
             ui_props = BM_UI.get_data(ctx)
             ui_props.ui_context_item = ctx_type
 
-            if GLOBALS.is_context_texture_item:
-                cv.shelf_grid_item_info.expand = True
-            else:
-                cv.shelf_grid_item_info.expand = False
+            if hasattr(cv, 'shelf_grid_item_info'):
+                if GLOBALS.is_context_texture_item:
+                    cv.shelf_grid_item_info.expand = True
+                else:
+                    cv.shelf_grid_item_info.expand = False
 
             for but in self.buttons:
                 but.set_state('ENABLED', remove=True)

@@ -37,43 +37,49 @@ class Shelf(WidgetBase):
 
     @expand.setter
     def expand(self, state: bool):
-        self.cv.shelf_drag.interactable = False
+        cv = self.cv
+
+        cv.shelf_drag.interactable = False
 
         def _update():
-            self.cv.refresh()
-            self.cv.shelf_drag.update(self.cv, None)
-            self.cv.shelf_search.update(self.cv, None)
-            self.cv.shelf_sidebar_actions.update(self.cv, None)
-            self.cv.shelf_sidebar.update(self.cv, None)
-            self.cv.shelf_ctx_switcher.update(self.cv, None)
-            self.cv.shelf_grid_item_info.update(self.cv, None)
+            cv.refresh()
+            cv.shelf_drag.update(cv, None)
+            cv.shelf_search.update(cv, None)
+            cv.shelf_sidebar_actions.update(cv, None)
+            cv.shelf_sidebar.update(cv, None)
+            cv.shelf_ctx_switcher.update(cv, None)
+            if hasattr(cv, 'shelf_grid_item_info'):
+                cv.shelf_grid_item_info.update(cv, None)
 
         if state == False:
-            self.cv.shelf_grid.selected_item = None
+            cv.shelf_grid.selected_item = None
 
-            self.cv.shelf_grid_item_info.enabled = False
+            if hasattr(cv, 'shelf_grid_item_info'):
+                cv.shelf_grid_item_info.enabled = False
 
             def _disable():
                 self._expand = False
-                self.cv.shelf_drag.interactable = True
+                cv.shelf_drag.interactable = True
 
             self.resize(y=0, animate=True, anim_change_callback=_update, anim_finish_callback=_disable)
 
         else:
             self._expand = True
-            self.cv.shelf_grid_item_info.enabled = True
-            self.cv.shelf_grid_item_info.update(self.cv, None)
 
-            if GLOBALS.is_context_texture_item:
-                self.cv.shelf_grid_item_info.expand = True
+            if hasattr(cv, 'shelf_grid_item_info'):
+                cv.shelf_grid_item_info.enabled = True
+                cv.shelf_grid_item_info.update(cv, None)
+
+                if GLOBALS.is_context_texture_item:
+                    cv.shelf_grid_item_info.expand = True
 
             def _enable():
                 self._expand = True
-                self.cv.shelf_drag.interactable = True
+                cv.shelf_drag.interactable = True
 
             r: float = self.size.y * .2
-            slot_size = SLOT_SIZE * self.cv.scale
-            height = slot_size * 5.25 # int(self.cv.size.y * .65) # self.cv.size.y - self.cv.shelf.pos.y - self.cv.hotbar.size.y - r
+            slot_size = SLOT_SIZE * cv.scale
+            height = slot_size * 5.25 # int(cv.size.y * .65) # cv.size.y - cv.shelf.pos.y - cv.hotbar.size.y - r
             self.resize(y=height, animate=True, anim_change_callback=_update, anim_finish_callback=_enable)
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
@@ -130,7 +136,10 @@ class ShelfGrid(ViewWidget):
         return SLOT_SIZE * scale * 5.25 - padding * 2
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
-        info_expanded = cv.shelf_grid_item_info.expand
+        if hasattr(cv, 'shelf_grid_item_info'):
+            info_expanded = cv.shelf_grid_item_info.expand
+        else:
+            info_expanded = False
 
         scale = cv.scale
 
@@ -346,7 +355,8 @@ class ShelfDragHandle(WidgetBase):
         cv.shelf_sidebar_actions.update(cv, None)
         cv.shelf_sidebar.update(cv, None)
         cv.shelf_ctx_switcher.update(cv, None)
-        cv.shelf_grid_item_info.update(cv, None)
+        if hasattr(cv, 'shelf_grid_item_info'):
+            cv.shelf_grid_item_info.update(cv, None)
 
     def end_drag(self, cv: Canvas):
         self.dragging = False
