@@ -1,6 +1,6 @@
 import bpy
 from bpy.app.timers import register as register_timer, is_registered as is_timer_registered
-from bpy.types import GizmoGroup as GZG, Gizmo as GZ
+from bpy.types import GizmoGroup as GZG, Gizmo as GZ, Region, Context
 from mathutils import Vector
 from sculpt_plus.prefs import get_prefs
 from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
@@ -17,16 +17,6 @@ exclude_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER'
 
 initialized = False
 
-
-def init_master(gzg,ctx,gmaster):
-    gzg.roff = (0, 0)
-    gzg.rdim = (ctx.region.width, ctx.region.height)
-    gmaster.reg=ctx.region
-    gmaster.init(ctx)
-    gmaster.use_event_handle_all = True
-    gmaster.use_draw_modal = True
-    gmaster.scale_basis = 1.0
-    gzg.master = gmaster
 
 
 
@@ -63,66 +53,29 @@ def dummy_poll_view(ctx):
         register_timer(initialize_brush, first_interval=.1)
     return True
 
-def on_refresh(gzg,ctx):
-    return True
-
-def update_master(gzg,ctx,cv):
-    off_left = 0
-    off_bot = 0
-    off_top = 0
-    off_right = 0
-    for reg in ctx.area.regions:
-        if reg.type == 'TOOLS':
-            off_left += reg.width
-        elif reg.type == 'UI':
-            off_right += reg.width
-    width = ctx.region.width - off_right - off_left
-    height = ctx.region.height - off_top - off_bot
-    if cv.reg != ctx.region or gzg.rdim[0] != width or gzg.rdim[1] != height or off_left != gzg.roff[0] or off_bot != gzg.roff[1]:
-        cv.reg = ctx.region
-        cv.refresh()
-        gzg.roff = (off_left, off_bot)
-        gzg.rdim = (width, height)
-        p = get_prefs(ctx)
-        cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
 
 
 class Master(GZ):
     bl_idname: str = 'VIEW3D_GZ_sculpt_hotbar'
     _cv_instance = None
+    
+    cv: CV
+    reg: Region
 
     @classmethod
-    def get(cls, r) -> CV:
+    def get_cv(cls, ctx: Context | None = None) -> CV:
         if cls._cv_instance is None:
-            cls._cv_instance = CV(r)
+            cls._cv_instance = CV(ctx.region if ctx is not None else bpy.context.region)
         return cls._cv_instance
 
-    def init(x, c): x.cv.update((0,0), (c.region.width, c.region.height), get_prefs(c).get_scale(c), get_prefs(c))
-    def setup(x): setattr(x, 'cv', x.__class__.get(bpy.context.region))
-    def test_select(x,c,l):
-        res = x.cv.test(c,l) if hasattr(x,'cv') else -1
-        # print("test result ->", res)
-        return res
-    def invoke(x,c,e): return x.cv.invoke(c,e) if hasattr(x,'cv') else {'FINISHED'}
-    def modal(c,x,e,t): return x.cv.modal(c,e,t) if hasattr(x,'cv') else {'FINISHED'}
-    def exit(x,c,ca): return x.cv.exit(c,ca) if hasattr(x,'cv') else None
-    def draw(x,c): x.cv.draw(c) if hasattr(x,'cv') else None
+    def setup(x): pass
+    def test_select(x,c,l): return Master.get_cv(c).test(c,l)
+    def invoke(x,c,e): return Master.get_cv(c).invoke(c,e)
+    def modal(x,c,e,t): return Master.get_cv(c).modal(c,e,t)
+    def exit(x,c,ca): return Master.get_cv(c).exit(c,ca)
+    def draw(x,c): Master.get_cv(c).draw(c)
 
-'''
-class Test(GZG, KM):
-    bl_idname: str = 'VIEW3D_GZG_test_sculpt_plus'
-    bl_label: str = 'Test Sculpt Plus'
-    bl_space_type: str = 'VIEW_3D'
-    bl_region_type: str = 'WINDOW'
-    bl_options: set[str] = {'PERSISTENT', 'SHOW_MODAL_ALL'}
 
-    @classmethod
-    def poll(cls, y) -> bool:
-        return y.mode == 'SCULPT'
-
-    def setup(x, y):
-        pass # x.gizmos.new("GIZMO_GT_button_2d")
-'''
 
 class Controller(GZG, KM):
     bl_idname: str = 'VIEW3D_GZG_sculpt_hotbar'
@@ -130,8 +83,7 @@ class Controller(GZG, KM):
     bl_space_type: str = 'VIEW_3D'
     bl_region_type: str = 'WINDOW'
     bl_options: set[str] = {'PERSISTENT', 'SHOW_MODAL_ALL'} #, 'EXCLUDE_MODAL' , '3D'}
-    gz: GZ = Master
-
+    # gz: GZ = Master
     # setup_keymap = KM.setup_keymap
 
     @classmethod
@@ -141,15 +93,49 @@ class Controller(GZG, KM):
         # print("poll result ->", res)
         return res
 
-    def setup(x, y): init_master(x,y,x.gizmos.new(x.__class__.gz.bl_idname))
+    def setup(gzg, ctx):
+        gzg.rdim = (ctx.region.width, ctx.region.height)
+        gzg.roff = (0, 0)
 
-    def draw_prepare(x, y):
-        # create_hotbar_km()
-        if hasattr(x,'master') and hasattr(x.master,'cv'):
-            update_master(x,y,x.master.cv)
+        gzg.init_master(ctx, gzg.gizmos.new(Master.bl_idname))
+    
+    def draw_prepare(gzg, ctx: Context):
+        gzg.update_master(ctx)
 
-    def refresh(x, y):
-        if on_refresh(x,y) and hasattr(x,'master') and hasattr(x.master,'cv'):
-            setattr(x.master.cv,'reg',y.region)
+    def refresh(gzg, ctx: Context):
+        cv = Master.get_cv(ctx)
+        if cv.reg != ctx.region:
+            setattr(cv, 'reg', ctx.region)
+            gzg.update_master(ctx)
+
+
+    def init_master(gzg, ctx: Context, gz_master: Master):
+        gz_master.reg=ctx.region
+        gz_master.use_event_handle_all = True
+        gz_master.use_draw_modal = True
+        gz_master.scale_basis = 1.0
+        gzg.master=gz_master
+
+    def update_master(gzg, ctx: Context):
+        off_left = 0
+        off_bot = 0
+        off_top = 0
+        off_right = 0
+        for reg in ctx.area.regions:
+            if reg.type == 'TOOLS':
+                off_left += reg.width
+            elif reg.type == 'UI':
+                off_right += reg.width
+        width = ctx.region.width - off_right - off_left
+        height = ctx.region.height - off_top - off_bot
+        cv=Master.get_cv(ctx)
+        if cv.reg != ctx.region or gzg.rdim[0] != width or gzg.rdim[1] != height or off_left != gzg.roff[0] or off_bot != gzg.roff[1]:
+            cv.reg = ctx.region
+            cv.refresh()
+            gzg.roff = (off_left, off_bot)
+            gzg.rdim = (width, height)
+            p = get_prefs(ctx)
+            cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
+
 
 bpy.sculpt_hotbar = Master
