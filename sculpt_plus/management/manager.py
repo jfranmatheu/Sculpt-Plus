@@ -133,6 +133,9 @@ class BrushSet_Collection:
 
     @active.setter
     def active(self, brush_set: str | BrushSet) -> None:
+        if brush_set is None:
+            self._active = ''
+            return
         if not isinstance(brush_set, (str, BrushSet)):
             raise TypeError("Expected an BrushSet instance or a string (uuid)")
         self._active = brush_set if isinstance(brush_set, str) else brush_set.uuid
@@ -179,11 +182,14 @@ class BrushSet_Collection:
         brush_set = BrushSet(self, cat_id)
         # Link the brush_set to this category.
         self.sets[brush_set.uuid] = brush_set
+        self.active = brush_set
         return brush_set
 
     def remove(self, brush_set: BrushSet | str) -> None | BrushSet:
         ''' In case a category got removed, we need to remove the BrushSet that is associated. '''
         if isinstance(brush_set, str):
+            if brush_set == self.active:
+                self.active = None
             del self.sets[brush_set]
         elif isinstance(brush_set, BrushSet):
             return self.remove(brush_set.uuid)
