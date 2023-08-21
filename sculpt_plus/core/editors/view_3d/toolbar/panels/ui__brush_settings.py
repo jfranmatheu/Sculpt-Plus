@@ -6,6 +6,8 @@ from bpy.types import UILayout
 
 from sculpt_plus.props import Props
 
+from sculpt_plus.props import bm_data
+
 
 def draw_brush_settings_tabs(layout, context):
     # BRUSH SETTINGS.
@@ -27,7 +29,12 @@ def draw_brush_settings_tabs(layout, context):
     item, tool, icon_value = cls._tool_get_active(context, space_type, mode, with_icon=True)
     if item is None:
         return None
-    label_text = act_brush.name # iface_(item.label, "Operator")
+
+    is_bm_brush = 'brush_manager' in act_brush
+    if is_bm_brush and bm_data.active_brush is not None:
+        label_text = bm_data.active_brush.name
+    else:
+        label_text = act_brush.name # iface_(item.label, "Operator")
     # header.label(text="    " + label_text, icon_value=icon_value)
     header.label(text="", icon_value=icon_value)
     tri_icon = 'TRIA_DOWN' if ui_props.show_brush_settings_panel else 'TRIA_LEFT'
