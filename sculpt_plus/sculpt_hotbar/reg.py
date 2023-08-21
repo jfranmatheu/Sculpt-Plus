@@ -9,6 +9,8 @@ from sculpt_plus.utils.gpu import LiveView
 from sculpt_plus.props import Props, CM_UIContext, bm_data
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
+
+from brush_manager.globals import GLOBALS
 # from .km import create_hotbar_km
 
 exclude_brush_tools: set[str] = {'MASK', 'DRAW_FACE_SETS', 'DISPLACEMENT_ERASER', 'DISPLACEMENT_SMEAR', 'SIMPLIFY'}
@@ -29,6 +31,9 @@ def init_master(gzg,ctx,gmaster):
 
 
 def initialize_brush():
+    if GLOBALS.is_importing_a_library:
+        return
+
     context = bpy.context
 
     with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
