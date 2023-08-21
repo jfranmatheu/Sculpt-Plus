@@ -17,7 +17,7 @@ from sculpt_plus.lib.icons import Icon
 from sculpt_plus.props import bm_data
 from .wg_but import ButtonGroup
 
-from brush_manager.api import bm_types, BM_OPS
+from brush_manager.api import bm_types, BM_OPS, BM_UI
 from brush_manager.globals import GLOBALS
 
 
@@ -212,7 +212,7 @@ class ShelfSidebarActions(ButtonGroup):
             "Import",
             Icon.DOWNLOAD,
             lambda ctx, cv: BM_OPS.import_library(ui_context_mode='SCULPT'),
-            draw_poll=lambda ctx, cv: GLOBALS.is_context_brush_item
+            draw_poll=lambda ctx, cv: BM_UI.get_data(ctx).ui_context_item == 'BRUSH'
         )
 
 
