@@ -262,7 +262,7 @@ class ShelfGrid(ViewWidget):
         #    idx: int = brush_idx_rel[brush]
         #    idx = idx+1 if idx!=9 else 0
         #    DiText(slot_p+Vector((1,3)), str(idx), 12, scale)
-        if self.type == 'BRUSH':
+        if GLOBALS.is_context_brush_item:
             if item.uuid in hotbar_ids:
                 DiText(slot_p+Vector((1,3)), str(hotbar_ids.index(item.uuid)), 12, scale)
 
