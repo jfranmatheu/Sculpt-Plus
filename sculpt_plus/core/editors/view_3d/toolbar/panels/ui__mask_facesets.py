@@ -255,7 +255,7 @@ def draw_facesets(layout: UILayout, context):
 
     header, content = _sub("V i s i b i l i t y :", icon='CAMERA_STEREO', align=True, use_content_box=False, columns=2)
     content.operator('sculpt.reveal_all', text='Reveal All', icon='HIDE_OFF')
-    content.operator('sculpt.face_set_change_visibility', text='Invert', icon='HOLDOUT_ON').mode='INVERT'
+    content.operator('sculpt.face_set_change_visibility', text='Invert', icon='HOLDOUT_ON').mode='TOGGLE' # 3.6 -> ('TOGGLE', 'SHOW_ACTIVE', 'HIDE_ACTIVE')
 
     header, content = _sub("C r e a t e   F a c e - S e t   f r o m ...", toggle_prop='show_facesets_panel_createfrom_section')
     if content:
