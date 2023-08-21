@@ -136,7 +136,8 @@ class Controller(GZG, KM):
 
     @classmethod
     def poll(cls, y) -> bool:
-        res = dummy_poll_view(y) and y.object and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace(y) == y.workspace
+        # dummy_poll_view(y) and
+        res = y.object is not None and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace(y) == y.workspace
         # print("poll result ->", res)
         return res
 
