@@ -16,13 +16,13 @@ BM_SUB.AddonData.SAVE += on_addon_data_save
 
 
 def on_cats_add(new_cat: bm_types.Category) -> None:
-    if isinstance(new_cat, bm_types.BrushCat):
+    if isinstance(new_cat, bm_types.BrushCat) and new_cat.owner.mode == 'SCULPT':
         # Initialize new BrushSet for the new BrushCat.
         hm_data.brush_sets.add(new_cat)
 
 
 def on_cats_remove(cat_to_remove: bm_types.Category) -> None:
-    if isinstance(cat_to_remove, bm_types.BrushCat):
+    if isinstance(cat_to_remove, bm_types.BrushCat) and cat_to_remove.owner.mode == 'SCULPT':
         # Ensure that we remove the BrushSet associated with the removed BrushCat.
         hm_data.brush_sets.remove(cat_to_remove.uuid)
 
@@ -32,9 +32,9 @@ BM_SUB.Cats.REMOVE += on_cats_remove
 
 
 def on_items_remove(item_to_remove: bm_types.Item) -> None:
-    if isinstance(item_to_remove, bm_types.BrushItem):
-        brush_set = hm_data.brush_sets.get(item_to_remove.cat_id)
-        brush_set.unasign_brush(item_to_remove)
+    if isinstance(item_to_remove, bm_types.BrushItem) and item_to_remove.cat.owner.mode == 'SCULPT':
+        if brush_set := hm_data.brush_sets.get(item_to_remove.cat_id):
+            brush_set.unasign_brush(item_to_remove)
 
 
 BM_SUB.Items.REMOVE += on_items_remove

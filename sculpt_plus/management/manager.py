@@ -55,12 +55,17 @@ class BrushSet:
             self.brushes[index_A], self.brushes[index_B] = self.brushes[index_B], self.brushes[index_A]
 
     def asign_brush(self, brush: bm_types.BrushItem | str, at_index: int) -> None:
+        print("asign_brush '", brush.name, "' to index ", at_index)
         cat = self.cat
         if cat is None:
             print("Can't asign Brush! BrushSet could not find its associated BrushCat with ID:", self.cat_id)
             return
         if at_index < 0 or at_index > 9:
             print("Index out of range! Expected a value between 0 and 9")
+            return
+
+        if 'HOTBAR' in brush.flags:
+            self.unasign_brush(brush)
             return
 
         brush = cat.items.get(brush) if isinstance(brush, str) else brush
