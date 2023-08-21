@@ -7,6 +7,8 @@ from sculpt_plus.previews import Previews
 toolbar_brush_sections_items = []
 def get_toolbar_brush_sections_items(self, context):
     brush = context.tool_settings.sculpt.brush
+    if brush is None:
+        return [('NONE', 'NONE', "")]
     items = [
         ('BRUSH_SETTINGS', "Brush", "Brush Settings", 'BRUSH_DATA', 0),
         ('BRUSH_SETTINGS_ADVANCED', "Advanced", "Advanced Brush Settings", 'OPTIONS', 1), # 'GHOST_ENABLED'

@@ -30,6 +30,10 @@ def draw_brush_settings_tabs(layout, context):
     if item is None:
         return None
 
+    if act_brush is None:
+        header.label(text="No Active Brush")
+        return None
+
     is_bm_brush = 'brush_manager' in act_brush
     if is_bm_brush and bm_data.active_brush is not None:
         label_text = bm_data.active_brush.name

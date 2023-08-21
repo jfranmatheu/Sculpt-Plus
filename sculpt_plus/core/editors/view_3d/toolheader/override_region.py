@@ -30,6 +30,9 @@ def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
 
     if is_brush:
         brush: BlBrush = context.tool_settings.sculpt.brush
+        if brush is None:
+            layout.label(text="No active brush !")
+            return
         '''
         UnifiedPaintPanel.prop_unified(layout, context, brush, 'size', 'size', 'use_pressure_size', text="Radius", slider=True, header=True)
         UnifiedPaintPanel.prop_unified(layout, context, brush, 'strength', 'strength', 'use_pressure_strength', text="Strength", slider=True, header=True)
