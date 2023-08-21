@@ -11,6 +11,9 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
 
 
     def execute(self, context):
+        if context.mode != 'SCULPT':
+            return {'CANCELLED'}
+
         # print("Holiwiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii toooooolll")
         from .override_tools import accept_brush_tools
         from sculpt_plus.props import Props, CM_UIContext, bm_data
