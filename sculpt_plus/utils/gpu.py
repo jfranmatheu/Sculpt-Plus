@@ -49,6 +49,8 @@ def resize_and_save_brush_icon(brush: Brush, size: Tuple[int, int] = (128, 128),
     return save_path
 
 def get_ui_image_tex(icon: Union[Icon, str]) -> Union[GPUTexture, None]:
+    if isinstance(icon, GPUTexture):
+        return icon
     if isinstance(icon, str):
         icon = getattr(Icon, icon, None)
     if icon is None:
