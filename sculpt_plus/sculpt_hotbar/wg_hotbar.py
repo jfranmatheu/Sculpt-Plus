@@ -265,10 +265,7 @@ class Hotbar(WidgetBase):
                     if (not cv.shelf.expand and act_br_id == b.id) or (replace_brush and idx == self.slot_on_hover):
                         DiRct(slot_pos+Vector((0,isize.y)),Vector((isize.x,int(5*scale))),prefs.theme_active_slot_color)
                     #DiBr(slot_pos+pad,isize-pad*2,b,idx==self.slot_on_hover)
-                    
-                    DiBMType(
-                        
-                    )
+
                     DiBMType(
                         slot_pos+pad,
                         isize-pad*2,
