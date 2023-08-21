@@ -6,9 +6,10 @@ from pathlib import Path
 import pickle
 
 from sculpt_plus.path import SculptPlusPaths
-from sculpt_plus.props import bm_data
 
-from brush_manager.api import bm_types
+from brush_manager.api import bm_types, BM_DATA
+
+bm_data = BM_DATA.SCULPT
 
 
 builtin_brush_names = ('Blob', 'Boundary', 'Clay', 'Clay Strips', 'Clay Thumb', 'Cloth', 'Crease', 'Draw Face Sets', 'Draw Sharp', 'Elastic Deform', 'Fill/Deepen', 'Flatten/Contrast', 'Grab', 'Inflate/Deflate', 'Layer', 'Mask', 'Multi-plane Scrape', 'Multires Displacement Eraser', 'Multires Displacement Smear', 'Nudge', 'Paint', 'Pinch/Magnify', 'Pose', 'Rotate', 'Scrape/Peaks', 'SculptDraw', 'Simplify', 'Slide Relax', 'Smooth', 'Snake Hook', 'Thumb')
@@ -255,9 +256,12 @@ class HotbarManager:
 
     @property
     def brushes(self) -> List[bm_types.BrushItem]:
+        act_brush_set = self.brush_sets.active
+        if act_brush_set is None:
+            return []
         if self.use_alt:
-            return self.brush_sets.active.brushes_alt
-        return self.brush_sets.active.brushes
+            return act_brush_set.brushes_alt
+        return act_brush_set.brushes
 
     @property
     def brushes_ids(self) -> List[str]:
