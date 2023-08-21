@@ -63,11 +63,12 @@ class BrushSet:
             print("Index out of range! Expected a value between 0 and 9")
             return
 
-        brush = cat.items.get(brush) if isinstance(brush, str) else brush.uuid
+        brush = cat.items.get(brush) if isinstance(brush, str) else brush
         if self.collection.hotbar_manager.use_alt:
             self.brushes_alt[at_index] = brush
         else:
             self.brushes[at_index] = brush
+        brush.flags.add('HOTBAR')
 
     def unasign_brush(self, brush: bm_types.BrushItem | str) -> None:
         ''' Call this function when detect that the brush is moved to another BrushCat or the BrushItem was removed. '''
@@ -75,11 +76,15 @@ class BrushSet:
         if cat is None:
             print("Can't un-asign Brush! BrushSet could not find its associated BrushCat with ID:", self.cat_id)
             return
-        brush = cat.items.get(brush) if isinstance(brush, str) else brush.uuid
+        brush = cat.items.get(brush) if isinstance(brush, str) else brush
+        if 'HOTBAR' not in brush.flags:
+            return
         if brush in self.brushes:
             self.brushes[self.brushes.index(brush)] = None
+            brush.flags.remove('HOTBAR')
         elif brush in self.brushes_alt:
             self.brushes_alt[self.brushes_alt.index(brush)] = None
+            brush.flags.remove('HOTBAR')
         else:
             print("WARN! Trying to unasign a BrushItem that is not set for this BrushSet")
 
