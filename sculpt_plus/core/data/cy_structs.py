@@ -573,6 +573,10 @@ class CY_ARegion(Structure):
         ('drawrct', CY_recti),
         ('winx', c_short),
         ('winy', c_short),
+        # This is a Y offset on the panel tabs that represents pixels,
+        # where zero represents no scroll - the first category always shows first at the top.
+        ('category_scroll', c_int), # 3.6
+        ('_pad0', c_char * 4), # 3.6
         ('visible', c_short),
         ('regiontype', c_short),
         ('alignment', c_short),
@@ -597,7 +601,8 @@ class CY_ARegion(Structure):
         ('gizmo_map', c_longlong), # POINTER(wmGizmoMap)
         ('regiontimer', c_longlong), # POINTER(wmTimer)
         ('draw_buffer', c_longlong), # POINTER(wmDrawBuffer)
-        ('headerstr', c_char),
+        ('headerstr', POINTER(c_char)),
+        ('regiondata', c_void_p), # 3.6?
         ('runtime', CY_ARegion_Runtime) # ARegion_Runtime
     ]
 
