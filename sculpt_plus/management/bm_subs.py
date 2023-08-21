@@ -3,6 +3,9 @@ from brush_manager.api import BM_SUB, bm_types
 from ..props import hm_data
 
 
+if BM_SUB.AddonData.SAVE is None:
+    raise Exception("OPS! Can't Subscribe to BM events.")
+
 
 def on_addon_data_save(bm_data: bm_types.AddonDataByMode) -> None:
     if bm_data.mode == 'SCULPT':

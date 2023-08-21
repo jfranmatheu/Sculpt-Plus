@@ -47,7 +47,7 @@ class ShelfSidebar(VerticalViewWidget):
         width = cv.hotbar.slot_size.x * 3 * cv.scale # item_size.x * 3 # * cv.scale
         # higher point - lower point
         footer_height = 24 * cv.scale
-        slot_height: int = int(width * self.item_aspect_ratio)
+        slot_height: int = 0 # IF fixed header cat: # int(width * self.item_aspect_ratio)
         height = cv.shelf.get_pos_by_relative_point(Vector((0, 1))).y - cv.hotbar.pos.y - footer_height - slot_height
         self.margin = 10 * cv.scale
 
@@ -111,7 +111,7 @@ class ShelfSidebar(VerticalViewWidget):
         return 1
 
     def get_data(self, _cv: Canvas) -> list:
-        return bm_data.get_cats(skip_active=True)
+        return list(bm_data.get_cats(skip_active=False))
 
     def poll(self, _context, cv: Canvas) -> bool:
         return cv.shelf.expand and self.size.y > self.item_size.y
@@ -121,16 +121,19 @@ class ShelfSidebar(VerticalViewWidget):
                   slot_s,
                   item: Union[bm_types.BrushCat, bm_types.TextureCat],
                   is_hovered: bool,
+                  act_item: Union[bm_types.BrushCat, bm_types.TextureCat],
                   thumb_size: Vector,
                   color: Vector,
                   scale: float,
                   prefs: SCULPTPLUS_AddonPreferences):
-        DiCage(slot_p, slot_s, 2, color)
+
+        DiLine(slot_p, slot_p+Vector((slot_s[0], 0)), 2, color)
+
         pad = 5 * scale
 
         def draw_fallback(p, s, cat, act: bool, op: float):
             # DiRct(p, s, Vector(prefs.theme_shelf_slot)*.8)
-            DiIcoCol(p, s, Icon.PENCIL_CASE_1 if self.type == 'BRUSH' else Icon.TEXTURE_SMALL, (.9, .9, .9, .92))
+            DiIcoCol(p, s, Icon.PENCIL_CASE_1 if self.type == 'BRUSH' else Icon.TEXTURE_SMALL, (.9, .9, .9, 1.0 if act else .82))
 
         DiBMType(
             slot_p+Vector((pad, pad)),
@@ -140,11 +143,16 @@ class ShelfSidebar(VerticalViewWidget):
             draw_fallback=draw_fallback
         )
 
+        # DiRct(slot_p+Vector((pad, pad)), thumb_size, Vector(prefs.theme_shelf_slot)*.8)
+
         DiText(slot_p+Vector((pad*2 + thumb_size.x, slot_s.y/2+pad)), item.name, 13, scale, pivot=(0, 0))
         # DiText(slot_p+Vector((pad*2 + thumb_size.x, pad*2)), '( ' + str(item.items.count) + ' )', 11, scale, (.5, .5, .5, .5), pivot=(0, 0))
 
         if is_hovered:
             DiRct(slot_p, slot_s, (.6,.6,.6,.25))
+
+        if item == act_item:
+            DiCage(slot_p+Vector((pad, pad)), slot_s-Vector((pad, pad))*2, 3.2*scale, Vector(prefs.theme_active_slot_color))
 
     def get_draw_item_args(self, _context, _cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
         pad = 5 * scale
@@ -153,11 +161,13 @@ class ShelfSidebar(VerticalViewWidget):
         bg_color = Vector(prefs.theme_shelf)
         bg_color.w *= 0.5
         return (
+            bm_data.active_category,
             isize_thumb,
             bg_color
         )
 
     def draw_post(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
+        return
         act_item = bm_data.active_category
 
         p = self.get_pos_by_relative_point(Vector((0.0, 1.0)))
@@ -190,7 +200,6 @@ class ShelfSidebar(VerticalViewWidget):
 
     def draw_pre(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         p, s = self.pos, self.size
-        ## DiText(p,'.',2,1,(0,0,0,0))
         color = Vector(prefs.theme_shelf)
         color.w *= 0.5
         DiRct(p, s, color)

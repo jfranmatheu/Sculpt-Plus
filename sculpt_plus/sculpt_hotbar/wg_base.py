@@ -455,6 +455,7 @@ class WidgetBase:
                 glDisable(GL_SCISSOR_TEST)
             else:
                 state.scissor_test_set(False)
+            self.draw_scissor_apply(Vector((0, 0)), Vector((context.region.width, context.region.height)))
             self.draw_post(context, cv, mouse, scale, prefs)
 
     def draw_scissor_apply(self, _p: Vector, _s: Vector):

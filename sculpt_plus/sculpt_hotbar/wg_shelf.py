@@ -293,7 +293,6 @@ class ShelfGrid(ViewWidget):
 
     def draw_post(self, _context, cv: Canvas, mouse: Vector, scale: float, _prefs: SCULPTPLUS_AddonPreferences):
         if cv.active_ctx_widget:
-            DiText(self.pos, '.', 1, scale)
             DiRct(self.pos, self.size, (.24, .24, .24, .64))
         else:
             super().draw_post(_context, cv, mouse, scale, _prefs)
@@ -596,8 +595,6 @@ class ShelfGridItemInfo(WidgetBase):
 
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         #return super().draw(context, cv, mouse, scale, prefs)
-        DiText(self.pos, '.', 1, 1, (0.1, 0.1, 0.1, 1))
-
         opacity = min(max(self.size.x / self.max_width, 0), 1)
         opacity = ease_quad_in_out(-.25, 1, opacity)
         #print("opacity:", opacity)

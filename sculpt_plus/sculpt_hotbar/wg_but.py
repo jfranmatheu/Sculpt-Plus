@@ -236,7 +236,6 @@ class ButtonGroup(WidgetBase):
         DiRct(self.pos, self.size, self.style['color'])
 
     def draw(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
-        DiText(self.pos, '.', 1, 1, (0, 0, 0, .1))
         for button in self.buttons:
             # is_hovered = button==self.hovered_button
             if button.draw_poll(context, cv):
