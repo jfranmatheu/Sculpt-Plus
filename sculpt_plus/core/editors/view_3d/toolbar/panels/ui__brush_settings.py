@@ -35,8 +35,8 @@ def draw_brush_settings_tabs(layout, context):
         return None
 
     is_bm_brush = 'brush_manager' in act_brush
-    if is_bm_brush and bm_data.active_brush is not None:
-        label_text = bm_data.active_brush.name
+    if is_bm_brush and 'name' in act_brush:
+        label_text = act_brush['name'] # bm_data.active_brush.name
     else:
         label_text = act_brush.name # iface_(item.label, "Operator")
     # header.label(text="    " + label_text, icon_value=icon_value)
