@@ -256,7 +256,6 @@ class ShelfGrid(ViewWidget):
             slot_s,
             item,
             is_hovered,
-            view_widget=self
         )
 
         #if brush_idx_rel is not None and brush in brush_idx_rel:
