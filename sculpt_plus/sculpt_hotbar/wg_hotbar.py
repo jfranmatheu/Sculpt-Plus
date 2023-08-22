@@ -108,10 +108,10 @@ class Hotbar(WidgetBase):
             if self.on_hover_slot(m, pos, self.slot_size):
                 return idx
         return None
-    
+
     def get_brush_item_on_hover(self) -> bm_types.BrushItem | None:
         return self.get_brush_item_at_index(self.slot_on_hover)
-    
+
     def get_brush_item_at_index(self, index: int) -> bm_types.BrushItem | None:
         if index < 0 or index > 9:
             return None
@@ -127,18 +127,17 @@ class Hotbar(WidgetBase):
         brush_item.set_active(ctx)
 
     def on_leftmouse_press(self, ctx, cv: Canvas, m: Vector) -> bool:
-        if self.slot_on_hover is None or self.get_brush_item_on_hover() is None:
-            self.moving_slot = False
-            self._press_time = None
-            return
         if cv.shelf.expand:
             ''' Assign brush from grid to hotbar. '''
             if cv.shelf_grid.selected_item is not None:
-                bar_index = self.slot_on_hover
-                bar_index = 9 if bar_index==0 else bar_index-1
                 if brush_set := hm_data.brush_sets.active:
-                    brush_set.asign_brush(cv.shelf_grid.selected_item, bar_index)
+                    brush_set.asign_brush(cv.shelf_grid.selected_item, self.slot_on_hover)
                 cv.shelf_grid.selected_item = None
+            return
+
+        if self.slot_on_hover is None or self.get_brush_item_on_hover() is None:
+            self.moving_slot = False
+            self._press_time = None
             return
 
         self.update_active_brush(ctx)
