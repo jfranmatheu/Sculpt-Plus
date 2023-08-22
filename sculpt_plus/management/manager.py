@@ -286,7 +286,6 @@ class HotbarManager:
 
     use_alt: bool
 
-    is_data_loaded: bool
 
     @property
     def active_brush_cat(self) -> bm_types.BrushCat:
@@ -326,8 +325,6 @@ class HotbarManager:
         self.brush_sets = BrushSet_Collection(self)
 
         self.use_alt: bool = False
-
-        self.is_data_loaded = False
 
     def __del__(self):
         del self.brush_sets
