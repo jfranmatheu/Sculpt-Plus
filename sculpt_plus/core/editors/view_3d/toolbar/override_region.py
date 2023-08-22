@@ -39,6 +39,11 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     using_dyntopo : bool = context.sculpt_object.use_dynamic_topology_sculpting
 
     space_type = context.space_data.type
+    active_tool = ToolSelectPanelHelper._tool_active_from_context(context, space_type)
+    tool_active_id = getattr(
+        active_tool,
+        "idname", None,
+    )
 
     # active_tool_label = getattr(active_tool, 'label', None)
     active_tool_type, active_tool_id = Props.SculptTool.get_from_context(context)
@@ -93,7 +98,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
             for i, sub_item in enumerate(item):
                 if sub_item is None:
                     continue
-                is_active = (sub_item.idname == active_tool_id)
+                is_active = (sub_item.idname == tool_active_id)
                 if is_active:
                     index = i
                     break
@@ -111,7 +116,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
             index = -1
             use_menu = False
 
-        is_active = (item.idname == active_tool_id)
+        is_active = (item.idname == tool_active_id)
 
         tool_idname: str = item.idname.split('.')[1].replace(' ', '_').upper()
         # SKIP first mask and face sets draw brushes.
