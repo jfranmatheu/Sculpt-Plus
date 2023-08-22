@@ -48,7 +48,7 @@ class BrushIcon(Enum):
 
     def __call__(self) -> Image:
         return load_image(self.value, '.png', 'brushes')
-    
+
     @staticmethod
     def from_brush(brush: Brush) -> Image:
         return get_brush_icon(brush)
@@ -63,7 +63,7 @@ def get_brush_icon(brush: Brush) -> Image:
     if brush.use_custom_icon and brush.icon_filepath:
         ico = load_image_from_filepath(abspath(brush.icon_filepath))
         if not ico:
-            return BrushIcon.DEFAULT() 
+            return BrushIcon.DEFAULT()
         return ico
     else:
         attr = getattr(BrushIcon, brush.sculpt_tool, None)
@@ -81,10 +81,10 @@ class Icon(Enum):
     MASK_INVERT = '.MaskInvert_icon'
     MASK_SMOOTH = '.MaskSmooth_icon'
     MASK_SHARP = '.MaskSharp_icon'
-    
+
     EXPAND = '.Expand_icon'
     SHRINK = '.Shrink_icon'
-    
+
     TRANSFORM_TRANSLATE = '.TransformTranslate_icon'
     TRANSFORM_ROTATE = '.TransformRotate_icon'
     TRANSFORM_SCALE = '.TransformScale_icon'
@@ -127,6 +127,8 @@ class Icon(Enum):
 
     FILE_PSD_1 = '.icons8-psd-1-96'
     FILE_PSD_2 = '.icons8-psd-2-64'
+
+    BLENDER_COLOR = '.blender_icon_64x64'
 
     def __call__(self) -> Image:
         return load_image(self.value, '.png', 'icons')

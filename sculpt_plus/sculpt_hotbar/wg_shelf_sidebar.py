@@ -135,13 +135,22 @@ class ShelfSidebar(VerticalViewWidget):
             # DiRct(p, s, Vector(prefs.theme_shelf_slot)*.8)
             DiIcoCol(p, s, Icon.PENCIL_CASE_1 if self.type == 'BRUSH' else Icon.TEXTURE_SMALL, (.9, .9, .9, 1.0 if act else .82))
 
-        DiBMType(
-            slot_p+Vector((pad, pad)),
-            thumb_size,
-            item,
-            is_hovered,
-            draw_fallback=draw_fallback
-        )
+        if item.uuid == 'DEFAULT':
+            DiIcoCol(
+                slot_p+Vector((pad, pad)),
+                thumb_size,
+                Icon.BLENDER_COLOR,
+                (0.9098, 0.49019, 0.05098, .9)
+            )
+
+        else:
+            DiBMType(
+                slot_p+Vector((pad, pad)),
+                thumb_size,
+                item,
+                is_hovered,
+                draw_fallback=draw_fallback
+            )
 
         # DiRct(slot_p+Vector((pad, pad)), thumb_size, Vector(prefs.theme_shelf_slot)*.8)
 
@@ -152,6 +161,7 @@ class ShelfSidebar(VerticalViewWidget):
             DiRct(slot_p, slot_s, (.6,.6,.6,.25))
 
         if item == act_item:
+            pad = 3*scale
             DiCage(slot_p+Vector((pad, pad)), slot_s-Vector((pad, pad))*2, 2.4*scale, Vector(prefs.theme_active_slot_color))
 
     def get_draw_item_args(self, _context, _cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
