@@ -278,10 +278,11 @@ class ShelfGrid(ViewWidget):
                 bar_index = 0 if bar_index > 9 else bar_index
                 DiText(slot_p+Vector((1,3)), str(bar_index), 12, scale)
 
-            if item.hotbar_set_type == 'ALT':
-                DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .9))
-            else:
-                DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.48, 0.212, 1, .9))
+            if 'HOTBAR' in item.flags:
+                if item.hotbar_set_type == 'ALT':
+                    DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .9))
+                else:
+                    DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.48, 0.212, 1, .9))
 
         if item.fav:
             size = 16 * scale
