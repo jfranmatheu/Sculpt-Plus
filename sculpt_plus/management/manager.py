@@ -71,8 +71,10 @@ class BrushSet:
 
         if self.collection.hotbar_manager.use_alt:
             self.brushes_alt[at_index] = brush
+            brush.hotbar_set_type = 'ALT'
         else:
             self.brushes[at_index] = brush
+            brush.hotbar_set_type = 'MAIN'
         brush.flags.add('HOTBAR')
 
     def unasign_brush(self, brush: bm_types.BrushItem | str) -> None:
@@ -90,9 +92,11 @@ class BrushSet:
         if brush in self.brushes:
             self.brushes[self.brushes.index(brush)] = None
             brush.flags.remove('HOTBAR')
+            del brush.hotbar_set_type
         elif brush in self.brushes_alt:
             self.brushes_alt[self.brushes_alt.index(brush)] = None
             brush.flags.remove('HOTBAR')
+            del brush.hotbar_set_type
         else:
             print("WARN! Trying to unasign a BrushItem that is not set for this BrushSet")
 
