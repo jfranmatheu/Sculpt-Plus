@@ -28,7 +28,7 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
         if workspace is None or context.workspace != workspace:
             return {'CANCELLED'}
 
-        print("Holiwiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii toooooolll")
+        ## print("Holiwiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii toooooolll")
 
         stored_tool_id = Props.SculptTool.get_stored()
 
@@ -45,7 +45,7 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
         if stored_tool_id not in toolbar_hidden_brush_tools:
             return {'FINISHED'}
 
-        print("Sculpt Brush! All for One, One for All!")
+        ## print("Sculpt Brush! All for One, One for All!")
         bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
 
         with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):

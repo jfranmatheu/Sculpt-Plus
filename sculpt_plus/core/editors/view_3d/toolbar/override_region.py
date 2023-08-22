@@ -51,10 +51,10 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
 
     match_active_x_stored = active_tool_id == stored_tool_id
 
-    print("Active Tool:", active_tool_type, active_tool_id)
-    print("Stored Tool:", stored_tool_id)
-    print("Is a hidden brush?", hidden_brush_tool_selected)
-    print("Match tool ID?", match_active_x_stored)
+    ## print("Active Tool:", active_tool_type, active_tool_id)
+    ## print("Stored Tool:", stored_tool_id)
+    ## print("Is a hidden brush?", hidden_brush_tool_selected)
+    ## print("Match tool ID?", match_active_x_stored)
     
     if stored_tool_id == 'NONE' and active_tool_id != 'NONE':
         if is_brush and hidden_brush_tool_selected:
