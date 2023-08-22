@@ -126,16 +126,17 @@ class ShelfGridItemCtxPie(CtxPie):
             cat_count: int = bm_data.texture_cats.count
 
         options = (
-            ('MOVE', "Move", "Move item to another category") if cat_count > 1 else None,
+            ('RENAME', "Rename", "Change item name"),
             # if item.cat_id == act_cat_id else
-            ## ('UNFAV', "Unmark Favourite", "Unmark item as favourite")
-            ## if item.fav else
-            ## ('FAV', "Mark Favourite", "Mark brush as favourite"),
-            ('REMOVE', "Remove", "Remove item from category"),
-            ('SAVE', "Save Default", "Save default state of the brush") if GLOBALS.is_context_brush_item else None,
-            ('RESET', "Reset to Default", "Reset brush to default state") if GLOBALS.is_context_brush_item else None,
+            ('UNFAV', "Unmark Favourite", "Unmark item as favourite")
+            if item.fav else
+            ('FAV', "Mark Favourite", "Mark brush as favourite"),
             ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush") if GLOBALS.is_context_brush_item else None,
-            ## ('RENAME', "Rename", "Change item name"),
+
+            ('SAVE_DEFAULT', "Save Default", "Save default state of the brush") if GLOBALS.is_context_brush_item else None,
+            ('RESET', "Reset to Default", "Reset brush to default state") if GLOBALS.is_context_brush_item else None,
+            ('REMOVE', "Remove", "Remove item from category"),
+            ('MOVE', "Move", "Move item to another category") if cat_count > 1 else None,
             ## ('DUPLICATE', "Duplicate", "Make a brush copy") if item_type=='BRUSH' else None,
         )
         return tuple(op for op in options if op is not None)
@@ -154,12 +155,16 @@ class ShelfGridItemCtxPie(CtxPie):
             BM_OPS.move_selected_to_category()
         elif option_id == 'ASSIGN_ICON':
             BM_OPS.asign_icon_to_brush(brush_uuid=target_item_uuid)
-        ## elif option_id == 'FAV':
-        ##     self.target_item.fav = True
-        ## elif option_id == 'UNFAV':
-        ##     self.target_item.fav = False
-        ## elif option_id == 'RENAME':
-        ##    BM_OPS.rename_item(uuid=target_item_uuid)
+        elif option_id == 'FAV':
+            self.target_item.fav = True
+        elif option_id == 'UNFAV':
+            self.target_item.fav = False
+        elif option_id == 'RENAME':
+           BM_OPS.rename_item(item_uuid=target_item_uuid)
+        elif option_id == 'SAVE_DEFAULT': # to default
+            self.target_item.save_default()
+        elif option_id == 'RESET': # to default
+            self.target_item.reset()
         ## elif option_id == 'DUPLICATE':
         ##     BM_OPS.duplicate_item(uuid=target_item_uuid)
 
@@ -179,11 +184,11 @@ class ShelfSidebarCatCtxPie(CtxPie):
             ## ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index < max_index else None,
             ## ('MOVE_DOWN', "Move Down", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
             ##  ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
-            ('REMOVE', "Remove", "Remove category"),
             ## ('SAVE', "Save Brushes Defaults", "Save default state for every brush") if GLOBALS.is_context_brush_item else None,
             ## ('RESET', "Reset Brushes to Defaults", "Reset to default state for every brush") if GLOBALS.is_context_brush_item else None,
+            ('RENAME', "Rename", "Change item name"),
             ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the category"),
-            ## ('RENAME', "Rename", "Change item name"),
+            ('REMOVE', "Remove", "Remove category"),
         )
         return tuple(op for op in options if op is not None)
 
@@ -194,15 +199,15 @@ class ShelfSidebarCatCtxPie(CtxPie):
                 bm_data.brush_cats.remove(target_item_uuid)
             else:
                 bm_data.texture_cats.remove(target_item_uuid)
+        elif option_id == 'ASSIGN_ICON':
+            BM_OPS.asign_icon_to_active_category()
+        elif option_id == 'RENAME':
+            BM_OPS.rename_cat(uuid=target_item_uuid)
         ## elif option_id == 'MOVE_UP':
         ##     pass
         ## elif option_id == 'MOVE_DOWN':
         ##     pass
-        elif option_id == 'ASSIGN_ICON':
-            BM_OPS.asign_icon_to_active_category()
         ## elif option_id == 'SAVE':
         ##     pass
         ## elif option_id == 'RESET':
         ##     BM_OPS.reset_cat(uuid=target_item_uuid)
-        ## elif option_id == 'RENAME':
-        ##     BM_OPS.rename_cat(uuid=target_item_uuid)
