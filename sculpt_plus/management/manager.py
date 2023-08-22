@@ -304,24 +304,11 @@ class HotbarManager:
     def brushes_ids(self) -> List[str]:
         return [b.uuid if b else '' for b in self.brushes]
 
-    ## @property
-    ## def active_brush(self) -> bm_types.BrushItem | None:
-    ##     cat_id, brush_id = self._active_brush
-    ##     if cat_id == '' or brush_id == '':
-    ##         return None
-    ##     if cat := bm_data.brush_cats.get(cat_id):
-    ##         return cat.items.get(brush_id)
-
-    ## @active_brush.setter
-    ## def active_brush(self, brush_item: bm_types.BrushItem) -> None:
-    ##     self._active_brush = brush_item.cat_id, brush_item.uuid
-
 
     # Constructor and free.
     # ------------------------------------------
     def __init__(self):
         self.active_cat_id = ''
-        ## self._active_brush = '', ''
         self.brush_sets = BrushSet_Collection(self)
 
         self.use_alt: bool = False
