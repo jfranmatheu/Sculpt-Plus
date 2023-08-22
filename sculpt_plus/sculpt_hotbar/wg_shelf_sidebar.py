@@ -14,7 +14,7 @@ from sculpt_plus.sculpt_hotbar.di import DiIma, DiImaco, DiLine, DiText, DiRct, 
 from .wg_base import WidgetBase
 from .wg_view import VerticalViewWidget
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import bm_data
+from sculpt_plus.props import bm_data, hm_data
 from .wg_but import ButtonGroup
 
 from brush_manager.api import bm_types, BM_OPS, BM_UI
@@ -82,6 +82,13 @@ class ShelfSidebar(VerticalViewWidget):
                 self.hovered_item = None
             return True
         return False
+
+    def on_double_click(self, ctx, cv: Canvas, m: Vector) -> None:
+        if self.hovered_item is None:
+            return False
+
+        hm_data.brush_sets.active = self.hovered_item.uuid # Category.uuid == BrushSet.uuid
+        cv.refresh(ctx)
 
     def on_leftmouse_release(self, ctx, cv: Canvas, _m: Vector) -> None:
         if not self._is_on_hover_view:
