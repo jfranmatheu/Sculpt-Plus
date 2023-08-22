@@ -64,11 +64,11 @@ class BrushSet:
             print("Index out of range! Expected a value between 0 and 9")
             return
 
+        brush = cat.items.get(brush) if isinstance(brush, str) else brush
+
         if 'HOTBAR' in brush.flags:
             self.unasign_brush(brush)
-            return
 
-        brush = cat.items.get(brush) if isinstance(brush, str) else brush
         if self.collection.hotbar_manager.use_alt:
             self.brushes_alt[at_index] = brush
         else:
@@ -81,9 +81,12 @@ class BrushSet:
         if cat is None:
             print("Can't un-asign Brush! BrushSet could not find its associated BrushCat with ID:", self.cat_id)
             return
+
         brush = cat.items.get(brush) if isinstance(brush, str) else brush
+
         if 'HOTBAR' not in brush.flags:
             return
+
         if brush in self.brushes:
             self.brushes[self.brushes.index(brush)] = None
             brush.flags.remove('HOTBAR')
