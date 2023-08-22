@@ -70,9 +70,13 @@ class BrushSet:
             self.unasign_brush(brush)
 
         if self.collection.hotbar_manager.use_alt:
+            if self.brushes_alt[at_index] is not None:
+                self.unasign_brush(self.brushes_alt[at_index])
             self.brushes_alt[at_index] = brush
             brush.hotbar_set_type = 'ALT'
         else:
+            if self.brushes[at_index] is not None:
+                self.unasign_brush(self.brushes[at_index])
             self.brushes[at_index] = brush
             brush.hotbar_set_type = 'MAIN'
         brush.flags.add('HOTBAR')
