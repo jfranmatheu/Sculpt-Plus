@@ -39,22 +39,27 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     using_dyntopo : bool = context.sculpt_object.use_dynamic_topology_sculpting
 
     space_type = context.space_data.type
-    active_tool = ToolSelectPanelHelper._tool_active_from_context(context, space_type)
-    tool_active_id = getattr(
-        active_tool,
-        "idname", None,
-    )
+
     # active_tool_label = getattr(active_tool, 'label', None)
-    manager_active_sculpt_tool = Props.SculptTool.get_stored()
-    toolbar_active_sculpt_tool = tool_active_id.split('.')[1].replace(' ', '_').upper()
+    active_tool_type, active_tool_id = Props.SculptTool.get_from_context(context)
+    stored_tool_id = Props.SculptTool.get_stored()
 
-    active_is_brush = tool_active_id.split('.')[0] == 'builtin_brush'
-    active_id = tool_active_id.split('.')[1].replace(' ', '_').upper()
-    hidden_brush_tool_selected = active_id in toolbar_hidden_brush_tools
+    is_brush = active_tool_type == 'builtin_brush'
+    is_tool = active_tool_type == 'builtin'
 
-    manager_selected_brush = manager_active_sculpt_tool == toolbar_active_sculpt_tool
-    # print(manager_active_sculpt_tool, toolbar_active_sculpt_tool)
-    # print(manager_selected_brush, hidden_brush_tool_selected)
+    hidden_brush_tool_selected = active_tool_id in toolbar_hidden_brush_tools
+
+    match_active_x_stored = active_tool_id == stored_tool_id
+
+    print("Active Tool:", active_tool_type, active_tool_id)
+    print("Stored Tool:", stored_tool_id)
+    print("Is a hidden brush?", hidden_brush_tool_selected)
+    print("Match tool ID?", match_active_x_stored)
+    
+    if stored_tool_id == 'NONE' and active_tool_id != 'NONE':
+        if is_brush and hidden_brush_tool_selected:
+            Props.SculptTool.set_stored(active_tool_id)
+
     #all_brush_active = manager_active_sculpt_tool == 'ALL_BRUSH' and toolbar_active_sculpt_tool == manager_active_sculpt_tool
 
     if detect_layout:
@@ -88,7 +93,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
             for i, sub_item in enumerate(item):
                 if sub_item is None:
                     continue
-                is_active = (sub_item.idname == tool_active_id)
+                is_active = (sub_item.idname == active_tool_id)
                 if is_active:
                     index = i
                     break
@@ -106,7 +111,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
             index = -1
             use_menu = False
 
-        is_active = (item.idname == tool_active_id)
+        is_active = (item.idname == active_tool_id)
 
         tool_idname: str = item.idname.split('.')[1].replace(' ', '_').upper()
         # SKIP first mask and face sets draw brushes.
@@ -119,7 +124,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
                 continue
             else:
                 if tool_idname == 'ALL_BRUSH':
-                    if not is_active and manager_active_sculpt_tool and manager_selected_brush and hidden_brush_tool_selected:
+                    if hidden_brush_tool_selected: # manager_active_sculpt_tool and manager_selected_brush and hidden_brush_tool_selected:
                         is_active = True
                 else:
                     continue

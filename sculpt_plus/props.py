@@ -26,7 +26,7 @@ exclude_brush_names: Set[str] = {sculpt_tool_brush_name[sculpt_tool] for sculpt_
 filtered_builtin_brush_names = tuple(b for b in builtin_brush_names if b not in exclude_brush_names)
 
 
-stored_sculpt_tool: str = 'NULL'
+stored_sculpt_tool = 'NONE'
 
 
 IN_BRUSH_CTX = lambda _type: _type == 'BRUSH'
@@ -104,11 +104,16 @@ class Props:
         def get_stored() -> str:
             global stored_sculpt_tool
             return stored_sculpt_tool
+        
+        @staticmethod
+        def set_stored(id: str) -> None:
+            global stored_sculpt_tool
+            stored_sculpt_tool = id
 
         @staticmethod
         def clear_stored() -> None:
             global stored_sculpt_tool
-            stored_sculpt_tool = 'NULL'
+            stored_sculpt_tool = 'NONE'
 
         @staticmethod
         def get_from_context(context: Context) -> tuple[str, str]:
@@ -116,20 +121,20 @@ class Props:
                 curr_active_tool = ToolSelectPanelHelper._tool_active_from_context(context, 'VIEW_3D', mode='SCULPT', create=False)
             except AttributeError as e:
                 print("[SCULPT+] WARN!", e)
-                return None
+                return None, 'NONE'
             if curr_active_tool is None:
                 print("[SCULPT+] WARN! Current active tool is NULL")
-                return None
+                return None, 'NONE'
             type, curr_active_tool = curr_active_tool.idname.split('.')
             curr_active_tool = curr_active_tool.replace(' ', '_').upper()
-            return curr_active_tool, type
+            return type, curr_active_tool
 
         @classmethod
         def update_stored(cls, context : Context) -> str:
             global stored_sculpt_tool
-            stored_sculpt_tool = cls.get_from_context(context)
+            stored_sculpt_tool = cls.get_from_context(context)[1]
 
         @classmethod
         def has_changed(cls, context: Context) -> bool:
             global stored_sculpt_tool
-            return stored_sculpt_tool != cls.get_from_context(context)
+            return stored_sculpt_tool != cls.get_from_context(context)[1]

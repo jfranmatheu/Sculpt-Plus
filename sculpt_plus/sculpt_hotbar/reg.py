@@ -48,7 +48,7 @@ def initialize_brush():
 
 def dummy_poll_view(ctx):
     global initialized
-    if not initialized or Props.SculptTool.get_stored() == 'NULL':
+    if not initialized or Props.SculptTool.get_stored() == 'NONE':
         # HACK. lol.
         # print("NOT ACTIVE BRUSH, LET'S CHANGE THAT!")
         if is_timer_registered(initialize_brush):
@@ -95,8 +95,8 @@ class Controller(GZG, KM):
         # dummy_poll_view(y) and
         res = y.object is not None and y.mode=='SCULPT' and y.scene.sculpt_hotbar.show_gizmo_sculpt_hotbar and y.space_data.show_gizmo and Props.Workspace(y) == y.workspace
         # print("poll result ->", res)
-        if res:
-            dummy_poll_view(y)
+        # if res:
+        #     dummy_poll_view(y)
         return res
 
     def setup(gzg, ctx):
