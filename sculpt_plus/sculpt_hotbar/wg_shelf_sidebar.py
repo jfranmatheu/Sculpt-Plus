@@ -30,7 +30,7 @@ class ShelfSidebar(VerticalViewWidget):
     scissor_padding: Vector = Vector((3, 3))
     hovered_item: Union[bm_types.BrushCat, bm_types.TextureCat]
 
-    item_aspect_ratio: float = 1 / 3.5
+    item_aspect_ratio: float = 1 / 4.0
 
     def init(self) -> None:
         super().init()
