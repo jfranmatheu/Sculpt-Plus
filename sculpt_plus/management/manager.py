@@ -282,7 +282,7 @@ class HotbarManager:
     # Properties
     # ------------------------------------------
     brush_sets: BrushSet_Collection
-    ## active_brush: bm_types.BrushItem
+
 
     use_alt: bool
 
