@@ -225,6 +225,9 @@ class ShelfGrid(ViewWidget):
         items.sort(key=lambda item: item.fav, reverse=True) # Favs first.
         return items
 
+    def poll(self, _context, cv: Canvas) -> bool:
+        return cv.shelf.expand
+
     def draw_poll(self, context, cv: Canvas) -> bool:
         return cv.shelf.expand and cv.shelf.size.y > self.slot_size
 
