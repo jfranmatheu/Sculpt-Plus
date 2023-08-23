@@ -1,6 +1,6 @@
 from brush_manager.api import BM_DATA, bm_types
 from .management.hotbar_manager import HotbarManager
-from dataclasses import dataclass
+
 
 
 class _Globals:
