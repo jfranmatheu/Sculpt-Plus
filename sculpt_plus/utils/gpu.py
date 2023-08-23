@@ -42,7 +42,7 @@ def resize_and_save_brush_icon(brush: Brush, size: Tuple[int, int] = (128, 128),
         return
     image_buffer: ImBuf = imbuf.load(brush.icon_filepath)
     image_buffer.resize(size, method='BILINEAR')
-    save_path = str(data_brush_dir / 'br_icon' / (brush['id'] + '.png'))
+    save_path = str(data_brush_dir / 'br_icon' / (brush['uuid'] + '.png'))
     imbuf.save(image_buffer, filepath=save_path)
     image_buffer.free()
     brush.icon_filepath = save_path

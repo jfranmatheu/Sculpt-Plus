@@ -35,7 +35,7 @@ def convert_to_jpg(image: BlImage, output: str):
     jpg_image = bpy.data.images.new(image.name + '.png', *image.size, alpha=True)
     # jpg_image.name = image.name + '.jpg'
     jpg_image.pixels.foreach_set(image_pixels)
-    #jpg_image.filepath_raw = SculptPlusPaths.DATA_TEXTURE_IMAGES(image['id'] + '.png')
+    #jpg_image.filepath_raw = SculptPlusPaths.DATA_TEXTURE_IMAGES(image['uuid'] + '.png')
     jpg_image.file_format = 'PNG'
     jpg_image.save(filepath=output, quality=80)
 

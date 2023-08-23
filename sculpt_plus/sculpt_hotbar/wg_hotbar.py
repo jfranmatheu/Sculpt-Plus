@@ -246,7 +246,7 @@ class Hotbar(WidgetBase):
         DiCage(p, s, 2.0*scale, Vector(prefs.theme_hotbar_slot)*.9)
 
         act_br = context.tool_settings.sculpt.brush
-        act_br_id = act_br['id'] if act_br and 'id' in act_br else None
+        act_br_id = act_br['uuid'] if act_br and 'uuid' in act_br else None
 
         if self.moving_slot:
             slots = self.slot_pos.copy()
