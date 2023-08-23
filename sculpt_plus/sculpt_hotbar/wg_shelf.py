@@ -287,10 +287,10 @@ class ShelfGrid(ViewWidget):
                     DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.9607, 0.949, 0.3725, .92))
                 else:
                     DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .92))
-                if item.uuid not in hotbar_ids:
-                    print("Brush not in hotbar IDs! what is happening?", item.uuid, hotbar_ids)
-                    print(active_hm_layer_id, set_type)
-                    print(G.hm_data.layers.active, G.hm_data.layers.active.name, G.hm_data.layers.active.uuid)
+                ### if item.uuid not in hotbar_ids:
+                ###     print("Brush not in hotbar IDs! what is happening?", item.uuid, hotbar_ids)
+                ###     print(active_hm_layer_id, set_type)
+                ###     print(G.hm_data.layers.active, G.hm_data.layers.active.name, G.hm_data.layers.active.uuid)
 
         if item.fav:
             size = 16 * scale
