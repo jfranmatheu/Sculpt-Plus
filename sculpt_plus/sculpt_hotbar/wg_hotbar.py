@@ -115,7 +115,7 @@ class Hotbar(WidgetBase):
     def get_brush_item_at_index(self, index: int) -> bm_types.BrushItem | None:
         if index < 0 or index > 9:
             return None
-        if hm_data.brush_sets.active is None:
+        if hm_data.layers.active is None:
             return None
         return hm_data.brushes[index]
 
@@ -123,15 +123,14 @@ class Hotbar(WidgetBase):
         brush_item = self.get_brush_item_on_hover()
         # NOTE: brush_item.type == bl_brush.sculpt_tool
         OP.wm.tool_set_by_id(name="builtin_brush." + brush_item.type.replace('_', ' ').title())
-        hm_data.active_brush = brush_item
         brush_item.set_active(ctx)
 
     def on_leftmouse_press(self, ctx, cv: Canvas, m: Vector) -> bool:
         if cv.shelf.expand:
             ''' Assign brush from grid to hotbar. '''
             if cv.shelf_grid.selected_item is not None:
-                if brush_set := hm_data.brush_sets.active:
-                    brush_set.asign_brush(cv.shelf_grid.selected_item, self.slot_on_hover)
+                if hm_layer := hm_data.layers.active:
+                    hm_layer.link_brush(cv.shelf_grid.selected_item, self.slot_on_hover)
                 cv.shelf_grid.selected_item = None
             return
 
@@ -213,7 +212,7 @@ class Hotbar(WidgetBase):
                 return True
             #print(brushes[prev_slot], brushes[curr_slot])
             #brushes[prev_slot].slot, brushes[curr_slot].slot = brushes[curr_slot].slot, brushes[prev_slot].slot
-            hm_data.brush_sets.active.switch(prev_slot, curr_slot)
+            hm_data.layers.active.switch(prev_slot, curr_slot)
             self._press_slot.x = self.slot_pos[curr_slot].x
             self.slot_on_hover = curr_slot
         #cv.refresh()

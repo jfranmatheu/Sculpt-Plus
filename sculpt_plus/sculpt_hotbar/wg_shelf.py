@@ -199,8 +199,8 @@ class ShelfGrid(ViewWidget):
         #if not cv.shelf.expand:
         #    return
         bar_index = 9 if number==0 else number-1
-        if brush_set := hm_data.brush_sets.active:
-            brush_set.asign_brush(self.selected_item, bar_index)
+        if hm_layer := hm_data.layers.active:
+            hm_layer.link_brush(self.selected_item, bar_index)
         # print("Asign to BrushSet:", brush_set, self.selected_item, bar_index, hm_data.brush_sets.count, hm_data.active_brush_cat)
         self.selected_item = None
 
@@ -238,14 +238,15 @@ class ShelfGrid(ViewWidget):
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
         act_item = bm_data.active_item
-        return slot_color, act_cat.uuid, act_item.uuid if act_item else None, hm_data.brushes_ids
+        act_layer = hm_data.layers.active
+        return slot_color, act_layer.uuid if act_layer is not None else '', act_item.uuid if act_item else None, hm_data.brushes_ids
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,
                   item: Union[bm_types.BrushItem, bm_types.TextureItem], #brush_idx_rel: dict,
                   is_hovered: bool,
                   slot_color: Vector,
-                  act_cat_id: str,
+                  active_hm_layer_id,
                   act_item: str,
                   hotbar_ids: List[str],
                   scale: float,
@@ -278,8 +279,8 @@ class ShelfGrid(ViewWidget):
                 bar_index = 0 if bar_index > 9 else bar_index
                 DiText(slot_p+Vector((1,3)), str(bar_index), 12, scale)
 
-            if 'HOTBAR' in item.flags:
-                if item.hotbar_set_type == 'ALT':
+            if (set_type := item.hotbar_layers.get(active_hm_layer_id, None)) is not None:
+                if set_type == 'ALT':
                     DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.9607, 0.949, 0.3725, .92))
                 else:
                     DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .92))

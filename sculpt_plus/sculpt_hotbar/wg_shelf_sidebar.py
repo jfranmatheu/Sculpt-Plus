@@ -84,11 +84,7 @@ class ShelfSidebar(VerticalViewWidget):
         return False
 
     def on_double_click(self, ctx, cv: Canvas, m: Vector) -> None:
-        if self.hovered_item is None:
-            return False
-
-        hm_data.brush_sets.active = self.hovered_item.uuid # Category.uuid == BrushSet.uuid
-        cv.refresh(ctx)
+        return False
 
     def on_leftmouse_release(self, ctx, cv: Canvas, _m: Vector) -> None:
         if not self._is_on_hover_view:

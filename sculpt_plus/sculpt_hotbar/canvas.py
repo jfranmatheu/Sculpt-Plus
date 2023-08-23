@@ -88,6 +88,10 @@ class Canvas:
                          self.group_mask, self.group_t,
                          self.ctx_shelf_item, self.ctx_shelf_sidebar_item,
                          )
+    
+        self.prev_event_time = time()
+        self.prev_event = None, None
+    
         global start_time
         start_time = time()
 
@@ -165,14 +169,22 @@ class Canvas:
         return False
 
     def invoke(self, ctx, evt):
+        prev_evt_type, prev_evt_value = self.prev_event
+        if prev_evt_type == evt.type and prev_evt_value == evt.value:
+            if time() - self.prev_event_time < 0.2:
+                # Prevent overheat from occurring events that leads to issues in event handling (eg. LEFT_ALT key case).
+                return Return.FINISH()
+        self.prev_event_time = time()
+        self.prev_event = evt.type, evt.value
         ## print("Canvas::invoke - Event:", evt.type, evt.value)
         # print(evt.alt)
         if evt.type == 'LEFT_ALT':
+            # print(evt.type, evt.value, evt.alt)
             from sculpt_plus.props import hm_data
-            if evt.alt and evt.value == 'PRESS':
-                hm_data.use_alt = True
-            elif not evt.alt and evt.value == 'RELEASE':
-                hm_data.use_alt = False
+            if evt.value == 'PRESS':
+                hm_data.toggle_alt()
+            ## elif not evt.alt and evt.value == 'RELEASE':
+            ##     hm_data.use_alt = False
             self.refresh(ctx)
             return Return.FINISH()
         if not self.wg_on_hover:

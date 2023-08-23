@@ -17,25 +17,35 @@ BM_SUB.AddonData.SAVE += on_addon_data_save
 
 def on_cats_add(new_cat: bm_types.Category) -> None:
     if isinstance(new_cat, bm_types.BrushCat) and new_cat.collection.owner.mode == 'SCULPT':
-        # Initialize new BrushSet for the new BrushCat.
-        hm_data.brush_sets.add(new_cat)
+        pass
 
 
 def on_cats_remove(cat_to_remove: bm_types.Category) -> None:
     if isinstance(cat_to_remove, bm_types.BrushCat) and cat_to_remove.collection.owner.mode == 'SCULPT':
-        # Ensure that we remove the BrushSet associated with the removed BrushCat.
-        hm_data.brush_sets.remove(cat_to_remove.uuid)
+        # Ensure that we unlink the BrushCat's BrushItem from their HotbarLayers.
+        for item in cat_to_remove.items:
+            on_items_remove(item)
 
 
 BM_SUB.Cats.ADD += on_cats_add
 BM_SUB.Cats.REMOVE += on_cats_remove
 
 
+def on_items_add(new_item: bm_types.Item) -> None:
+    if isinstance(new_item, bm_types.BrushItem) and new_item.cat.collection.owner.mode == 'SCULPT':
+        # Dict: Layer ID -> Set Type.
+        new_item.hotbar_layers: dict[str, str] = {}
+
+
 def on_items_remove(item_to_remove: bm_types.Item) -> None:
     if isinstance(item_to_remove, bm_types.BrushItem) and item_to_remove.cat.collection.owner.mode == 'SCULPT':
-        if brush_set := hm_data.brush_sets.get(item_to_remove.cat_id):
-            brush_set.unasign_brush(item_to_remove)
+        for layer_id, set_type in item_to_remove.hotbar_layers.items():
+            if layer := hm_data.layers.get(layer_id):
+                if set_type == 'ALT':
+                    layer.brush_set_alt.unasign_brush(item_to_remove)
+                else:
+                    layer.brush_set.asign_brush(item_to_remove)
 
 
+BM_SUB.Items.ADD += on_items_add
 BM_SUB.Items.REMOVE += on_items_remove
-BM_SUB.Items.MOVE_PRE += on_items_remove
