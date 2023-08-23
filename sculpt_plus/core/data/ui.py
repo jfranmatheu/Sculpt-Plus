@@ -60,8 +60,8 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
     show_brush_settings_falloff: BoolProperty(default=False)
     show_brush_settings_texture: BoolProperty(default=False)
 
-    show_brush_settings_panel: BoolProperty(default=False, name="Show Brush Settings")
-    show_mask_facesets_panel: BoolProperty(default=True, name="Show Mask/Face Sets Panel")
+    show_brush_settings_panel: BoolProperty(default=True, name="Show Brush Settings")
+    show_mask_facesets_panel: BoolProperty(default=False, name="Show Mask/Face Sets Panel")
     show_sculpt_mesh_panel: BoolProperty(default=True, name="Show Sculpt Mesh Panel")
 
     show_facesets_panel_initialize_section: BoolProperty(default=False, name="Show Initialize FaceSets Options")
