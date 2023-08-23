@@ -27,7 +27,7 @@ def _layout_generator_single_row(layout, scale_y):
 
 def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', scale_y=1.75, spacing=0.25):
     # Use a classmethod so it can be called outside of a panel context.
-    
+
     use_legacy_sculpt = 'sculpt_plus' not in context.workspace
 
     # XXX, this UI isn't very nice.
@@ -60,7 +60,7 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     ## print("Stored Tool:", stored_tool_id)
     ## print("Is a hidden brush?", hidden_brush_tool_selected)
     ## print("Match tool ID?", match_active_x_stored)
-    
+
     if stored_tool_id == 'NONE' and active_tool_id != 'NONE':
         if is_brush and hidden_brush_tool_selected:
             Props.SculptTool.set_stored(active_tool_id)
@@ -235,13 +235,16 @@ def draw_toolbar(self, context):
     # DYN-SEP.
     # prefs = context.preferences
     reg = context.region
-    view_scroll_y = -reg.view2d.region_to_view(0, reg.height-1)[1]
+    view_scroll_y = abs(reg.view2d.region_to_view(0, reg.height)[1])
+
     # ui_scale = prefs.system.ui_scale # prefs.view.ui_scale
-    line_height_px = 40 * ui_scale
+    line_height_px = 20 * ui_scale # widget_unit is 20 in 72 DPI by default.
     offset_factor_y = view_scroll_y / line_height_px
     sep = col_1.column(align=True)
     sep.label(text='', icon='BLANK1')
-    sep.scale_y = (offset_factor_y-.05) * 2.0
+    sep.scale_y = offset_factor_y * 1.0333
+
+    # print(context.area.height, reg.height, view_scroll_y, offset_factor_y)
 
     # TOOLBAR.
     toolbar = col_1.column(align=True)
