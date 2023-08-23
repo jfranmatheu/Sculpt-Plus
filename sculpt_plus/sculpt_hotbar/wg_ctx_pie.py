@@ -10,7 +10,7 @@ from sculpt_plus.utils.math import rotate_point_around_point, point_inside_circl
 
 from brush_manager.api import bm_types, BM_OPS
 from brush_manager.globals import GLOBALS
-from sculpt_plus.props import bm_data
+from sculpt_plus.globals import G
 
 
 item_types = Union[bm_types.BrushItem, bm_types.TextureItem, bm_types.BrushCat, bm_types.TextureCat]
@@ -121,9 +121,9 @@ class CtxPie(WidgetBase):
 class ShelfGridItemCtxPie(CtxPie):
     def get_options(self, item: Union[bm_types.BrushItem, bm_types.TextureItem]) -> Tuple[Tuple[str, str, str]]:
         if GLOBALS.is_context_brush_item:
-            cat_count: int = bm_data.brush_cats.count
+            cat_count: int = G.bm_data.brush_cats.count
         else:
-            cat_count: int = bm_data.texture_cats.count
+            cat_count: int = G.bm_data.texture_cats.count
 
         options = (
             ('RENAME', "Rename", "Change item name"),
@@ -146,9 +146,9 @@ class ShelfGridItemCtxPie(CtxPie):
         target_item_uuid = self.target_item.uuid
         if option_id == 'REMOVE':
             if GLOBALS.is_context_brush_item:
-                bm_data.brush_cats.active.items.remove(target_item_uuid)
+                G.bm_data.brush_cats.active.items.remove(target_item_uuid)
             else:
-                bm_data.texture_cats.active.items.remove(target_item_uuid)
+                G.bm_data.texture_cats.active.items.remove(target_item_uuid)
         elif option_id == 'MOVE':
             BM_OPS.deselect_all()
             BM_OPS.select_item(item_uuid=target_item_uuid)
@@ -196,9 +196,9 @@ class ShelfSidebarCatCtxPie(CtxPie):
         target_item_uuid: str = self.target_item.uuid
         if option_id == 'REMOVE':
             if GLOBALS.is_context_brush_item:
-                bm_data.brush_cats.remove(target_item_uuid)
+                G.bm_data.brush_cats.remove(target_item_uuid)
             else:
-                bm_data.texture_cats.remove(target_item_uuid)
+                G.bm_data.texture_cats.remove(target_item_uuid)
         elif option_id == 'ASSIGN_ICON':
             BM_OPS.asign_icon_to_active_category()
         elif option_id == 'RENAME':

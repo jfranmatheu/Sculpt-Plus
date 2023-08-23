@@ -5,8 +5,8 @@ from bpy.types import Context, Area, SpaceView3D
 
 from .override_tools import accept_brush_tools
 from .override_region import toolbar_hidden_brush_tools
-from sculpt_plus.props import Props, CM_UIContext, bm_data
-
+from sculpt_plus.props import Props, CM_UIContext
+from sculpt_plus.globals import G
 
 
 def check_sculpt_tool_updates():

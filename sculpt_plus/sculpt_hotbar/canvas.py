@@ -12,6 +12,7 @@ from .types import Return
 from sculpt_plus.prefs import get_prefs
 from .di import set_font
 from sculpt_plus.lib.fonts import Fonts
+from sculpt_plus.globals import G
 
 start_time = 0
 counter = 0
@@ -180,11 +181,10 @@ class Canvas:
         # print(evt.alt)
         if evt.type == 'LEFT_ALT':
             # print(evt.type, evt.value, evt.alt)
-            from sculpt_plus.props import hm_data
             if evt.value == 'PRESS':
-                hm_data.toggle_alt()
+                G.hm_data.toggle_alt()
             ## elif not evt.alt and evt.value == 'RELEASE':
-            ##     hm_data.use_alt = False
+            ##     G.hm_data.use_alt = False
             self.refresh(ctx)
             return Return.FINISH()
         if not self.wg_on_hover:

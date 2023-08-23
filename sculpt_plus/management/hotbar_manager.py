@@ -5,9 +5,7 @@ import pickle
 from sculpt_plus.path import SculptPlusPaths
 from .hotbar_layer import HotbarLayer_Collection
 
-from brush_manager.api import bm_types, BM_DATA
-
-bm_data = BM_DATA.SCULPT
+from brush_manager.api import bm_types
 
 
 class HotbarManager:
@@ -17,6 +15,8 @@ class HotbarManager:
 
     @classmethod
     def get(cls) -> 'HotbarManager':
+        if cls._instance is not None:
+            return cls._instance
         # Try to load data from file.
         data_filepath: Path = SculptPlusPaths.HOTBAR_DATA(as_path=True)
 
@@ -59,7 +59,9 @@ class HotbarManager:
 
     @property
     def brushes_ids(self) -> List[str]:
-        return [b.uuid if b else '' for b in self.brushes]
+        if act_layer := self.layers.active:
+            return act_layer.brushes_ids
+        return []
 
 
     # Constructor and free.
@@ -70,7 +72,8 @@ class HotbarManager:
 
         self.use_alt: bool = False
 
-        self.layers.add('Default')
+        self.layers.add('Default', custom_uuid='DEFAULT')
+
 
     def __del__(self):
         del self.layers

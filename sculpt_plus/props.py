@@ -10,9 +10,9 @@ from sculpt_plus.management.hotbar_manager import HotbarManager
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
-from brush_manager.api import BM_DATA, bm_types, BM_UI, get_bm_data
+from brush_manager.api import bm_types, BM_UI
 from brush_manager.globals import GLOBALS, CM_UIContext
-
+from sculpt_plus.globals import G
 
 
 # SOME NICE SCULPT TOOL - BRUSH NAME CONSTANTS:
@@ -31,10 +31,6 @@ stored_sculpt_tool = 'NONE'
 
 IN_BRUSH_CTX = lambda _type: _type == 'BRUSH'
 IN_TEXTURE_CTX = lambda _type: _type == 'TEXTURE'
-
-
-bm_data = BM_DATA.SCULPT
-hm_data = HotbarManager.get()
 
 
 

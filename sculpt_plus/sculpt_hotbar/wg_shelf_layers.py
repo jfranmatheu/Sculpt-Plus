@@ -13,7 +13,7 @@ from sculpt_plus.utils.math import clamp, point_inside_circle
 from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage, DiBr, get_rect_from_text, get_text_dim, DiTriCorner, DiStar, DiIcoOpGamHl, DiBMType
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import hm_data, bm_data
+from sculpt_plus.globals import G
 from sculpt_plus.management.hotbar_layer import HotbarLayer
 
 from brush_manager.api import bm_types

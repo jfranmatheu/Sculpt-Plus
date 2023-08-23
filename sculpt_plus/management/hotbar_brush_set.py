@@ -2,8 +2,6 @@ from typing import List
 
 from brush_manager.api import bm_types, BM_DATA
 
-bm_data = BM_DATA.SCULPT
-
 
 
 class HotbarBrushSet:
@@ -39,6 +37,8 @@ class HotbarBrushSet:
             print("ERROR! Index out of range! Expected a value between 0 and 9")
             return
 
+        print("asign_brush '", brush.name, "' to layer with ID ", self.layer.uuid, " --- ", self.type)
+
         if self.layer.uuid in brush.hotbar_layers:
             # BrushItem already in layer but in another Set.
             # IGNORE BY NOW...
@@ -68,6 +68,6 @@ class HotbarBrushSet:
 
     def ensure_owners(self, layer) -> None:
         self.owner = layer
-        get_cat = bm_data.brush_cats.get
+        get_cat = BM_DATA.SCULPT.brush_cats.get
         # Convert brush UUIDs back to BrushItem references.
         self.brushes = [get_cat(cat_id).items.get(brush_uuid) if cat_id != '' else None for (cat_id, brush_uuid) in self.brushes]

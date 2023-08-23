@@ -5,7 +5,8 @@ from bpy.types import WorkSpaceTool, Operator
 
 from .override_tools import accept_brush_tools
 from .override_region import toolbar_hidden_brush_tools
-from sculpt_plus.props import Props, CM_UIContext, bm_data
+from sculpt_plus.props import Props, CM_UIContext
+from sculpt_plus.globals import G
 
 
 
@@ -49,9 +50,9 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
         bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
 
         with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
-            if active_br := bm_data.active_brush:
+            if active_br := G.bm_data.active_brush:
                 active_br.set_active(context)
-            elif active_cat := bm_data.active_category:
+            elif active_cat := G.bm_data.active_category:
                 if active_cat.items.count > 0:
                     active_cat.items[0].set_active(context)
 

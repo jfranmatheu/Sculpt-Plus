@@ -32,12 +32,14 @@ class HotbarLayer:
         ''' Wrapper. '''
         return self.active_set.brushes_ids
 
-    def __init__(self, collection: 'HotbarLayer_Collection', name: str = 'Layer') -> None:
+    def __init__(self, collection: 'HotbarLayer_Collection', name: str = 'Layer', custom_uuid: str | None = None) -> None:
         self.owner = collection
-        self.uuid = uuid4().hex
+        self.uuid = uuid4().hex if custom_uuid is None else custom_uuid
         self.name = name
         self.brush_set = HotbarBrushSet(self, set_size=10, type='MAIN')
         self.brush_set_alt = HotbarBrushSet(self, set_size=10, type='ALT')
+        
+        print("Creating new Layer for hotbar:", collection, collection.hotbar_manager)
 
     def __del__(self) -> None:
         del self.brush_set
@@ -136,9 +138,9 @@ class HotbarLayer_Collection:
         if isinstance(layer, str) and layer in self.layers:
             self._active = layer
 
-    def add(self, name: str = 'New Layer') -> HotbarLayer:
+    def add(self, name: str = 'New Layer', custom_uuid: str | None = None) -> HotbarLayer:
         # Construct a new BrushSet.
-        layer = HotbarLayer(self, name)
+        layer = HotbarLayer(self, name, custom_uuid=custom_uuid)
         self.layers[layer.uuid] = layer
         self._active = layer.uuid
         return layer
@@ -151,7 +153,7 @@ class HotbarLayer_Collection:
             # Ensure there is an active layer.
             if self.active is None:
                 if self.count == 0:
-                    self.add()
+                    self.add('Default', 'DEFAULT')
                 else:
                     self.select(0)
         elif isinstance(layer, HotbarLayer):

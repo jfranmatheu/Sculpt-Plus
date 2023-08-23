@@ -14,7 +14,7 @@ from sculpt_plus.sculpt_hotbar.di import DiIcoCol, DiLine, DiText, DiRct, DiCage
 from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
-from sculpt_plus.props import hm_data, bm_data
+from sculpt_plus.globals import G
 
 from brush_manager.api import bm_types
 from brush_manager.globals import GLOBALS
@@ -178,7 +178,7 @@ class ShelfGrid(ViewWidget):
         if self.hovered_item is None:
             return
         # IF SELECT ON DOUBLE CLICK.
-        bm_data.active_item = self.hovered_item
+        G.bm_data.active_item = self.hovered_item
 
         # Close shelf.
         cv.shelf.expand = False
@@ -187,7 +187,7 @@ class ShelfGrid(ViewWidget):
     def on_rightmouse_press(self, context, cv: Canvas, m: Vector) -> int:
         if self.hovered_item is None:
             return 0
-        if bm_data.active_category is None:
+        if G.bm_data.active_category is None:
             return 0
         cv.ctx_shelf_item.show(cv, m, self.hovered_item)
         self.hovered_item = None
@@ -199,13 +199,13 @@ class ShelfGrid(ViewWidget):
         #if not cv.shelf.expand:
         #    return
         bar_index = 9 if number==0 else number-1
-        if hm_layer := hm_data.layers.active:
+        if hm_layer := G.hm_data.layers.active:
             hm_layer.link_brush(self.selected_item, bar_index)
-        # print("Asign to BrushSet:", brush_set, self.selected_item, bar_index, hm_data.brush_sets.count, hm_data.active_brush_cat)
+        # print("Asign to BrushSet:", brush_set, self.selected_item, bar_index, G.hm_data.brush_sets.count, G.hm_data.active_brush_cat)
         self.selected_item = None
 
     def get_data(self, cv: Canvas) -> list:
-        act_cat = bm_data.active_category
+        act_cat = G.bm_data.active_category
         if act_cat is None or act_cat.items.count == 0:
             return []
 
@@ -232,7 +232,7 @@ class ShelfGrid(ViewWidget):
         return cv.shelf.expand and cv.shelf.size.y > self.slot_size
 
     def get_draw_item_args(self, context, cv: Canvas, scale: float, prefs: SCULPTPLUS_AddonPreferences) -> tuple:
-        act_cat = bm_data.active_category
+        act_cat = G.bm_data.active_category
         if act_cat is None:
             return None
         slot_color = Vector(prefs.theme_shelf_slot)
@@ -240,9 +240,9 @@ class ShelfGrid(ViewWidget):
         #     return slot_color, None
         #brush_idx_rel: dict = {brush: idx for idx, brush in enumerate(brushes)}
         #return brush_idx_rel, slot_color, act_cat_id
-        act_item = bm_data.active_item
-        act_layer = hm_data.layers.active
-        return slot_color, act_layer.uuid if act_layer is not None else '', act_item.uuid if act_item else None, hm_data.brushes_ids
+        act_item = G.bm_data.active_item
+        act_layer = G.hm_data.layers.active
+        return slot_color, act_layer.uuid if act_layer is not None else '', act_item.uuid if act_item else None, G.hm_data.brushes_ids
 
     def draw_item(self,
                   slot_p: Vector, slot_s: Vector,
@@ -287,6 +287,10 @@ class ShelfGrid(ViewWidget):
                     DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.9607, 0.949, 0.3725, .92))
                 else:
                     DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .92))
+                if item.uuid not in hotbar_ids:
+                    print("Brush not in hotbar IDs! what is happening?", item.uuid, hotbar_ids)
+                    print(active_hm_layer_id, set_type)
+                    print(G.hm_data.layers.active, G.hm_data.layers.active.name, G.hm_data.layers.active.uuid)
 
         if item.fav:
             size = 16 * scale
@@ -632,7 +636,7 @@ class ShelfGridItemInfo(WidgetBase):
             (.1, .1, .1, .64 * opacity)
         )
 
-        act_brush = bm_data.active_brush
+        act_brush = G.bm_data.active_brush
         # if act_item is None:
         #     return
 
@@ -675,8 +679,8 @@ class ShelfGridItemInfo(WidgetBase):
             DiIcoOpGamHl(p, s, Icon.TEXTURE, opacity)
 
         # item_pos = inner_pos
-        act_texture = bm_data.active_texture
-        if act_texture: # act_brush and act_brush.texture_id and (act_texture := bm_data.get_texture(act_brush.texture_id)):
+        act_texture = G.bm_data.active_texture
+        if act_texture: # act_brush and act_brush.texture_id and (act_texture := G.bm_data.get_texture(act_brush.texture_id)):
             label = act_texture.name
             DiBMType(item_pos, item_size, act_texture, False, opacity, draw_fallback=draw_fallback)
         else:

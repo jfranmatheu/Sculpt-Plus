@@ -5,8 +5,7 @@ from bl_ui.properties_paint_common import brush_settings, brush_settings_advance
 from bpy.types import UILayout
 
 from sculpt_plus.props import Props
-
-from sculpt_plus.props import bm_data
+from sculpt_plus.globals import G
 
 
 def draw_brush_settings_tabs(layout, context):
@@ -36,7 +35,7 @@ def draw_brush_settings_tabs(layout, context):
 
     is_bm_brush = 'brush_manager' in act_brush
     if is_bm_brush and 'name' in act_brush:
-        label_text = act_brush['name'] # bm_data.active_brush.name
+        label_text = act_brush['name']
     else:
         label_text = act_brush.name # iface_(item.label, "Operator")
     # header.label(text="    " + label_text, icon_value=icon_value)

@@ -9,7 +9,8 @@ from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiTe
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth, map_value
 from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
-from sculpt_plus.props import bm_data, bm_types, GLOBALS, hm_data
+from sculpt_plus.props import bm_types
+from sculpt_plus.globals import G
 
 
 SLOT_SIZE = 48
@@ -115,9 +116,9 @@ class Hotbar(WidgetBase):
     def get_brush_item_at_index(self, index: int) -> bm_types.BrushItem | None:
         if index < 0 or index > 9:
             return None
-        if hm_data.layers.active is None:
+        if G.hm_data.layers.active is None:
             return None
-        return hm_data.brushes[index]
+        return G.hm_data.brushes[index]
 
     def update_active_brush(self, ctx) -> None:
         brush_item = self.get_brush_item_on_hover()
@@ -131,7 +132,7 @@ class Hotbar(WidgetBase):
         if cv.shelf.expand:
             ''' Assign brush from grid to hotbar. '''
             if cv.shelf_grid.selected_item is not None:
-                if hm_layer := hm_data.layers.active:
+                if hm_layer := G.hm_data.layers.active:
                     hm_layer.link_brush(cv.shelf_grid.selected_item, self.slot_on_hover)
                 cv.shelf_grid.selected_item = None
             return
@@ -214,7 +215,7 @@ class Hotbar(WidgetBase):
                 return True
             #print(brushes[prev_slot], brushes[curr_slot])
             #brushes[prev_slot].slot, brushes[curr_slot].slot = brushes[curr_slot].slot, brushes[prev_slot].slot
-            hm_data.layers.active.switch(prev_slot, curr_slot)
+            G.hm_data.layers.active.switch(prev_slot, curr_slot)
             self._press_slot.x = self.slot_pos[curr_slot].x
             self.slot_on_hover = curr_slot
         #cv.refresh()
