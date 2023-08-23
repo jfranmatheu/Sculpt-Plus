@@ -121,6 +121,8 @@ class Hotbar(WidgetBase):
 
     def update_active_brush(self, ctx) -> None:
         brush_item = self.get_brush_item_on_hover()
+        if brush_item is None:
+            return
         # NOTE: brush_item.type == bl_brush.sculpt_tool
         OP.wm.tool_set_by_id(name="builtin_brush." + brush_item.type.replace('_', ' ').title())
         brush_item.set_active(ctx)
