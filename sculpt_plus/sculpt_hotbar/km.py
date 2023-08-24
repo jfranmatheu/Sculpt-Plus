@@ -81,11 +81,11 @@ def create_hotbar_km(cls=None, keyconfig=None):
         cls = Controller
     if keyconfig is None:
         keyconfig = bpy.context.window_manager.keyconfigs.addon
-    print("******************************************************\n [SCULPT+] WIDGET KEYMAP SETUP \n******************************************************")
+    #### print("******************************************************\n [SCULPT+] WIDGET KEYMAP SETUP \n******************************************************")
     # print(keyconfig.name, keyconfig.preferences.bl_idname, keyconfig.keymaps.keys(), cls.bl_idname)
     if keyconfig.preferences is None:
         km = bpy.context.window_manager.keyconfigs.addon.keymaps.new(cls.bl_idname, space_type='VIEW_3D', region_type='WINDOW')
-        print("\t- INVALID! -> CREATE!", km, cls.bl_idname)
+        #### print("\t- INVALID! -> CREATE!", km, cls.bl_idname)
         for key in hotkeys:
             km.keymap_items.new(op, key, 'ANY', any=True);km.keymap_items.new(op, key, 'RELEASE', any=True)
         km.keymap_items.new(op, 'LEFT_ALT', 'ANY', alt=True)
@@ -94,14 +94,14 @@ def create_hotbar_km(cls=None, keyconfig=None):
     # print(keyconfig.name, keyconfig.preferences.bl_idname, cls.bl_idname)
     if km:=keyconfig.keymaps.get(cls.bl_idname, None):
         if km.keymap_items and len(km.keymap_items) > 1:
-            print("\t - EXISTS!", km, cls.bl_idname, len(km.keymap_items))
+            #### print("\t - EXISTS!", km, cls.bl_idname, len(km.keymap_items))
             return km
     # import bpy
     # act_keymap_config: KeyConfig = bpy.context.window_manager.keyconfigs.active
     # sculpt_km = act_keymap_config.keymaps['Sculpt']
     # for keyconfig in bpy.context.window_manager.keyconfigs:
     km = keyconfig.keymaps.new(name=cls.bl_idname, space_type='VIEW_3D', region_type='WINDOW')
-    print("\t - CREATE!", km, cls.bl_idname)
+    #### print("\t - CREATE!", km, cls.bl_idname)
     for key in hotkeys:
         km.keymap_items.new(op, key, 'ANY', any=True);km.keymap_items.new(op, key, 'RELEASE', any=True)
     km.keymap_items.new(op, 'LEFT_ALT', 'ANY', alt=True)

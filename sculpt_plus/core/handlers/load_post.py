@@ -14,10 +14,9 @@ def on_post_load(dummy):
     from sculpt_plus.prefs import get_prefs
     if not get_prefs(bpy.context).first_time:
         return
-    print("[Sculpt+] Installation complete!")
+    print("[Sculpt+] on_post_load()")
     get_prefs(bpy.context).first_time = False
     return
-    print("[Sculpt+] Unregistering Sculpt brush tools...")
     from bpy.utils import unregister_tool
     tools: List[ToolDef] = list(VIEW3D_PT_tools_active.tools_from_context(bpy.context, mode='SCULPT'))
     for tool in tools:
