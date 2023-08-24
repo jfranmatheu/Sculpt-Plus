@@ -28,7 +28,7 @@ class HotbarManager:
 
         if not data_filepath.exists() or data_filepath.stat().st_size == 0:
             print(f"[Sculpt+] HotbarManager not found in path: '{str(data_filepath)}'")
-            HotbarManager()
+            _hm_data = HotbarManager()
         else:
             with data_filepath.open('rb') as data_file:
                 data: HotbarManager = pickle.load(data_file)
@@ -84,9 +84,6 @@ class HotbarManager:
     # Constructor and free.
     # ------------------------------------------
     def __init__(self):
-        global _hm_data
-        _hm_data = self
-
         print(f"[Sculpt+] New HM_DATA@[{id(self)}]")
 
         self.active_cat_id = ''
