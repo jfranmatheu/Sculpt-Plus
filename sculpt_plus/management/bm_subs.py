@@ -45,6 +45,8 @@ def on_addon_data_init(bm_data: bm_types.AddonDataByMode) -> None:
             link_brush(brush_item, default_layer_brush_set_brushes.index(brush_item.name))
         # print(brush_item.name, brush_item.hotbar_layers)
 
+    G.hm_data.save()
+
 
 def on_addon_data_save(bm_data: bm_types.AddonDataByMode) -> None:
     if bm_data.mode == 'SCULPT':
