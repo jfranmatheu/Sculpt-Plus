@@ -200,9 +200,9 @@ class ShelfSidebarCatCtxPie(CtxPie):
             else:
                 G.bm_data.texture_cats.remove(target_item_uuid)
         elif option_id == 'ASSIGN_ICON':
-            BM_OPS.asign_icon_to_active_category()
+            BM_OPS.asign_icon_to_category(cat_uuid=target_item_uuid)
         elif option_id == 'RENAME':
-            BM_OPS.rename_cat(uuid=target_item_uuid)
+            BM_OPS.rename_cat(cat_uuid=target_item_uuid)
         ## elif option_id == 'MOVE_UP':
         ##     pass
         ## elif option_id == 'MOVE_DOWN':
