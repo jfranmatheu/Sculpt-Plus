@@ -11,8 +11,6 @@ sculpt_tool_VS_brush_name: Dict[str, str] = {}
 def on_post_load(dummy):
     # global sculpt_tool_VS_brush_name
     # sculpt_tool_VS_brush_name = {b.sculpt_tool: b.name for b in bpy.data.brushes if b.use_paint_sculpt}
-
-
     from sculpt_plus.prefs import get_prefs
     if not get_prefs(bpy.context).first_time:
         return

@@ -32,7 +32,7 @@ if __package__ == 'sculpt_plus':
         ordered_classes = get_ordered_classes_to_register(modules)
 
     def register():
-        print("[Sculpt+] Starting Register...")
+        print("[Sculpt+] Registering...")
         global modules
         global ordered_classes
         #from sculpt_plus.sculpt_hotbar.reg import get_classes
@@ -54,10 +54,8 @@ if __package__ == 'sculpt_plus':
         #for cls in get_classes():
         #    bpy.utils.register_class(cls)
 
-        print("[Sculpt+] Register Complete!")
-
     def unregister():
-        print("[Sculpt+] Starting Unregister...")
+        print("[Sculpt+] Unregistering...")
         global modules
         global ordered_classes
         #from sculpt_plus.sculpt_hotbar.reg import get_classes
@@ -81,8 +79,6 @@ if __package__ == 'sculpt_plus':
                 continue
             if module.__name__ in sys_modules:
                 del sys.modules[module.__name__]
-
-        print("[Sculpt+] Unregister Complete!")
 
 
     # Import modules
