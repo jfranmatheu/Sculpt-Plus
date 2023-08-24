@@ -6,7 +6,6 @@ from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture,
 
 from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.path import SculptPlusPaths
-from sculpt_plus.management.hotbar_manager import HotbarManager
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 

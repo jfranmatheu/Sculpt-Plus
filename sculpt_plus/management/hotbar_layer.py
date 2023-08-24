@@ -78,13 +78,11 @@ class HotbarLayer:
 class HotbarLayer_Collection:
     active: HotbarLayer
     layers: OrderedDict[str, HotbarLayer]
-    owner: object # 'HotbarManager'
+    owner: object
 
     @property
-    def hotbar_manager(self): # -> 'HotbarManager':
-        from .hotbar_manager import HotbarManager
-        hm: HotbarManager = self.owner
-        return hm
+    def hotbar_manager(self):
+        return self.owner
 
     @property
     def count(self) -> int:
@@ -174,10 +172,10 @@ class HotbarLayer_Collection:
 
     def clear_owners(self) -> None:
         self.owner = None
-        for layer in self.layers.values():
+        for layer in self:
             layer.clear_owners()
 
     def ensure_owners(self, hm: object) -> None:
         self.owner = hm
-        for layer in self.layers.values():
+        for layer in self:
             layer.ensure_owners(self)
