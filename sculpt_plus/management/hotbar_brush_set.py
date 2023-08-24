@@ -32,12 +32,12 @@ class HotbarBrushSet:
         self.brushes[index_A], self.brushes[index_B] = self.brushes[index_B], self.brushes[index_A]
 
     def asign_brush(self, brush: bm_types.BrushItem | str, at_index: int) -> None:
-        # print("asign_brush '", brush.name, "' to index ", at_index)
+        #### print("asign_brush '", brush.name, "' to index ", at_index)
         if at_index < 0 or at_index > 9:
             print("ERROR! Index out of range! Expected a value between 0 and 9")
             return
 
-        print("asign_brush '", brush.name, "' to layer with ID ", self.layer.uuid, " --- ", self.type)
+        #### print("asign_brush '", brush.name, "' to layer with ID ", self.layer.uuid, " --- ", self.type)
 
         if self.layer.uuid in brush.hotbar_layers:
             # BrushItem already in layer but in another Set.

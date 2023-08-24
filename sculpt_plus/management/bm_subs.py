@@ -26,8 +26,6 @@ def on_addon_data_init(bm_data: bm_types.AddonDataByMode) -> None:
     if bm_data.mode != 'SCULPT':
         return
 
-    print("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
-
     def_cat = bm_data.brush_cats.get('DEFAULT')
     if def_cat is None:
         print("no cat")
@@ -38,7 +36,7 @@ def on_addon_data_init(bm_data: bm_types.AddonDataByMode) -> None:
         print("no layer")
         return
 
-    print("addon data initialized... filling default layer...", def_layer, def_layer.name, def_layer.uuid)
+    print("[Sculpt+] brush_manager data initialized... filling default hotbar layer...") #, def_layer, def_layer.name, def_layer.uuid)
 
     link_brush = def_layer.link_brush
     G.hm_data.layers.select(def_layer)

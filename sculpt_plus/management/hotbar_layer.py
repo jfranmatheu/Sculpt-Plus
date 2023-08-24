@@ -38,8 +38,8 @@ class HotbarLayer:
         self.name = name
         self.brush_set = HotbarBrushSet(self, set_size=10, type='MAIN')
         self.brush_set_alt = HotbarBrushSet(self, set_size=10, type='ALT')
-        
-        print("Creating new Layer for hotbar:", collection, collection.hotbar_manager)
+
+        #### print("Creating new Layer for hotbar:", collection, collection.hotbar_manager)
 
     def __del__(self) -> None:
         del self.brush_set
