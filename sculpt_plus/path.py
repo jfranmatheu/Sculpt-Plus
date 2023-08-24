@@ -56,13 +56,13 @@ def ensure_paths():
         # data_brush_dir.mkdir()
         # data_texture_dir.mkdir()
         temp_dir.mkdir()
-        (data_brush_dir / "settings" / "defaults").mkdir(parents=True)
-        (data_brush_dir / "cats").mkdir()
-        (data_brush_dir / "previews").mkdir()
-        (data_texture_dir / "settings" / "defaults").mkdir(parents=True)
-        (data_texture_dir / "cats").mkdir()
-        (data_texture_dir / "previews").mkdir()
-        (data_texture_dir / "images").mkdir()
+        # (data_brush_dir / "settings" / "defaults").mkdir(parents=True)
+        # (data_brush_dir / "cats").mkdir()
+        # (data_brush_dir / "previews").mkdir()
+        # (data_texture_dir / "settings" / "defaults").mkdir(parents=True)
+        # (data_texture_dir / "cats").mkdir()
+        # (data_texture_dir / "previews").mkdir()
+        # (data_texture_dir / "images").mkdir()
         (temp_dir / "fake_items").mkdir()
         (temp_dir / "thumbnails").mkdir()
         if not management_config_file.exists():
@@ -95,20 +95,20 @@ class SculptPlusPaths(Enum):
     APP__TEMP = temp_dir
 
     CONFIG_FILE = data_dir / 'config.json'
-    HOTBAR_DATA = data_brush_dir / "hotbar"
+    HOTBAR_DATA = data_dir / "hotbar"
 
-    DATA_BRUSH_SETTINGS = data_brush_dir / "settings"
-    DATA_BRUSH_DEFAULTS = data_brush_dir / "settings" / "defaults"
-    DATA_BRUSH_CATS = data_brush_dir / "cats"
-    DATA_BRUSH_PREVIEWS = data_brush_dir / "previews"
-    DATA_BRUSH_CAT_ICONS = data_brush_dir / "cats"
+    # DATA_BRUSH_SETTINGS = data_brush_dir / "settings"
+    # DATA_BRUSH_DEFAULTS = data_brush_dir / "settings" / "defaults"
+    # DATA_BRUSH_CATS = data_brush_dir / "cats"
+    # DATA_BRUSH_PREVIEWS = data_brush_dir / "previews"
+    # DATA_BRUSH_CAT_ICONS = data_brush_dir / "cats"
 
-    DATA_TEXTURE_SETTINGS = data_texture_dir / "settings"
-    # DATA_TEXTURE_DEFAULTS = str(data_texture_dir / "settings" / "default")
-    DATA_TEXTURE_CATS = data_texture_dir / "cats"
-    DATA_TEXTURE_PREVIEWS = data_texture_dir / "previews"
-    DATA_TEXTURE_IMAGES = data_texture_dir / "images"
-    DATA_TEXTURE_CAT_ICONS = data_texture_dir / "cats"
+    # DATA_TEXTURE_SETTINGS = data_texture_dir / "settings"
+    # # DATA_TEXTURE_DEFAULTS = str(data_texture_dir / "settings" / "default")
+    # DATA_TEXTURE_CATS = data_texture_dir / "cats"
+    # DATA_TEXTURE_PREVIEWS = data_texture_dir / "previews"
+    # DATA_TEXTURE_IMAGES = data_texture_dir / "images"
+    # DATA_TEXTURE_CAT_ICONS = data_texture_dir / "cats"
 
     TEMP_FAKE_ITEMS = temp_dir / "fake_items"
     TEMP_THUMBNAILS = temp_dir / "thumbnails"
