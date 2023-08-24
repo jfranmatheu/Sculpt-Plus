@@ -33,6 +33,7 @@ class HotbarLayer:
         return self.active_set.brushes_ids
 
     def __init__(self, collection: 'HotbarLayer_Collection', name: str = 'Layer', custom_uuid: str | None = None) -> None:
+        print("[Sculpt+] New HotbarLayer", name, custom_uuid)
         self.owner = collection
         self.uuid = uuid4().hex if custom_uuid is None else custom_uuid
         self.name = name

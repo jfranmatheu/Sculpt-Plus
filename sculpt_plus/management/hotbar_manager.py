@@ -9,7 +9,6 @@ from sculpt_plus.utils.decorators import singleton
 from brush_manager.api import bm_types
 
 
-_hm_data = None
 
 @singleton
 class HotbarManager:
@@ -17,10 +16,10 @@ class HotbarManager:
     # ------------------------------------------
     @classmethod
     def get(cls):
-        global _hm_data
-        if _hm_data is not None:
-            return _hm_data
-        print(f"[Sculpt+] Instance? HM_DATA@[{id(_hm_data) if _hm_data is not None else None}]")
+        hm = cls.get_instance()
+        if hm is not None:
+            return hm
+        print(f"[Sculpt+] Instance? HM_DATA@[{id(hm) if hm is not None else None}]")
         # Try to load data from file.
         data_filepath: Path = SculptPlusPaths.HOTBAR_DATA(as_path=True)
 
@@ -28,14 +27,18 @@ class HotbarManager:
 
         if not data_filepath.exists() or data_filepath.stat().st_size == 0:
             print(f"[Sculpt+] HotbarManager not found in path: '{str(data_filepath)}'")
-            _hm_data = HotbarManager()
+            hm = HotbarManager()
         else:
             with data_filepath.open('rb') as data_file:
-                data: HotbarManager = pickle.load(data_file)
-                data.ensure_owners()
-                _hm_data = data
-            print(f"[Sculpt+] Loaded HM_DATA@[{id(data)}] from file: '{str(data_filepath)}'")
-        return _hm_data
+                hm: HotbarManager = pickle.load(data_file)
+                hm.ensure_owners()
+            print(f"[Sculpt+] Loaded HM_DATA@[{id(hm)}] from file: '{str(data_filepath)}'")
+
+        cls.set_instance(hm)
+        print(f"[Sculpt+] Created/Loaded? HM_DATA@[{id(hm) if hm is not None else None}]")
+        hm = cls.get_instance()
+        print(f"[Sculpt+] StoredInstance? HM_DATA@[{id(hm) if hm is not None else None}]")
+        return hm
 
 
     def save(self) -> None:

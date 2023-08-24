@@ -282,11 +282,11 @@ class ShelfGrid(ViewWidget):
                 bar_index = 0 if bar_index > 9 else bar_index
                 DiText(slot_p+Vector((1,3)), str(bar_index), 12, scale)
 
-            if (set_type := item.hotbar_layers.get(active_hm_layer_id, None)) is not None:
-                if set_type == 'ALT':
-                    DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.9607, 0.949, 0.3725, .92))
-                else:
-                    DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .92))
+                if set_type := item.hotbar_layers.get(active_hm_layer_id, None):
+                    if set_type == 'ALT':
+                        DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (0.9607, 0.949, 0.3725, .92))
+                    elif set_type == 'MAIN':
+                        DiTriCorner(slot_p+Vector((.5, slot_s.y-.5)), slot_s.x/5, 'TOP_LEFT', (1, 0.212, 0.48, .92))
                 ### if item.uuid not in hotbar_ids:
                 ###     print("Brush not in hotbar IDs! what is happening?", item.uuid, hotbar_ids)
                 ###     print(active_hm_layer_id, set_type)

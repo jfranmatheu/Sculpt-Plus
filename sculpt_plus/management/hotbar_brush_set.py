@@ -40,12 +40,13 @@ class HotbarBrushSet:
         #### print("asign_brush '", brush.name, "' to layer with ID ", self.layer.uuid, " --- ", self.type)
 
         if self.layer.uuid in brush.hotbar_layers:
-            # BrushItem already in layer but in another Set.
-            # IGNORE BY NOW...
-            print("WARN! BrushItem already in target Layer OR in another Set of the same Layer!")
-            return
-
-        if self.brushes[at_index] is not None:
+            ## print("WARN! BrushItem already in target Layer OR in another Set of the same Layer!")
+            if self.brushes[at_index] == brush:
+                # Can't replace to itself.
+                return
+            # Re-asign Brush...
+            self.unasign_brush(brush)
+        elif self.brushes[at_index] is not None:
             self.unasign_brush(self.brushes[at_index])
 
         self.brushes[at_index] = brush
@@ -57,7 +58,10 @@ class HotbarBrushSet:
             return
 
         self.brushes[self.brushes.index(brush)] = None
-        del brush.hotbar_layers[self.layer.uuid]
+        if self.layer.uuid not in brush.hotbar_layers:
+            print("WARN! BrushItem.hotbar_layers does not contain the layer with UUID:", self.layer.uuid, brush.hotbar_layers)
+        else:
+            del brush.hotbar_layers[self.layer.uuid]
 
     # ---------------------------
 
