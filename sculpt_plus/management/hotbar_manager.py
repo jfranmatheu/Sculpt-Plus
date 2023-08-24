@@ -82,6 +82,12 @@ class HotbarManager:
         if act_layer := self.layers.active:
             return act_layer.brushes_ids
         return []
+    
+    
+    def select_brush(self, context, brush_index: int) -> None:
+        if layer := self.layers.active:
+            if brush_item := layer.active_set.brushes[brush_index]:
+                brush_item.set_active(context)
 
 
     # Constructor and free.

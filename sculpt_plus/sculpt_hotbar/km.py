@@ -1,4 +1,4 @@
-keys = (
+numkeys = (
     'ONE',
     'TWO',
     'THREE',
@@ -32,11 +32,13 @@ def register():
     cfg = C.window_manager.keyconfigs.addon
     if not cfg:
         return
+    
+    if not cfg.keymaps.__contains__('Sculpt'):
+        cfg.keymaps.new('Sculpt', space_type='EMPTY', region_type='WINDOW')
+    kmi = cfg.keymaps['Sculpt'].keymap_items
+
     opid = SCULPTHOTBAR_OT_set_brush.bl_idname
-    for idx, key in enumerate(keys):
-        if not cfg.keymaps.__contains__('Sculpt'):
-            cfg.keymaps.new('Sculpt', space_type='EMPTY', region_type='WINDOW')
-        kmi = cfg.keymaps['Sculpt'].keymap_items
+    for idx, key in enumerate(numkeys):
         kmi.new(opid, key, 'PRESS').properties.index = idx
         kmi.new(opid, key, 'PRESS', alt=True).properties.index = idx
     kmi.new(SCULPTPLUS_OT_set_hotbar_alt.bl_idname, 'LEFT_ALT', 'PRESS', alt=True).properties.enabled = True
