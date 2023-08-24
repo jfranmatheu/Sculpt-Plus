@@ -21,25 +21,36 @@ class HotbarManager:
         data_filepath: Path = SculptPlusPaths.HOTBAR_DATA(as_path=True)
 
         if not data_filepath.exists():
+            print(f"[Sculpt+] HM_DATA not found in path: '{str(data_filepath)}'")
             cls._instance = HotbarManager()
         else:
             with data_filepath.open('rb') as data_file:
                 data: HotbarManager = pickle.load(data_file)
+                data.ensure_owners()
                 cls._instance = data
-
+            print(f"[Sculpt+] Loaded HM_DATA@[{id(data)}] from file: '{str(data_filepath)}'")
         return cls._instance
 
 
     def save(self) -> None:
         data_filepath: Path = SculptPlusPaths.HOTBAR_DATA(as_path=True)
 
+        print(f"[Sculpt+] Saving HM_DATA@[{id(self)}] to file: '{str(data_filepath)}'")
+
         # Avoid multiple references to objects since pickle doesn't work really well with that.
-        self.layers.clear_owners()
+        self.clear_owners()
 
         with data_filepath.open('wb') as data_file:
             pickle.dump(self, data_file)
 
         # Restore references...
+        self.ensure_owners()
+
+
+    def clear_owners(self) -> None:
+        self.layers.clear_owners()
+
+    def ensure_owners(self) -> None:
         self.layers.ensure_owners(self)
 
 
@@ -67,6 +78,8 @@ class HotbarManager:
     # Constructor and free.
     # ------------------------------------------
     def __init__(self):
+        print(f"[Sculpt+] New HM_DATA@[{id(self)}]")
+
         self.active_cat_id = ''
         self.layers = HotbarLayer_Collection(self)
 
@@ -76,6 +89,8 @@ class HotbarManager:
 
 
     def __del__(self):
+        print(f"[Sculpt+] Remove HM_DATA@[{id(self)}]")
+
         del self.layers
         HotbarManager._instance = None
 
