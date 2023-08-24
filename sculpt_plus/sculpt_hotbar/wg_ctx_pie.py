@@ -132,12 +132,11 @@ class ShelfGridItemCtxPie(CtxPie):
             if item.fav else
             ('FAV', "Mark Favourite", "Mark brush as favourite"),
             ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the brush") if GLOBALS.is_context_brush_item else None,
-
+            ('DUPLICATE', "Duplicate", "Make a brush copy") if GLOBALS.is_context_brush_item else None,
             ('SAVE_DEFAULT', "Save Default", "Save default state of the brush") if GLOBALS.is_context_brush_item else None,
             ('RESET', "Reset to Default", "Reset brush to default state") if GLOBALS.is_context_brush_item else None,
             ('REMOVE', "Remove", "Remove item from category"),
             ('MOVE', "Move", "Move item to another category") if cat_count > 1 else None,
-            ## ('DUPLICATE', "Duplicate", "Make a brush copy") if item_type=='BRUSH' else None,
         )
         return tuple(op for op in options if op is not None)
 
@@ -165,8 +164,8 @@ class ShelfGridItemCtxPie(CtxPie):
             self.target_item.save_default()
         elif option_id == 'RESET': # to default
             self.target_item.reset()
-        ## elif option_id == 'DUPLICATE':
-        ##     BM_OPS.duplicate_item(uuid=target_item_uuid)
+        elif option_id == 'DUPLICATE':
+            BM_OPS.duplicate_brush(brush_uuid=target_item_uuid)
 
 
 class ShelfSidebarCatCtxPie(CtxPie):
