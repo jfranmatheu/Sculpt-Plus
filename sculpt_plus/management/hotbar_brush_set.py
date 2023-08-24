@@ -1,6 +1,6 @@
 from typing import List
 
-from brush_manager.api import bm_types, BM_DATA
+from brush_manager.api import bm_types
 
 
 
@@ -69,9 +69,12 @@ class HotbarBrushSet:
         self.owner = None
         # Convert BrushItem references to strings (UUIDs).
         self.brushes = [(brush.cat_id, brush.uuid) if brush is not None else ('', '') for brush in self.brushes]
+        #### print(self.owner.name, "BRUSHES AFTER CLEAR:", self.brushes)
 
     def ensure_owners(self, layer) -> None:
+        from sculpt_plus.globals import G
         self.owner = layer
-        get_cat = BM_DATA.SCULPT.brush_cats.get
+        get_cat = G.bm_data.brush_cats.get
         # Convert brush UUIDs back to BrushItem references.
         self.brushes = [get_cat(cat_id).items.get(brush_uuid) if cat_id != '' else None for (cat_id, brush_uuid) in self.brushes]
+        #### print(layer.name, "BRUSHES AFTER ENSURE:", self.brushes)
