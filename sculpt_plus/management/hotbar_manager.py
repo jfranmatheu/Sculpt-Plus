@@ -4,32 +4,38 @@ import pickle
 
 from sculpt_plus.path import SculptPlusPaths
 from .hotbar_layer import HotbarLayer_Collection
+from sculpt_plus.utils.decorators import singleton
 
 from brush_manager.api import bm_types
 
 
+_hm_data = None
+
+@singleton
 class HotbarManager:
     # Singleton.
     # ------------------------------------------
-    _instance = None
-
     @classmethod
-    def get(cls) -> 'HotbarManager':
-        if cls._instance is not None:
-            return cls._instance
+    def get(cls):
+        global _hm_data
+        if _hm_data is not None:
+            return _hm_data
+        print(f"[Sculpt+] Instance? HM_DATA@[{id(_hm_data) if _hm_data is not None else None}]")
         # Try to load data from file.
         data_filepath: Path = SculptPlusPaths.HOTBAR_DATA(as_path=True)
 
-        if not data_filepath.exists():
-            print(f"[Sculpt+] HM_DATA not found in path: '{str(data_filepath)}'")
-            cls._instance = HotbarManager()
+        from ..management.hotbar_manager import HotbarManager
+
+        if not data_filepath.exists() or data_filepath.stat().st_size == 0:
+            print(f"[Sculpt+] HotbarManager not found in path: '{str(data_filepath)}'")
+            HotbarManager()
         else:
             with data_filepath.open('rb') as data_file:
                 data: HotbarManager = pickle.load(data_file)
                 data.ensure_owners()
-                cls._instance = data
+                _hm_data = data
             print(f"[Sculpt+] Loaded HM_DATA@[{id(data)}] from file: '{str(data_filepath)}'")
-        return cls._instance
+        return _hm_data
 
 
     def save(self) -> None:
@@ -78,6 +84,9 @@ class HotbarManager:
     # Constructor and free.
     # ------------------------------------------
     def __init__(self):
+        global _hm_data
+        _hm_data = self
+
         print(f"[Sculpt+] New HM_DATA@[{id(self)}]")
 
         self.active_cat_id = ''
@@ -92,7 +101,8 @@ class HotbarManager:
         print(f"[Sculpt+] Remove HM_DATA@[{id(self)}]")
 
         del self.layers
-        HotbarManager._instance = None
+        global _hm_data
+        _hm_data = None
 
     # Util methods.
     # ------------------------------------------
