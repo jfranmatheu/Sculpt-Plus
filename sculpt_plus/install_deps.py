@@ -29,6 +29,7 @@ def install():
 
     try:
         import brush_manager
+        bm_version = brush_manager.bl_info['version']
     except ImportError:
         if BM_VERSION != "latest":
             url = "https://api.github.com/repos/{}/{}/releases/tags/{}".format(
