@@ -22,6 +22,10 @@ bl_info = {
     "category" : "General"
 }
 
+
+PILLOW_VERSION = "Pillow>=9.3.0"
+BM_VERSION = 'v1.0-b3.6.x'
+
 USE_DEV_ENVIRONMENT = True
 
 if __package__ != 'sculpt_plus':
