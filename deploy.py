@@ -1,4 +1,5 @@
 import glob
+import os
 import python_minifier
 from fnmatch import fnmatch
 from os.path import join, dirname, exists, isdir
@@ -48,11 +49,13 @@ build_name=f'{module_name}_v{version}-b{blender}'
 zip_path=join(build_dir, build_name)
 make_archive(zip_path, 'zip', _temp_dir)
 
+# Clenup.
+rmtree(_temp_dir, ignore_errors=True)
+
 # sculpt plus installer...
 sculpt_plus_installer_path = join(root, 'sculpt_plus_installer')
 sculpt_plus_installer_zipfile = join(sculpt_plus_installer_path, 'sculpt_plus.zip')
 copyfile(zip_path + '.zip', sculpt_plus_installer_zipfile)
-make_archive(join(root, 'sculpt_plus_installer'), 'zip', sculpt_plus_installer_path)
+# make_archive(join(root, 'sculpt_plus_installer'), 'zip', sculpt_plus_installer_path)
 
-# Clenup.
-rmtree(_temp_dir, ignore_errors=True)
+os.system(join(sculpt_plus_installer_path, 'pack_installer.bat'))
