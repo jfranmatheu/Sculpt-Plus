@@ -22,8 +22,9 @@ bl_info = {
     "category" : "General"
 }
 
-
-BUILD_NAME = 'Brushmanager_1.0.0_(B3D-3.6.X)'
+BM_MODULE_NAME = 'brush_manager'
+BM_TAG_VERSION = 'v1.0-b3.6.x'
+BUILD_NAME = F'{BM_MODULE_NAME}_{BM_TAG_VERSION}'
 
 
 import bpy
@@ -39,26 +40,44 @@ from pathlib import Path
 src_path = Path(__file__).parent
 
 
+class VersionError(Exception):
+    pass
+
 
 def install_bm():
     print("Installing Brush Manager addon...")
-    
-    module_name = 'brush_manager'
 
-    url = f"https://github.com/jfranmatheu/Blender-Brush-Manager/raw/main/build/{BUILD_NAME}.zip"
 
-    r = requests.get(url, stream=True)
-    print("[Sculpt+] Install BM - Request Status Code:", r.status_code)
-    if r.status_code == 200:
 
-        # Download the .zip file.
-        with tempfile.TemporaryFile(mode='w+b', suffix='.zip', delete=False) as tmpfile:
-            for chunk in r.iter_content(chunk_size=128):
-                tmpfile.write(chunk)
 
-        # BUILD URL DOWNLOAD.
-        bpy.ops.preferences.addon_install(filepath=tmpfile.name)
-        bpy.ops.preferences.addon_enable(module=module_name)
+# ----------------------------------------------------------------
+
+
+def check_brush_manager():
+
+
+    try:
+        import brush_manager
+        if hasattr(brush_manager, 'tag_version') and brush_manager.tag_version != BM_TAG_VERSION:
+            raise VersionError(f"Required Brush Manager version is {BM_TAG_VERSION} but found {brush_manager.tag_version}")
+
+    except (ModuleNotFoundError, ImportError, VersionError) as e:
+        print(e)
+
+        url = f"https://github.com/jfranmatheu/Blender-Brush-Manager/raw/main/build/{BUILD_NAME}.zip"
+
+        r = requests.get(url, stream=True)
+        print("[Sculpt+] Install BM - Request Status Code:", r.status_code)
+        if r.status_code == 200:
+
+            # Download the .zip file.
+            with tempfile.TemporaryFile(mode='w+b', suffix='.zip', delete=False) as tmpfile:
+                for chunk in r.iter_content(chunk_size=128):
+                    tmpfile.write(chunk)
+
+            # BUILD URL DOWNLOAD.
+            bpy.ops.preferences.addon_install(filepath=tmpfile.name)
+            bpy.ops.preferences.addon_enable(module=BM_MODULE_NAME)
 
     '''
         # OLD URL.
