@@ -39,8 +39,10 @@ if bpy.app.background:
     def register(): pass
     def unregister(): pass
 else:
-    from . import auto_load
+    from . import install_deps
+    install_deps.install()
 
+    from . import auto_load
     auto_load.init(USE_DEV_ENVIRONMENT)
 
     def register():
