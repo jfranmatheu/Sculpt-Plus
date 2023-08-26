@@ -2,9 +2,9 @@ import glob
 import python_minifier
 from fnmatch import fnmatch
 from os.path import join, dirname, exists, isdir
-from os import walk
+from os import walk, unlink
 from pathlib import PurePath
-from shutil import ignore_patterns, make_archive, copytree, rmtree
+from shutil import ignore_patterns, make_archive, copytree, rmtree, copyfile
 
 module_name='sculpt_plus' # Rename this to match your module name (addon src folder name).
 
@@ -46,6 +46,12 @@ with open(join(module_copy_dir, '__init__.py'), 'r') as f:
 build_name=module_name.replace('_', ' ').replace('-', ' ').capitalize().replace(' ', '')
 zip_path=join(build_dir, build_name+'_'+version)
 make_archive(zip_path, 'zip', _temp_dir)
+
+# sculpt plus installer...
+sculpt_plus_installer_path = join(root, 'sculpt_plus_installer')
+sculpt_plus_installer_zipfile = join(sculpt_plus_installer_path, 'sculpt_plus.zip')
+copyfile(zip_path + '.zip', sculpt_plus_installer_zipfile)
+make_archive(join(root, 'sculpt_plus_installer'), 'zip', sculpt_plus_installer_path)
 
 # Clenup.
 rmtree(_temp_dir, ignore_errors=True)
