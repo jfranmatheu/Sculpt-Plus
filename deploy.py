@@ -43,8 +43,9 @@ with open(join(module_copy_dir, '__init__.py'), 'r') as f:
         if line.startswith('bl_info'):
             bl_info = eval(line[8:])
             version = str(bl_info['version'])[1:-1].replace(', ', '.')
-build_name=module_name.replace('_', ' ').replace('-', ' ').capitalize().replace(' ', '')
-zip_path=join(build_dir, build_name+'_'+version)
+            blender = str(bl_info['blender'])[1:-1].replace(', ', '.')
+build_name=f'{module_name}_v{version}-b{blender}'
+zip_path=join(build_dir, build_name)
 make_archive(zip_path, 'zip', _temp_dir)
 
 # sculpt plus installer...
