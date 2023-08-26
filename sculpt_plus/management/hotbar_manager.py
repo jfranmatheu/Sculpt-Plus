@@ -10,6 +10,15 @@ from brush_manager.api import bm_types
 
 
 
+def fix_default_category_items():
+    from sculpt_plus.globals import G
+    if bm_data := G.bm_data:
+        if def_cat := bm_data.brush_cats.get('DEFAULT'):
+            if def_cat.items.count > 0 and not hasattr(def_cat.items[0], 'hotbar_layers'):
+                from .bm_subs import on_addon_data_init
+                on_addon_data_init(bm_data)
+
+
 @singleton
 class HotbarManager:
     # Singleton.
@@ -101,6 +110,11 @@ class HotbarManager:
         self.use_alt: bool = False
 
         self.layers.add('Default', custom_uuid='DEFAULT')
+        
+        # Fix default category items.
+        # When init bm_data while Sculpt+ data is not initialized yet
+        # so that the bm subs are not there and on_addon_data_init wasn't called.
+        fix_default_category_items()
 
 
     def __del__(self):

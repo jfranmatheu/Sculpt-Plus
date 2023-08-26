@@ -38,8 +38,10 @@ class HotbarBrushSet:
             return
 
         #### print("asign_brush '", brush.name, "' to layer with ID ", self.layer.uuid, " --- ", self.type)
+        if not hasattr(brush, 'hotbar_layers'):
+            brush.hotbar_layers = {}
 
-        if self.layer.uuid in brush.hotbar_layers:
+        elif self.layer.uuid in brush.hotbar_layers:
             ## print("WARN! BrushItem already in target Layer OR in another Set of the same Layer!")
             if self.brushes[at_index] == brush:
                 # Can't replace to itself.
