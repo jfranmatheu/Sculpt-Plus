@@ -73,7 +73,7 @@ def install_bm():
 def install_sculpt_plus():
     print("Installing Sculpt Plus addon...")
 
-    bpy.ops.preferences.addon_install(filepath=str(src_path / 'sculpt_plus.zip'))
+    bpy.ops.preferences.addon_install(filepath=str(src_path / 'sculpt_plus_build.zip'))
     bpy.ops.preferences.addon_enable(module='sculpt_plus')
     bpy.ops.preferences.addon_show(module='sculpt_plus')
 
