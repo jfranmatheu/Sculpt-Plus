@@ -101,7 +101,7 @@ if __package__ == 'sculpt_plus':
             if module == __name__:
                 continue
             if module.__name__ in sys_modules:
-                print("[Sculpt+] Removing module %s" % module.__name__)
+                ## print("[Sculpt+] Removing module %s" % module.__name__)
                 del sys.modules[module.__name__]
 
         if __name__ in sys_modules:
