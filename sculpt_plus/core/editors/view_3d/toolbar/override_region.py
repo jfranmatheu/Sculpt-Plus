@@ -8,7 +8,7 @@ from sculpt_plus.prefs import get_prefs
 # from sculpt_plus.core.data.cy_structs import CyBlStruct
 
 from .panels import *
-from ...backup_cache import get_attr_from_cache
+from ...backup_cache import set_cls_attribute
 
 
 def _layout_generator_single_row(layout, scale_y):
@@ -301,7 +301,4 @@ def draw_toolbar(self, context):
 
 
 def register():
-    VIEW3D_PT_tools_active.draw = draw_toolbar
-
-def unregister():
-    VIEW3D_PT_tools_active.draw = get_attr_from_cache(VIEW3D_PT_tools_active, 'draw')
+    set_cls_attribute(VIEW3D_PT_tools_active, 'draw', draw_toolbar)
