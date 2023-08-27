@@ -8,8 +8,14 @@ NUNITO_FILEPATH = join(fonts_folder, 'Nunito-Regular.ttf')
 
 class Fonts:
     DEFAULT = 0
-    NUNITO = load(NUNITO_FILEPATH)
+    NUNITO = 0
+
+
+def register():
+    Fonts.NUNITO = load(NUNITO_FILEPATH)
 
 
 def unregister():
+    print("Unregistering fonts...")
+    Fonts.NUNITO = 0
     unload(NUNITO_FILEPATH)
