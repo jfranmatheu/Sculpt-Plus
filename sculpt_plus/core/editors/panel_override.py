@@ -74,6 +74,3 @@ def register():
         unregister_class(cls)
         cls.bl_category = 'Sculpt'
         register_class(cls)
-
-def unregister():
-    pass

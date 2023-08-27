@@ -61,12 +61,16 @@ if __package__ == 'sculpt_plus':
         #    bpy.utils.unregister_class(cls)
 
         for cls in reversed(ordered_classes):
+            print("[Sculpt+] Unregistering class %s" % cls.__name__)
             bpy.utils.unregister_class(cls)
+
+        return
 
         #print(__name__)
         for module in modules:
             if module.__name__ == __name__:
                 continue
+            print("[Sculpt+] Unregistering module %s" % module.__name__)
             if hasattr(module, "unregister"):
                 module.unregister()
 
@@ -75,6 +79,7 @@ if __package__ == 'sculpt_plus':
             if module == __name__:
                 continue
             if module.__name__ in sys_modules:
+                print("[Sculpt+] Removing module %s" % module.__name__)
                 del sys.modules[module.__name__]
 
 

@@ -421,3 +421,9 @@ class LiveView(object):
             layout.box().template_icon(self.icon_id, scale=scale)
         with self.offscreen.bind():
             layout.box().template_icon(self.offscreen.color_texture, scale=scale)
+
+
+def unregister():
+    for gputex in cache_tex.values():
+        del gputex
+    cache_tex.clear()

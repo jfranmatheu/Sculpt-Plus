@@ -121,6 +121,3 @@ def register():
     # Here we override cls methods and properties as we need.
     VIEW3D_HT_tool_header.draw_tool_settings = draw_toolheader_tool_settings
     VIEW3D_HT_tool_header.draw_mode_settings = draw_toolheader_mode_settings
-
-def unregister():
-    pass

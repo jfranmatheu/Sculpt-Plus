@@ -26,7 +26,7 @@ bl_info = {
 PILLOW_VERSION = "Pillow>=9.3.0"
 BM_VERSION = 'v1.0-b3.6.x'
 
-USE_DEV_ENVIRONMENT = True
+USE_DEV_ENVIRONMENT = False
 
 if __package__ != 'sculpt_plus':
     import sys

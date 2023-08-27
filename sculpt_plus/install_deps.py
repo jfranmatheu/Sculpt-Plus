@@ -27,7 +27,9 @@ def check_brush_manager():
         if hasattr(brush_manager, 'tag_version') and brush_manager.tag_version != BM_VERSION:
             raise VersionError(f"Required Brush Manager version is {BM_VERSION} but found {brush_manager.tag_version}")
 
-    except (ModuleNotFoundError, ImportError, VersionError) as e:
+    except (ModuleNotFoundError, ImportError) as e:
+        print(e)
+    except VersionError as e:
         print(e)
 
 
