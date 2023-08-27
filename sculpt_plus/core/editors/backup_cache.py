@@ -7,6 +7,7 @@ from bpy.types import (
     VIEW3D_PT_tools_brush_falloff, VIEW3D_PT_tools_brush_stroke,
     VIEW3D_PT_tools_brush_texture,
 )
+from collections import defaultdict
 
 
 classes_to_reset = (
@@ -22,23 +23,35 @@ classes_to_reset = (
 )
 
 _cache_reset = {}
+_mod_cls_attributes = defaultdict(set)
 
 
 def get_attr_from_cache(cls, attr, default=None):
-    return _cache_reset[cls.__name__].get(attr, default)
+    if cls_cache := _cache_reset.get(cls.__name__, None):
+        if hasattr(cls_cache, attr):
+            return cls_cache.get(attr, default)
+    return default
+
+def cache_cls_attributes(cls):
+    _cache_reset[cls.__name__] = cls.__dict__.copy()
+    
+
+def set_cls_attribute(cls, attr, new_value):
+    if cls.__name__ not in _cache_reset:
+        cache_cls_attributes(cls)
+    _mod_cls_attributes[cls.__name__].add(attr)
+    setattr(cls, 'old_' + attr, get_attr_from_cache(cls, attr))
+    setattr(cls, attr, new_value)
 
 
-def register():
+def pre_register():
     for cls in classes_to_reset:
-        _cache_reset[cls.__name__] = cls.__dict__.copy()
+        cache_cls_attributes(cls)
 
-def unregister():
+def pre_unregister():
     for cls in classes_to_reset:
-        cache = _cache_reset[cls.__name__] # raises AttributeError on class without decorator
-        #for key in [key for key in cls.__dict__ if key not in cache]:
-        #    delattr(cls, key)
-        for key, value in cache.items():  # reset the items to original values
-            try:
-                setattr(cls, key, value)
-            except AttributeError:
-                pass
+        if mod_cls_attributes := _mod_cls_attributes.get(cls.__name__, None):
+            cache = _cache_reset[cls.__name__] # raises AttributeError on class without decorator
+            for mod_attr in mod_cls_attributes:
+                setattr(cls, mod_attr, cache[mod_attr])
+                delattr(cls, 'old_' + mod_attr)
