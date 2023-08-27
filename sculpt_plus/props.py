@@ -99,7 +99,7 @@ class Props:
         def get_stored() -> str:
             global stored_sculpt_tool
             return stored_sculpt_tool
-        
+
         @staticmethod
         def set_stored(id: str) -> None:
             global stored_sculpt_tool
@@ -133,3 +133,12 @@ class Props:
         def has_changed(cls, context: Context) -> bool:
             global stored_sculpt_tool
             return stored_sculpt_tool != cls.get_from_context(context)[1]
+
+
+
+def pre_unregister():
+    if workspace := Props.Workspace(bpy.context):
+        del workspace['sculpt_plus']
+
+    if bpy.context.workspace == workspace:
+        bpy.ops.workspace.delete()
