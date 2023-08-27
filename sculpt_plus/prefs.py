@@ -44,7 +44,9 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
         #cv = SculptHotbarGizmo.get()
         if not hasattr(bpy, 'sculpt_hotbar'):
             return
-        cv = bpy.sculpt_hotbar.get(context.region)
+        if bpy.sculpt_hotbar is None:
+            return
+        cv = bpy.sculpt_hotbar.get_cv(context.region)
         if not cv:
             return
         scale = self.get_scale(context)

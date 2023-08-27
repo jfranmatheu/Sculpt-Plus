@@ -145,4 +145,8 @@ class Controller(GZG, KM):
             cv.update((off_left, off_bot), (width, height), p.get_scale(ctx), p)
 
 
-bpy.sculpt_hotbar = Master
+def register():
+    bpy.sculpt_hotbar = Master
+
+def unregister():
+    del bpy.sculpt_hotbar
