@@ -5,6 +5,7 @@ from fnmatch import fnmatch
 from os.path import join, dirname, exists, isdir
 from os import walk, unlink
 from pathlib import PurePath
+import zipfile
 from shutil import ignore_patterns, make_archive, copytree, rmtree, copyfile
 
 module_name='sculpt_plus' # Rename this to match your module name (addon src folder name).
@@ -53,9 +54,14 @@ make_archive(zip_path, 'zip', _temp_dir)
 rmtree(_temp_dir, ignore_errors=True)
 
 # sculpt plus installer...
-sculpt_plus_installer_path = join(root, 'sculpt_plus_installer')
-sculpt_plus_installer_zipfile = join(sculpt_plus_installer_path, 'sculpt_plus.zip')
-copyfile(zip_path + '.zip', sculpt_plus_installer_zipfile)
-# make_archive(join(root, 'sculpt_plus_installer'), 'zip', sculpt_plus_installer_path)
+_installer_path = join(root, module_name + '_installer')
+## _installer_zipfile = join(_installer_path, f'{module_name}_build.zip')
+## copyfile(zip_path + '.zip', _installer_zipfile)
 
-os.system(join(sculpt_plus_installer_path, 'pack_installer.bat'))
+with zipfile.ZipFile(join(_installer_path, module_name + '_installer.zip'), mode='w') as zip_ref:
+    zip_ref.write(join(_installer_path, '__init__.py'), arcname=f'{module_name}/__init__.py')
+    zip_ref.write(join(_installer_path, 'installer.py'), arcname=f'{module_name}/installer.py')
+    ## zip_ref.write(_installer_zipfile, arcname=f'{module_name}/{module_name}_build.zip')
+    zip_ref.write(zip_path + '.zip', arcname=f'{module_name}/{module_name}_build.zip')
+
+os.system(join(_installer_path, 'pack_installer.bat'))
