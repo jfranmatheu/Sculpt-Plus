@@ -1,7 +1,8 @@
 from bl_ui.space_view3d import VIEW3D_HT_tool_header
 from bpy.types import Brush as BlBrush, UILayout
+from bl_ui.properties_paint_common import UnifiedPaintPanel
 
-from ...backup_cache import get_attr_from_cache, VIEW3D_PT_tools_active, UnifiedPaintPanel, set_cls_attribute
+from ...backup_cache import get_attr_from_cache, VIEW3D_PT_tools_active, set_cls_attribute
 
 
 def draw_error(self, context):
