@@ -1,14 +1,18 @@
 from bl_ui.space_view3d import VIEW3D_HT_tool_header
 from bpy.types import Brush as BlBrush, UILayout
 
-from ...backup_cache import get_attr_from_cache, VIEW3D_PT_tools_active, UnifiedPaintPanel
+from ...backup_cache import get_attr_from_cache, VIEW3D_PT_tools_active, UnifiedPaintPanel, set_cls_attribute
+
+
+def draw_error(self, context):
+    self.layout.label(text="ERROR!")
 
 
 def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
     # Override in Sculpt Mode.
     if context.mode != 'SCULPT' or 'sculpt_plus' not in context.workspace:
         # Used cached method.
-        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings')(self, context)
+        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings', draw_error)(self, context)
         return
 
     use_legacy_sculpt = 'sculpt_plus' not in context.workspace
@@ -87,14 +91,14 @@ def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
             layout.row().prop(brush, "direction", expand=True, text="")
 
     else:
-        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings')(self, context)
+        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings', draw_error)(self, context)
 
 
 def draw_toolheader_mode_settings(self, context):
     # Override in Sculpt Mode.
     if context.mode != 'SCULPT' or 'sculpt_plus' not in context.workspace:
         # Used cached method.
-        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_mode_settings')(self, context)
+        get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_mode_settings', draw_error)(self, context)
         return
 
     use_legacy_sculpt = 'sculpt_plus' not in context.workspace
@@ -119,5 +123,5 @@ def draw_toolheader_mode_settings(self, context):
 
 def register():
     # Here we override cls methods and properties as we need.
-    VIEW3D_HT_tool_header.draw_tool_settings = draw_toolheader_tool_settings
-    VIEW3D_HT_tool_header.draw_mode_settings = draw_toolheader_mode_settings
+    set_cls_attribute(VIEW3D_HT_tool_header, 'draw_tool_settings', draw_toolheader_tool_settings)
+    set_cls_attribute(VIEW3D_HT_tool_header, 'draw_mode_settings', draw_toolheader_mode_settings)
