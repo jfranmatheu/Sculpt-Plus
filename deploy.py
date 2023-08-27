@@ -54,14 +54,15 @@ make_archive(zip_path, 'zip', _temp_dir)
 rmtree(_temp_dir, ignore_errors=True)
 
 # sculpt plus installer...
-_installer_path = join(root, module_name + '_installer')
+module_installer_name = f'{module_name}_installer'
+_installer_path = join(root, module_installer_name)
 ## _installer_zipfile = join(_installer_path, f'{module_name}_build.zip')
 ## copyfile(zip_path + '.zip', _installer_zipfile)
 
-with zipfile.ZipFile(join(_installer_path, module_name + '_installer.zip'), mode='w') as zip_ref:
-    zip_ref.write(join(_installer_path, '__init__.py'), arcname=f'{module_name}/__init__.py')
-    zip_ref.write(join(_installer_path, 'installer.py'), arcname=f'{module_name}/installer.py')
+with zipfile.ZipFile(join(_installer_path, f'{module_installer_name}.zip'), mode='w') as zip_ref:
+    zip_ref.write(join(_installer_path, '__init__.py'), arcname=f'{module_installer_name}/__init__.py')
+    zip_ref.write(join(_installer_path, 'installer.py'), arcname=f'{module_installer_name}/installer.py')
     ## zip_ref.write(_installer_zipfile, arcname=f'{module_name}/{module_name}_build.zip')
-    zip_ref.write(zip_path + '.zip', arcname=f'{module_name}/{module_name}_build.zip')
+    zip_ref.write(zip_path + '.zip', arcname=f'{module_installer_name}/{module_name}_build.zip')
 
 os.system(join(_installer_path, 'pack_installer.bat'))
