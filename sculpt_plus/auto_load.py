@@ -45,8 +45,20 @@ if __package__ == 'sculpt_plus':
         for module in modules:
             if module.__name__ == __name__:
                 continue
+            if hasattr(module, "pre_register"):
+                module.pre_register()
+
+        for module in modules:
+            if module.__name__ == __name__:
+                continue
             if hasattr(module, "register"):
                 module.register()
+
+        for module in modules:
+            if module.__name__ == __name__:
+                continue
+            if hasattr(module, "post_register"):
+                module.post_register()
 
         #for cls in get_classes():
         #    bpy.utils.register_class(cls)
@@ -64,7 +76,11 @@ if __package__ == 'sculpt_plus':
             print("[Sculpt+] Unregistering class %s" % cls.__name__)
             bpy.utils.unregister_class(cls)
 
-        return
+        for module in modules:
+            if module.__name__ == __name__:
+                continue
+            if hasattr(module, "pre_unregister"):
+                module.pre_unregister()
 
         #print(__name__)
         for module in modules:
@@ -74,6 +90,13 @@ if __package__ == 'sculpt_plus':
             if hasattr(module, "unregister"):
                 module.unregister()
 
+        for module in modules:
+            if module.__name__ == __name__:
+                continue
+            if hasattr(module, "post_unregister"):
+                module.post_unregister()
+
+        return
         sys_modules = sys.modules
         for module in modules:
             if module == __name__:
