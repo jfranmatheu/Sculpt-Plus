@@ -5,6 +5,7 @@ import pickle
 from sculpt_plus.path import SculptPlusPaths
 from .hotbar_layer import HotbarLayer_Collection
 from sculpt_plus.utils.decorators import singleton
+from sculpt_plus.props import Props
 
 from brush_manager.api import bm_types
 
@@ -97,6 +98,7 @@ class HotbarManager:
         if layer := self.layers.active:
             if brush_item := layer.active_set.brushes[brush_index]:
                 brush_item.set_active(context)
+                Props.SculptTool.update_stored(context)
 
 
     # Constructor and free.

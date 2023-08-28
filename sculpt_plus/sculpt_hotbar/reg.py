@@ -33,6 +33,7 @@ def initialize_brush():
     with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
         if active_br := G.bm_data.active_brush:
             active_br.set_active(context)
+            Props.SculptTool.update_stored(context)
         elif active_cat := G.bm_data.active_category:
             if active_cat.items.count > 0:
                 try:
