@@ -148,6 +148,7 @@ class ShelfGridItemCtxPie(CtxPie):
                 G.bm_data.brush_cats.active.items.remove(target_item_uuid)
             else:
                 G.bm_data.texture_cats.active.items.remove(target_item_uuid)
+            self.cv.refresh(ctx)
         elif option_id == 'MOVE':
             BM_OPS.deselect_all()
             BM_OPS.select_item(item_uuid=target_item_uuid)
@@ -165,7 +166,12 @@ class ShelfGridItemCtxPie(CtxPie):
         elif option_id == 'RESET': # to default
             self.target_item.reset()
         elif option_id == 'DUPLICATE':
-            BM_OPS.duplicate_brush(brush_uuid=target_item_uuid)
+            # BM_OPS.duplicate_brush(brush_uuid=target_item_uuid)
+            if GLOBALS.is_context_brush_item:
+                G.bm_data.brush_cats.active.items.duplicate(target_item_uuid)
+            else:
+                G.bm_data.texture_cats.active.items.duplicate(target_item_uuid)
+            self.cv.refresh(ctx)
 
 
 class ShelfSidebarCatCtxPie(CtxPie):
@@ -183,10 +189,10 @@ class ShelfSidebarCatCtxPie(CtxPie):
             ## ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index < max_index else None,
             ## ('MOVE_DOWN', "Move Down", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
             ##  ('MOVE_UP', "Move Up", "Move category upwards") if item_is_active and act_cat.index > 0 else None,
-            ## ('SAVE', "Save Brushes Defaults", "Save default state for every brush") if GLOBALS.is_context_brush_item else None,
-            ## ('RESET', "Reset Brushes to Defaults", "Reset to default state for every brush") if GLOBALS.is_context_brush_item else None,
             ('RENAME', "Rename", "Change item name"),
             ('ASSIGN_ICON', "Assign Icon", "Set custom icon to the category"),
+            ('SAVE', "Save Brushes Defaults", "Save default state for every brush") if GLOBALS.is_context_brush_item else None,
+            ('RESET', "Reset Brushes to Defaults", "Reset to default state for every brush") if GLOBALS.is_context_brush_item else None,
             ('REMOVE', "Remove", "Remove category"),
         )
         return tuple(op for op in options if op is not None)
@@ -206,7 +212,7 @@ class ShelfSidebarCatCtxPie(CtxPie):
         ##     pass
         ## elif option_id == 'MOVE_DOWN':
         ##     pass
-        ## elif option_id == 'SAVE':
-        ##     pass
-        ## elif option_id == 'RESET':
-        ##     BM_OPS.reset_cat(uuid=target_item_uuid)
+        elif option_id == 'SAVE_DEFAULT': # to default
+            self.target_item.save_default(compress=True)
+        elif option_id == 'RESET': # to default
+            self.target_item.reset()
