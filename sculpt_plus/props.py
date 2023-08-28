@@ -104,7 +104,7 @@ class SculptTool:
 
     @staticmethod
     def set_stored(id: str) -> None:
-        print("Set Sculpt Tool to:", id)
+        ## print("Set Sculpt Tool to:", id)
         states['stored_sculpt_tool_id'] = id
 
     @classmethod

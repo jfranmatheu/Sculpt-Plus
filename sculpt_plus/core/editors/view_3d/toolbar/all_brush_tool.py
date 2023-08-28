@@ -33,7 +33,7 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
 
         stored_tool_id = SculptTool.get_stored()
 
-        print("All in one - Stored tool ID ->", stored_tool_id)
+        #### print("All in one - Stored tool ID ->", stored_tool_id)
 
         # TOOL IS NONE! IDK WHY...
         if stored_tool_id == 'NONE':
