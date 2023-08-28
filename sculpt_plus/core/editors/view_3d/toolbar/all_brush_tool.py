@@ -38,16 +38,18 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
             # IDK RICK.
             return {'CANCELLED'}
 
+        stored_tool_id_upper = stored_tool_id.replace(' ', '_').upper()
+
         # BRUSH TOOL BUT OF SPECIAL TYPE.
-        if stored_tool_id in accept_brush_tools:
-            bpy.ops.wm.tool_set_by_id(name='builtin_brush.' + stored_tool_id.replace('_', ' ').title())
+        if stored_tool_id_upper in accept_brush_tools:
+            bpy.ops.wm.tool_set_by_id(name='builtin_brush.' + stored_tool_id)
             return {'FINISHED'}
 
-        if stored_tool_id not in toolbar_hidden_brush_tools:
+        if stored_tool_id_upper not in toolbar_hidden_brush_tools:
             return {'FINISHED'}
 
         ## print("Sculpt Brush! All for One, One for All!")
-        bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
+        bpy.ops.wm.tool_set_by_id(name='builtin_brush.' + stored_tool_id)
 
         with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
             if active_br := G.bm_data.active_brush:
