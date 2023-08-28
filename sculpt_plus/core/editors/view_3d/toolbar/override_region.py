@@ -61,9 +61,8 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     ## print("Is a hidden brush?", hidden_brush_tool_selected)
     ## print("Match tool ID?", match_active_x_stored)
 
-    if stored_tool_id == 'NONE' and active_tool_id != 'NONE':
-        if is_brush and hidden_brush_tool_selected:
-            Props.SculptTool.set_stored(active_tool_id)
+    if active_tool_id != stored_tool_id and is_brush and hidden_brush_tool_selected:
+        Props.SculptTool.set_stored(active_tool_id)
 
     #all_brush_active = manager_active_sculpt_tool == 'ALL_BRUSH' and toolbar_active_sculpt_tool == manager_active_sculpt_tool
 

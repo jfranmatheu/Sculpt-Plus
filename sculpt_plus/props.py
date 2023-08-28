@@ -120,9 +120,9 @@ class Props:
             if curr_active_tool is None:
                 print("[SCULPT+] WARN! Current active tool is NULL")
                 return None, 'NONE'
-            type, curr_active_tool = curr_active_tool.idname.split('.')
-            curr_active_tool = curr_active_tool.replace(' ', '_').upper()
-            return type, curr_active_tool
+            tool_type, tool_idname = curr_active_tool.idname.split('.')
+            # tool_idname = tool_idname.replace(' ', '_').upper()
+            return tool_type, tool_idname
 
         @classmethod
         def update_stored(cls, context : Context) -> str:
