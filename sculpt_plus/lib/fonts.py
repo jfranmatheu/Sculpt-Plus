@@ -18,8 +18,4 @@ def register():
 def unregister():
     print("Unregistering fonts...")
     Fonts.NUNITO = 0
-    try:
-        unload(NUNITO_FILEPATH)
-    except Exception as e:
-        print("FUCK BLENDER FONT AND FILE SYSTEM MANAGEMENT, ALSO FUCK WINDOWS")
-        print(e)
+    unload(NUNITO_FILEPATH)
