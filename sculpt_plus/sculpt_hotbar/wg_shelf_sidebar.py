@@ -157,7 +157,7 @@ class ShelfSidebar(VerticalViewWidget):
 
         # DiRct(slot_p+Vector((pad, pad)), thumb_size, Vector(prefs.theme_shelf_slot)*.8)
 
-        DiText(slot_p+Vector((pad*2 + thumb_size.x, slot_s.y/2+pad)), item.name, 13, scale, pivot=(0, 0))
+        DiText(slot_p+Vector((pad*2 + thumb_size.x, slot_s.y/2)), item.name, 13, scale, pivot=(0, 0.5))
         # DiText(slot_p+Vector((pad*2 + thumb_size.x, pad*2)), '( ' + str(item.items.count) + ' )', 11, scale, (.5, .5, .5, .5), pivot=(0, 0))
 
         if is_hovered:
