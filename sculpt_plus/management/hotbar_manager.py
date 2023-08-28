@@ -97,8 +97,8 @@ class HotbarManager:
         if layer := self.layers.active:
             if brush_item := layer.active_set.brushes[brush_index]:
                 brush_item.set_active(context)
-                from sculpt_plus.props import Props
-                Props.SculptTool.update_stored(context)
+                from sculpt_plus.props import SculptTool
+                SculptTool.update_stored(context)
 
 
     # Constructor and free.

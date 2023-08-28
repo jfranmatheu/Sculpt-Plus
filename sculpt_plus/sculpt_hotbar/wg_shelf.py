@@ -15,6 +15,7 @@ from sculpt_plus.sculpt_hotbar.wg_view import ViewWidget
 from .wg_base import WidgetBase
 from sculpt_plus.lib.icons import Icon
 from sculpt_plus.globals import G
+from sculpt_plus.props import SculptTool
 
 from brush_manager.api import bm_types
 from brush_manager.globals import GLOBALS
@@ -178,7 +179,8 @@ class ShelfGrid(ViewWidget):
         if self.hovered_item is None:
             return
         # IF SELECT ON DOUBLE CLICK.
-        G.bm_data.active_item = self.hovered_item
+        self.hovered_item.set_active(context)
+        SculptTool.update_stored(context)
 
         # Close shelf.
         cv.shelf.expand = False

@@ -6,7 +6,7 @@ from sculpt_plus.prefs import get_prefs
 from sculpt_plus.sculpt_hotbar.km import WidgetKM as KM
 from sculpt_plus.sculpt_hotbar.canvas import Canvas as CV
 from sculpt_plus.utils.gpu import LiveView
-from sculpt_plus.props import Props, CM_UIContext
+from sculpt_plus.props import Props, CM_UIContext, SculptTool
 from sculpt_plus.globals import G
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
@@ -33,7 +33,7 @@ def initialize_brush():
     with CM_UIContext(context, mode='SCULPT', item_type='BRUSH'):
         if active_br := G.bm_data.active_brush:
             active_br.set_active(context)
-            Props.SculptTool.update_stored(context)
+            SculptTool.update_stored(context)
         elif active_cat := G.bm_data.active_category:
             if active_cat.items.count > 0:
                 try:
@@ -42,15 +42,15 @@ def initialize_brush():
                     return 1.0
         else:
             if context.space_data is None:
-                Props.SculptTool.clear_stored()
+                SculptTool.clear_stored()
                 return None
             bpy.ops.wm.tool_set_by_id(name='builtin_brush.Draw')
-            Props.SculptTool.update_stored(context)
+            SculptTool.update_stored(context)
 
 
 def dummy_poll_view(ctx):
     global initialized
-    if not initialized or Props.SculptTool.get_stored() == 'NONE':
+    if not initialized or SculptTool.get_stored() == 'NONE':
         # HACK. lol.
         # print("NOT ACTIVE BRUSH, LET'S CHANGE THAT!")
         if is_timer_registered(initialize_brush):

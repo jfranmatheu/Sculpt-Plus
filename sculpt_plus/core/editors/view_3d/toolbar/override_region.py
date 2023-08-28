@@ -3,8 +3,9 @@ from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
 from time import time
 
-from sculpt_plus.props import Props, toolbar_hidden_brush_tools
+from sculpt_plus.props import Props, toolbar_hidden_brush_tools, SculptTool
 from sculpt_plus.prefs import get_prefs
+
 # from sculpt_plus.core.data.cy_structs import CyBlStruct
 
 from .panels import *
@@ -46,24 +47,24 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
     )
 
     # active_tool_label = getattr(active_tool, 'label', None)
-    active_tool_type, active_tool_id = Props.SculptTool.get_from_context(context)
+    active_tool_type, active_tool_id = SculptTool.get_from_context(context)
     active_tool_id_upper: str = active_tool_id.replace(' ', '_').upper()
-    stored_tool_id = Props.SculptTool.get_stored()
+    stored_tool_id = SculptTool.get_stored()
 
     is_brush = active_tool_type == 'builtin_brush'
-    is_tool = active_tool_type == 'builtin'
+    # is_tool = active_tool_type == 'builtin'
 
     hidden_brush_tool_selected = active_tool_id_upper in toolbar_hidden_brush_tools
 
-    match_active_x_stored = active_tool_id == stored_tool_id
+    # match_active_x_stored = active_tool_id == stored_tool_id
 
-    ## print("Active Tool:", active_tool_type, active_tool_id)
-    ## print("Stored Tool:", stored_tool_id)
+    print("Active Tool:", active_tool_type, active_tool_id)
+    print("Stored Tool:", stored_tool_id)
     ## print("Is a hidden brush?", hidden_brush_tool_selected)
     ## print("Match tool ID?", match_active_x_stored)
 
-    if active_tool_id != stored_tool_id and is_brush and hidden_brush_tool_selected:
-        Props.SculptTool.set_stored(active_tool_id)
+    if stored_tool_id == 'NONE' and active_tool_id != 'NONE' and is_brush and hidden_brush_tool_selected:
+        SculptTool.set_stored(active_tool_id)
 
     #all_brush_active = manager_active_sculpt_tool == 'ALL_BRUSH' and toolbar_active_sculpt_tool == manager_active_sculpt_tool
 

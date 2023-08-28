@@ -25,7 +25,9 @@ exclude_brush_names: Set[str] = {sculpt_tool_brush_name[sculpt_tool] for sculpt_
 filtered_builtin_brush_names = tuple(b for b in builtin_brush_names if b not in exclude_brush_names)
 
 
-stored_sculpt_tool = 'NONE'
+states = {
+    'stored_sculpt_tool_id': 'NONE',
+}
 
 
 IN_BRUSH_CTX = lambda _type: _type == 'BRUSH'
@@ -35,6 +37,7 @@ IN_TEXTURE_CTX = lambda _type: _type == 'TEXTURE'
 
 ''' Helper to get properties paths (with typing). '''
 class Props:
+
     @staticmethod
     def Workspace(context=None) -> WorkSpace or None:
         context = context if context else bpy.context
@@ -94,45 +97,41 @@ class Props:
         return cls.Temporal(context).ui
 
 
-    class SculptTool:
-        @staticmethod
-        def get_stored() -> str:
-            global stored_sculpt_tool
-            return stored_sculpt_tool
+class SculptTool:
+    @staticmethod
+    def get_stored() -> str:
+        return states['stored_sculpt_tool_id']
 
-        @staticmethod
-        def set_stored(id: str) -> None:
-            global stored_sculpt_tool
-            stored_sculpt_tool = id
+    @staticmethod
+    def set_stored(id: str) -> None:
+        print("Set Sculpt Tool to:", id)
+        states['stored_sculpt_tool_id'] = id
 
-        @staticmethod
-        def clear_stored() -> None:
-            global stored_sculpt_tool
-            stored_sculpt_tool = 'NONE'
+    @classmethod
+    def clear_stored(cls) -> None:
+        cls.set_stored('NONE')
 
-        @staticmethod
-        def get_from_context(context: Context) -> tuple[str, str]:
-            try:
-                curr_active_tool = ToolSelectPanelHelper._tool_active_from_context(context, 'VIEW_3D', mode='SCULPT', create=False)
-            except AttributeError as e:
-                print("[SCULPT+] WARN!", e)
-                return None, 'NONE'
-            if curr_active_tool is None:
-                print("[SCULPT+] WARN! Current active tool is NULL")
-                return None, 'NONE'
-            tool_type, tool_idname = curr_active_tool.idname.split('.')
-            # tool_idname = tool_idname.replace(' ', '_').upper()
-            return tool_type, tool_idname
+    @staticmethod
+    def get_from_context(context: Context) -> tuple[str, str]:
+        try:
+            curr_active_tool = ToolSelectPanelHelper._tool_active_from_context(context, 'VIEW_3D', mode='SCULPT', create=False)
+        except AttributeError as e:
+            print("[SCULPT+] WARN!", e)
+            return None, 'NONE'
+        if curr_active_tool is None:
+            print("[SCULPT+] WARN! Current active tool is NULL")
+            return None, 'NONE'
+        tool_type, tool_idname = curr_active_tool.idname.split('.')
+        # tool_idname = tool_idname.replace(' ', '_').upper()
+        return tool_type, tool_idname
 
-        @classmethod
-        def update_stored(cls, context : Context) -> str:
-            global stored_sculpt_tool
-            stored_sculpt_tool = cls.get_from_context(context)[1]
+    @classmethod
+    def update_stored(cls, context : Context) -> str:
+        cls.set_stored(cls.get_from_context(context)[1])
 
-        @classmethod
-        def has_changed(cls, context: Context) -> bool:
-            global stored_sculpt_tool
-            return stored_sculpt_tool != cls.get_from_context(context)[1]
+    @classmethod
+    def has_changed(cls, context: Context) -> bool:
+        return states['stored_sculpt_tool_id'] != cls.get_from_context(context)[1]
 
 
 

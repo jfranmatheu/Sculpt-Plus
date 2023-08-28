@@ -5,7 +5,7 @@ from bpy.types import WorkSpaceTool, Operator
 
 from .override_tools import accept_brush_tools
 from .override_region import toolbar_hidden_brush_tools
-from sculpt_plus.props import Props, CM_UIContext
+from sculpt_plus.props import Props, CM_UIContext, SculptTool
 from sculpt_plus.globals import G
 
 
@@ -31,7 +31,9 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
 
         ## print("Holiwiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii toooooolll")
 
-        stored_tool_id = Props.SculptTool.get_stored()
+        stored_tool_id = SculptTool.get_stored()
+
+        print("All in one - Stored tool ID ->", stored_tool_id)
 
         # TOOL IS NONE! IDK WHY...
         if stored_tool_id == 'NONE':
@@ -58,6 +60,6 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
                 if active_cat.items.count > 0:
                     active_cat.items[0].set_active(context)
 
-        # Props.SculptTool.update_stored(context)
+        # SculptTool.update_stored(context)
 
         return {'FINISHED'}

@@ -9,7 +9,7 @@ from sculpt_plus.sculpt_hotbar.di import DiArrowSolid, DiBr, DiCage, DiRct, DiTe
 from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 from sculpt_plus.utils.math import clamp, ease_quad_in_out, ease_quadratic_out, lerp_smooth, map_value
 from sculpt_plus.sculpt_hotbar.wg_base import WidgetBase
-from sculpt_plus.props import bm_types, Props
+from sculpt_plus.props import bm_types, Props, SculptTool
 from sculpt_plus.globals import G
 
 
@@ -127,7 +127,7 @@ class Hotbar(WidgetBase):
         # NOTE: brush_item.type == bl_brush.sculpt_tool
         OP.wm.tool_set_by_id(name="builtin_brush." + brush_item.type.replace('_', ' ').title())
         brush_item.set_active(ctx)
-        Props.SculptTool.update_stored(ctx)
+        SculptTool.update_stored(ctx)
 
 
     def on_leftmouse_press(self, ctx, cv: Canvas, m: Vector) -> bool:
