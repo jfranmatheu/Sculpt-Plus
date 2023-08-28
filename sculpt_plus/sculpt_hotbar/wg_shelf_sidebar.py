@@ -44,7 +44,7 @@ class ShelfSidebar(VerticalViewWidget):
 
     def update(self, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences) -> None:
         #super().update(cv, prefs)
-        width = cv.hotbar.slot_size.x * 3 * cv.scale # item_size.x * 3 # * cv.scale
+        width = cv.hotbar.slot_size.x * 3.5 # * cv.scale # item_size.x * 3 # * cv.scale
         # higher point - lower point
         footer_height = 24 * cv.scale
         slot_height: int = 0 # IF fixed header cat: # int(width * self.item_aspect_ratio)

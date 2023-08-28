@@ -67,7 +67,7 @@ class Hotbar(WidgetBase):
             cv_pos.y + prefs.margin_bottom*cv.scale
         ))
         # Slot Size.
-        self.slot_size = slot_size = Vector((s.x/10, s.x/10))
+        self.slot_size = slot_size = Vector((isize, isize))
         # Slot Position.
         off = Vector((slot_size.x, 0))
         pad = Vector((prefs.padding*cv.scale, prefs.padding*cv.scale))
