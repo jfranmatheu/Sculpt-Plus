@@ -83,6 +83,7 @@ def on_items_remove(item_to_remove: bm_types.Item) -> None:
         for layer_id, set_type in item_to_remove.hotbar_layers.items():
             if layer := G.hm_data.layers.get(layer_id):
                 layer.unlink_brush(item_to_remove)
+                break
 
 
 BM_SUB.Items.ADD += on_items_add
