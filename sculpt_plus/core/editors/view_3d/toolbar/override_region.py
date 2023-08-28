@@ -47,12 +47,13 @@ def draw_cls(cls, layout, context, detect_layout=True, default_layout='COL', sca
 
     # active_tool_label = getattr(active_tool, 'label', None)
     active_tool_type, active_tool_id = Props.SculptTool.get_from_context(context)
+    active_tool_id_upper: str = active_tool_id.replace(' ', '_').upper()
     stored_tool_id = Props.SculptTool.get_stored()
 
     is_brush = active_tool_type == 'builtin_brush'
     is_tool = active_tool_type == 'builtin'
 
-    hidden_brush_tool_selected = active_tool_id in toolbar_hidden_brush_tools
+    hidden_brush_tool_selected = active_tool_id_upper in toolbar_hidden_brush_tools
 
     match_active_x_stored = active_tool_id == stored_tool_id
 

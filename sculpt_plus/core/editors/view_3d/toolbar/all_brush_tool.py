@@ -58,6 +58,6 @@ class SCULPTPLUS_OT_all_brush_tool(Operator):
                 if active_cat.items.count > 0:
                     active_cat.items[0].set_active(context)
 
-        Props.SculptTool.update_stored(context)
+        # Props.SculptTool.update_stored(context)
 
         return {'FINISHED'}
