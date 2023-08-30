@@ -21,24 +21,36 @@ _mod_cls_attributes = defaultdict(set)
 def get_attr_from_cache(cls, attr, default=None):
     if cls_cache := _cache_reset.get(cls, None):
         if hasattr(cls_cache, attr):
-            return cls_cache.get(attr, default)
+            return cls_cache[attr]
+        else:
+            print(f"No cache attr '{attr}' for cls '{cls}'")
+    else:
+        print(f"No cache for cls:", cls)
     return default
 
-def cache_cls_attributes(cls):
+def cache_cls_attributes(cls) -> dict:
     _cache_reset[cls] = cls.__dict__.copy()
-    
+    return _cache_reset[cls]
 
-def set_cls_attribute(cls, attr, new_value):
+
+def set_cls_attribute(cls, attr: str, new_value):
     if cls not in _cache_reset:
-        cache_cls_attributes(cls)
+        cache = cache_cls_attributes(cls)
+    else:
+        cache = _cache_reset[cls]
+        
+    if attr not in cache:
+        setattr(cls, attr, new_value)
+        return
+
+    setattr(cls, 'old_' + attr, cache[attr])
+
     _mod_cls_attributes[cls].add(attr)
-    setattr(cls, 'old_' + attr, get_attr_from_cache(cls, attr))
-    setattr(cls, attr, new_value)
 
 
-def pre_register():
-    for cls in classes_to_cache:
-        cache_cls_attributes(cls)
+# def pre_register():
+#     for cls in classes_to_cache:
+#         cache_cls_attributes(cls)
 
 def pre_unregister():
     for cls, mod_cls_attributes in _mod_cls_attributes.items():
@@ -48,4 +60,7 @@ def pre_unregister():
                 # WTF! This should not happen...
                 continue
             setattr(cls, mod_attr, cache[mod_attr])
-            delattr(cls, 'old_' + mod_attr)
+            old_attr = 'old_' + mod_attr
+            if not hasattr(cls, old_attr) or old_attr not in cache:
+                continue
+            delattr(cls, old_attr)
