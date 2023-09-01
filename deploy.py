@@ -1,68 +1,109 @@
-import glob
-import os
-import python_minifier
-from fnmatch import fnmatch
-from os.path import join, dirname, exists, isdir
-from os import walk, unlink
-from pathlib import PurePath
-import zipfile
-from shutil import ignore_patterns, make_archive, copytree, rmtree, copyfile
+''' Made by @jfranmatheu ^u^
 
-module_name='sculpt_plus' # Rename this to match your module name (addon src folder name).
+NOTE: This Script assumes that your project structure looks like this:
+project_folder/
+    addon_source/
+    build/ # Created by this script.
+    deploy.py # THIS SCRIPT!
+    README.md
+'''
 
-root=dirname(__file__)
-module_dir=join(root, module_name)
-build_dir=join(root, 'build')
+# ----------------------------------------------------------------
+#  M O D I F Y   T H E S E  !  :D
 
-# Make a copy of the src folder to build dir.
-_temp_dir = join(build_dir, 'temp')
-if exists(_temp_dir) and isdir(_temp_dir):
-    rmtree(_temp_dir, ignore_errors=True)
-module_copy_dir = join(_temp_dir, module_name) # So that we have a folder inside the .zip with all addon files in there. 'temp' will be replaced by the .zip...
-copytree(module_dir, module_copy_dir, ignore=ignore_patterns('__pycache__', '*.pyc', '*.pyo', '*.old.py', '*.dev.py'))
+MODULE_NAME = 'sculpt_plus' # Rename this to match your module name (addon source folder name).
+BUILD_DIRNAME = 'build' # Your build/output directory name.
 
-# Minify .py files to decrease space.
-minify_re=join(module_copy_dir, '/**/*.py') # r'.\sculpt_plus\*.py'
-code=''
-# for filepath in  glob.iglob(minify_re, recursive=True):
-for path, subdirs, files in walk(module_copy_dir):
-    for filename in files:
-        filepath = PurePath(path, filename)
-        if filepath.suffix != '.py':
-            continue
-        with open(filepath, 'r', encoding="utf8") as f:
-            raw_code = f.read().replace("\0", "")
-            if not raw_code:
-                continue
-            code = python_minifier.minify(raw_code, remove_annotations=False)
-        with open(filepath, 'w', encoding="utf8") as f:
-            f.write(code)
+# V = Addon Version. (V:1, V:2, V:3)
+# B = Blender Version. (B:1, B:2, B:3)
+# MODULE_NAME:u (upper-case). MODULE_NAME:l (lower-case). MODULE_NAME:t (title-like).
+VERSION_FORMAT = '{MODULE_NAME:t}_v{V:1}.{V:2}.{V:3}-b{B:1}.{B:2}.x'
 
-# Compress folder to .zip
-version='0.0.1'#str(bl_info['version'])[1:-1].replace(', ', '.')
-with open(join(module_copy_dir, '__init__.py'), 'r') as f:
-    for line in f.readlines():
-        if line.startswith('bl_info'):
-            bl_info = eval(line[8:])
-            version = str(bl_info['version'])[1:-1].replace(', ', '.')
-            blender = str(bl_info['blender'])[1:-1].replace(', ', '.')
-build_name=f'{module_name}_v{version}-b{blender}'
-zip_path=join(build_dir, build_name)
-make_archive(zip_path, 'zip', _temp_dir)
+# Flags.
+USE_MINIFIER = False
+USE_PY_PACKER = False
 
-# Clenup.
-rmtree(_temp_dir, ignore_errors=True)
+# Additional (optional) file or directory patterns that should be excluded from the addon build.
+IGNORE = ('*.old.py', '*.dev.py')
 
-# sculpt plus installer...
-module_installer_name = f'{module_name}_installer'
-_installer_path = join(root, module_installer_name)
-## _installer_zipfile = join(_installer_path, f'{module_name}_build.zip')
-## copyfile(zip_path + '.zip', _installer_zipfile)
+# ----------------------------------------------------------------
 
-with zipfile.ZipFile(join(_installer_path, f'{module_installer_name}.zip'), mode='w') as zip_ref:
-    zip_ref.write(join(_installer_path, '__init__.py'), arcname=f'{module_installer_name}/__init__.py')
-    zip_ref.write(join(_installer_path, 'installer.py'), arcname=f'{module_installer_name}/installer.py')
-    ## zip_ref.write(_installer_zipfile, arcname=f'{module_name}/{module_name}_build.zip')
-    zip_ref.write(zip_path + '.zip', arcname=f'{module_installer_name}/{module_name}_build.zip')
 
-os.system(join(_installer_path, 'pack_installer.bat'))
+from re import search as re_search
+from string import Formatter
+from os.path import join
+from os import walk
+from pathlib import Path
+from shutil import ignore_patterns, make_archive, copytree
+from tempfile import TemporaryDirectory
+
+if USE_PY_PACKER:
+    from os import system
+
+if USE_MINIFIER:
+    try:
+        import python_minifier
+    except (ImportError, ModuleNotFoundError):
+        USE_MINIFIER = False
+        print("WARNING! Could not find 'python_minifier' package installed! USE_MINIFIER option will be disabled.")
+
+
+root = Path(__file__).parent
+module_dir = root / MODULE_NAME
+builds_dir = root / BUILD_DIRNAME
+
+
+class VersionFormatter(Formatter):
+    def format_field(self, value, format_spec):
+        if isinstance(value, str):
+            spec_option = format_spec[-1]
+            if spec_option in {'u', 'l', 't', '1', '2', '3'}:
+                format_spec = format_spec[:-1]
+                if spec_option in {'1', '2', '3'}:
+                    value = value[int(spec_option) - 1]
+                else:
+                    if spec_option == 'u':
+                        value = value.upper()
+                    elif spec_option == 'l':
+                        value = value.lower()
+                    elif spec_option == 't':
+                        value = value.replace('_', ' ').title().replace(' ', '')
+        return super(VersionFormatter, self).format(value, format_spec)
+
+
+with TemporaryDirectory(prefix=F'{MODULE_NAME}_build_') as temp_dir:
+    module_copy_dir = join(temp_dir, MODULE_NAME)
+    copytree(module_dir, module_copy_dir, ignore=ignore_patterns('__pycache__', '*.pyc', '*.pyo', *IGNORE))
+
+    if USE_MINIFIER:
+        for path, subdirs, files in walk(module_copy_dir):
+            for filename in files:
+                filepath = Path(path, filename)
+                if filepath.suffix != '.py':
+                    continue
+                with filepath.open('r+', encoding="utf8") as f:
+                    raw_code = f.read().replace("\0", "")
+                    f.seek(0)
+                    min_code = python_minifier.minify(raw_code, remove_annotations=False)
+                    f.write(min_code)
+                    f.truncate()
+
+    init_py = module_dir / '__init__.py'
+
+    with init_py.open('r') as f:
+        bl_info_code = re_search(r"\{(.|\n)*?\}", f.read())
+        if bl_info_code is None:
+            raise Exception("Could not find bl_info in __init__.py at", init_py.name)
+
+        bl_info = eval(bl_info_code[0])
+        version = str(bl_info['version'])[1:-1].replace(', ', '')
+        blender = str(bl_info['blender'])[1:-1].replace(', ', '')
+
+    fmt = VersionFormatter()
+    build_name = fmt.format(VERSION_FORMAT, MODULE_NAME=MODULE_NAME, V=version, B=blender)
+    build_zip_path = str(builds_dir / build_name)
+
+    zipname = make_archive(build_zip_path, 'zip', temp_dir)
+
+    if USE_PY_PACKER:
+        system(f'copy /B "{str(init_py)}" + "{zipname}" "{str(build_zip_path)}.py"')
