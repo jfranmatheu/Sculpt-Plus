@@ -36,7 +36,10 @@ def cache_cls_attributes(cls) -> dict:
 def set_cls_attribute(cls, attr: str, new_value):
     ## print("CLS ATTR:", cls, attr, getattr(cls, attr))
 
-    cache = cache_cls_attributes(cls)
+    if cache := _cache_reset.get(cls, None):
+        pass
+    else:
+        cache = cache_cls_attributes(cls)
 
     setattr(cls, attr, new_value)
 
