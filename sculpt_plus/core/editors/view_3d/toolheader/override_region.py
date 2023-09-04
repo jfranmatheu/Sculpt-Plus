@@ -19,7 +19,7 @@ def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
             get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings', draw_error)(self, context)
         return
 
-    use_legacy_sculpt = 'sculpt_plus' not in context.workspace
+    # use_legacy_sculpt = 'sculpt_plus' not in context.workspace
 
     space_type = context.space_data.type
     tool_active = VIEW3D_PT_tools_active._tool_active_from_context(context, space_type)
