@@ -81,10 +81,13 @@ def draw_brush_settings_tabs(layout: UILayout, context: Context):
             content.template_icon(icon_value=UILayout.icon(act_brush.texture), scale=5.0)
             brush_texture_settings(content, act_brush, sculpt=True)
         else:
+            content.alert = True
             content.label(text="Brush has not texture")
+            content.alert = False
+            content.separator()
             content.prop(act_brush, 'texture', text='Asign Existing')
-            content.operator('render.render', text='Import')
-            # TODO: Texture import from image path.
+            content.separator()
+            content.operator('sculpt_plus.import_texture', text='Import from image file')
 
     content.separator(factor=0.5)
 
