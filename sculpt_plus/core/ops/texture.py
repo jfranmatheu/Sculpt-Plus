@@ -32,6 +32,6 @@ class SCULPTPLUS_OT_import_texture(Operator, ImportHelper):
         new_tex.image = loaded_image
         
         from sculpt_plus.globals import G
-        G.bm_data.add_bl_texture(new_tex, set_active=True)
+        G.bm_data.add_bl_texture(context, new_tex, set_active=True)
 
         return {'FINISHED'}
