@@ -19,7 +19,7 @@ _default_layer_brush_set_brushes = set(default_layer_brush_set_brushes)
 
 
 if BM_SUB.AddonData.SAVE is None:
-    raise Exception("OPS! Can't Subscribe to BM events.")
+    raise Exception("OPS! Can't Subscribe to BM events. Is 'Brush Manager' addon installed? If it is, please clean-up its addon_data manually and try again.")
 
 
 def on_addon_data_init(bm_data: bm_types.AddonDataByMode) -> None:

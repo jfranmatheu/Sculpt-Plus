@@ -4,7 +4,13 @@ from bpy.props import PointerProperty, BoolProperty, EnumProperty, FloatVectorPr
 from sculpt_plus.previews import Previews
 
 
-toolbar_brush_sections_items = []
+toolbar_brush_sections_items = [
+        ('BRUSH_SETTINGS', "Brush", "Brush Settings", 'BRUSH_DATA', 0),
+        ('BRUSH_SETTINGS_ADVANCED', "Advanced", "Advanced Brush Settings", 'OPTIONS', 1), # 'GHOST_ENABLED'
+        ('BRUSH_SETTINGS_STROKE', "Stroke", "Brush Stroke Settings", 'GP_SELECT_STROKES', 2),
+        ('BRUSH_SETTINGS_FALLOFF', "Falloff", "Brush Falloff Settings", 'SMOOTHCURVE', 3),
+        ('BRUSH_SETTINGS_TEXTURE', "Texture", "Brush Texture Settings", 'TEXTURE_DATA', 4)
+]
 def get_toolbar_brush_sections_items(self, context):
     brush = context.tool_settings.sculpt.brush
     if brush is None:
@@ -25,7 +31,7 @@ def get_toolbar_brush_sections_items(self, context):
 def get_toolbar_sculpt_sections_items(self, context):
     if context.sculpt_object.use_dynamic_topology_sculpting:
         return (
-            ('DYNTOPO', "Dyntopo", "Dyntopo", 'MESH_ICOSPHERE', 2),
+            ('DYNTOPO', "Dyntopo", "Dyntopo", 'MESH_ICOSPHERE', 0),
         )
     ob = context.sculpt_object
     md = None
@@ -35,7 +41,7 @@ def get_toolbar_sculpt_sections_items(self, context):
             break
     if md is not None and md.total_levels > 0:
         return (
-            ('MULTIRES', "Multires", "Multires", 'MOD_MULTIRES', 3),
+            ('MULTIRES', "Multires", "Multires", 'MOD_MULTIRES', 0),
         )
 
     return (
@@ -70,7 +76,7 @@ class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
     toolbar_brush_sections: EnumProperty(
         name="Section",
         #description="Brush Settings Sections",
-        items=get_toolbar_brush_sections_items
+        items=toolbar_brush_sections_items
     )
 
     toolbar_maskfacesets_sections: EnumProperty(

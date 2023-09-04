@@ -34,23 +34,24 @@ def cache_cls_attributes(cls) -> dict:
 
 
 def set_cls_attribute(cls, attr: str, new_value):
-    if cls not in _cache_reset:
-        cache = cache_cls_attributes(cls)
-    else:
-        cache = _cache_reset[cls]
-        
-    if attr not in cache:
-        setattr(cls, attr, new_value)
-        return
+    ## print("CLS ATTR:", cls, attr, getattr(cls, attr))
 
-    setattr(cls, 'old_' + attr, cache[attr])
+    cache = cache_cls_attributes(cls)
+
+    setattr(cls, attr, new_value)
+
+    if attr not in cache:
+        print("Attribute %s not in cls" % attr, cls)
+        return
 
     _mod_cls_attributes[cls].add(attr)
 
+    setattr(cls, 'old_' + attr, cache[attr])
 
-# def pre_register():
-#     for cls in classes_to_cache:
-#         cache_cls_attributes(cls)
+
+def pre_register():
+    for cls in classes_to_cache:
+        cache_cls_attributes(cls)
 
 def pre_unregister():
     for cls, mod_cls_attributes in _mod_cls_attributes.items():

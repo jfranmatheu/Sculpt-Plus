@@ -2,13 +2,13 @@ from ._dummy import DummyPanel
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel, SmoothStrokePanel
-from bpy.types import UILayout
+from bpy.types import UILayout, Context
 
 from sculpt_plus.props import Props
 from sculpt_plus.globals import G
 
 
-def draw_brush_settings_tabs(layout, context):
+def draw_brush_settings_tabs(layout: UILayout, context: Context):
     # BRUSH SETTINGS.
     from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
     ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
@@ -55,7 +55,7 @@ def draw_brush_settings_tabs(layout, context):
     selector_line_bot = col_2.box()#.column(align=True)
     selector_line_bot.ui_units_y = 0.1
 
-    content = col_2.box().column(align=False if ui_section in {'BRUSH_SETTINGS', 'BRUSH_SETTINGS_FALLOFF'} else True)
+    content: UILayout = col_2.box().column(align=False if ui_section in {'BRUSH_SETTINGS', 'BRUSH_SETTINGS_FALLOFF'} else True)
     content.separator()
 
     if ui_section == 'BRUSH_SETTINGS':
@@ -77,12 +77,18 @@ def draw_brush_settings_tabs(layout, context):
         FalloffPanel.draw(DummyPanel(content), context)
     elif ui_section == 'BRUSH_SETTINGS_TEXTURE':
         # content.template_icon(icon_value=UILayout.icon(act_brush.texture.image), scale=5.0)
-        content.template_icon(icon_value=UILayout.icon(act_brush.texture), scale=5.0)
-        brush_texture_settings(content, act_brush, sculpt=True)
+        if act_brush.texture is not None:
+            content.template_icon(icon_value=UILayout.icon(act_brush.texture), scale=5.0)
+            brush_texture_settings(content, act_brush, sculpt=True)
+        else:
+            content.label(text="Brush has not texture")
+            content.prop(act_brush, 'texture', text='Asign Existing')
+            content.operator('render.render', text='Import')
+            # TODO: Texture import from image path.
 
     content.separator(factor=0.5)
 
-def draw_brush_settings_expandable(layout, context):
+def draw_brush_settings_expandable(layout: UILayout, context: Context):
     # BRUSH SETTINGS.
     from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
     ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
