@@ -11,7 +11,7 @@ class SCULPTPLUS_OT_import_texture(Operator, ImportHelper):
     bl_idname = "sculpt_plus.import_texture"
     bl_label = "Import Texture"
     bl_description = "Import texture from an image file and asign it to the active brush"
-    
+
     filter_glob: StringProperty(options={'HIDDEN'}, default='*.jpg;*.jpeg;*.png;*.bmp;*.psd;*.tiff;*.tif')
 
     @classmethod
@@ -26,12 +26,36 @@ class SCULPTPLUS_OT_import_texture(Operator, ImportHelper):
 
         if loaded_image is None:
             return {'CANCELLED'}
-        
+
         is_sequence = self.filepath.endswith(('.psd', '.tiff', '.tif'))
         new_tex: ImageTexture = bpy.data.textures.new(basename(self.filepath), 'IMAGE')
         new_tex.image = loaded_image
-        
+
         from sculpt_plus.globals import G
         G.bm_data.add_bl_texture(context, new_tex, set_active=True)
+
+        return {'FINISHED'}
+
+
+class SCULPTPLUS_OT_unasign_bl_texture(Operator):
+    bl_idname = 'sculpt_plus.unasign_bl_texture'
+    bl_label = "Unasign Texture"
+    bl_description = "Un-asign the texture from the Brush"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == "SCULPT" and context.sculpt_object is not None and context.tool_settings.sculpt.brush is not None
+
+    def execute(self, context):
+        if context.tool_settings.sculpt.brush.texture is None:
+            return {'CANCELLED'}
+
+        from sculpt_plus.globals import G
+        act_brush = context.tool_settings.sculpt.brush
+        act_brush.texture = None
+        act_brush_item = G.bm_data.active_brush
+
+        if act_brush['uuid'] == act_brush_item.uuid:
+            act_brush_item.texture = None
 
         return {'FINISHED'}

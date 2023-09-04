@@ -80,6 +80,10 @@ def draw_brush_settings_tabs(layout: UILayout, context: Context):
         if act_brush.texture is not None:
             content.template_icon(icon_value=UILayout.icon(act_brush.texture), scale=5.0)
             brush_texture_settings(content, act_brush, sculpt=True)
+            content.separator()
+            content.alert = True
+            content.operator('sculpt_plus.unasign_bl_texture', text="Unasign Texture")
+            content.alert = False
         else:
             content.alert = True
             content.label(text="Brush has not texture")
