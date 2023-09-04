@@ -14,7 +14,10 @@ def draw_toolheader_tool_settings(self: VIEW3D_HT_tool_header, context):
     if context.mode != 'SCULPT' or 'sculpt_plus' not in context.workspace:
         # Used cached method.
         if hasattr(VIEW3D_HT_tool_header, 'old_draw_tool_settings'):
-            VIEW3D_HT_tool_header.old_draw_tool_settings(self, context)
+            if VIEW3D_HT_tool_header.old_draw_tool_settings == draw_toolheader_tool_settings:
+                draw_error(self, context)
+            else:
+                VIEW3D_HT_tool_header.old_draw_tool_settings(self, context)
         else:
             get_attr_from_cache(VIEW3D_HT_tool_header, 'draw_tool_settings', draw_error)(self, context)
         return
