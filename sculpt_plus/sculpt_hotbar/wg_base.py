@@ -384,6 +384,7 @@ class WidgetBase:
 
             if anim['change_callback']:
                 anim['change_callback']()
+                self.cv.refresh()
             #print("ANIM, value", value)
 
             return 0.001 # data['interval']
@@ -415,11 +416,18 @@ class WidgetBase:
             self.time_fun(_anim, delay, ease_fun, self.anim_pool[idname])
         else:
             # Hey leave me to breath, uh.
-            if not block_existing_anim and time() - self.anim_pool[idname]['start_time'] < 0.2:
-                #print("UPDATE WTF U DOIN'")
+            anim_data = self.anim_pool[idname]
+            t: float = time() - anim_data['start_time']
+            if duration < 0.5:
+                close_threshold = ( min(t, anim_data['time']) / anim_data['time'] ) < 0.2
+            else:
+                close_threshold = t < 0.2
+            if not block_existing_anim or close_threshold:
+                # print("UPDATE WTF U DOIN'")
                 return
-            self.anim_pool[idname].update(
-                end_value=getattr(data, attr),
+            anim_data.update(
+                start_value=getattr(data, attr),
+                end_value=target_value,
                 time=duration,
                 start_time=time(),
             )
