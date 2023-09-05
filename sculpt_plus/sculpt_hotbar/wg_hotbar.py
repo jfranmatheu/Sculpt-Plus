@@ -172,7 +172,7 @@ class Hotbar(WidgetBase):
             return True
         self._press_time = None
 
-    def on_scroll_up(self, ctx, cv: Canvas):
+    def on_scroll_up(self, ctx, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         if self.slot_on_hover is None:
             return
         if not self.brush_rolling:
@@ -183,7 +183,7 @@ class Hotbar(WidgetBase):
             self.slot_on_hover = 0
         self.update_active_brush(ctx)
 
-    def on_scroll_down(self, ctx, cv: Canvas):
+    def on_scroll_down(self, ctx, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         if self.slot_on_hover is None:
             return
         if not self.brush_rolling:

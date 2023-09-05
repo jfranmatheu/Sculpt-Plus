@@ -78,7 +78,7 @@ class WidgetBase:
     def poll(self, _context, cv: Canvas) -> bool:
         return True
 
-    def invoke(self, ctx, evt, cv: Canvas, m: Vector) -> bool:
+    def invoke(self, ctx, evt, cv: Canvas, m: Vector, prefs: SCULPTPLUS_AddonPreferences) -> bool:
         if not self.enabled:
             return False
         ret = None
@@ -106,9 +106,9 @@ class WidgetBase:
                 # so let's limit this based on time between events.
                 return False
             if evt.type == 'WHEELUPMOUSE':
-                self.on_scroll_up(ctx, cv)
+                self.on_scroll_up(ctx, cv, prefs)
             elif evt.type == 'WHEELDOWNMOUSE':
-                self.on_scroll_down(ctx, cv)
+                self.on_scroll_down(ctx, cv, prefs)
             self.scroll_prev_time = time()
         elif evt.type in num_str and evt.value == 'CLICK':
             ret = self.on_numkey(ctx, num_str[evt.type], cv, m)
@@ -224,10 +224,10 @@ class WidgetBase:
     def on_mousemove(self, ctx, cv: Canvas, m: Vector) -> None:
         pass
 
-    def on_scroll_up(self, ctx, cv: Canvas):
+    def on_scroll_up(self, ctx, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         pass
 
-    def on_scroll_down(self, ctx, cv: Canvas):
+    def on_scroll_down(self, ctx, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
         pass
 
 

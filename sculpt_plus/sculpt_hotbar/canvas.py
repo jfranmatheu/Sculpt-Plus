@@ -198,7 +198,7 @@ class Canvas:
             return Return.FINISH()
         self.refresh(ctx)
         mouse = Vector((evt.mouse_region_x, evt.mouse_region_y))
-        if self.wg_on_hover.invoke(ctx, evt, self, mouse):
+        if self.wg_on_hover.invoke(ctx, evt, self, mouse, get_prefs(ctx)):
             self.inject_submodal(ctx, self.wg_on_hover)
             return Return.RUN()
         return Return.FINISH()
