@@ -166,6 +166,8 @@ class ShelfGrid(ViewWidget):
         self.pos = p.copy()
         self.size = s
 
+        super().update(cv, prefs)
+
     def on_left_click(self, ctx, cv: Canvas, m: Vector) -> None:
         return super().on_left_click(ctx, cv, m)
 

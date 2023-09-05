@@ -41,7 +41,7 @@ class Sidebar(WidgetBase):
 
         slot_size = SLOT_SIZE * self.cv.scale
         width = slot_size * 5.5
-        
+
         alignment = prefs.sidebar_position
 
         if alignment == 'AUTO':
@@ -49,11 +49,11 @@ class Sidebar(WidgetBase):
                 alignment = 'RIGHT'
             else:
                 alignment = 'LEFT'
-                
+
 
         # To the left!
         cv.reg.id_data
-        
+
         if self.expand:
             self.pos = Vector((prefs.margin_left, bar_height))
             self.size = Vector((width, height))
@@ -167,6 +167,8 @@ class SidebarGrid(ViewWidget):
 
         self.pos = p.copy()
         self.size = s
+
+        super().update(cv, prefs)
 
     def get_data(self, cv: Canvas) -> list:
         #filt = cv.shelf_search.search
