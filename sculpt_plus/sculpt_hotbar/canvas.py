@@ -171,9 +171,13 @@ class Canvas:
     def invoke(self, ctx, evt):
         prev_evt_type, prev_evt_value = self.prev_event
         if prev_evt_type == evt.type and prev_evt_value == evt.value:
+            # Prevent overheat from occurring events that leads to issues in event handling (eg. LEFT_ALT key case).
             if time() - self.prev_event_time < 0.2:
-                # Prevent overheat from occurring events that leads to issues in event handling (eg. LEFT_ALT key case).
-                return Return.FINISH()
+                if evt.type in {'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
+                    # Exclude keys...
+                    pass
+                else:
+                    return Return.FINISH()
         self.prev_event_time = time()
         self.prev_event = evt.type, evt.value
         ## print("Canvas::invoke - Event:", evt.type, evt.value)
