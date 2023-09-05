@@ -211,6 +211,7 @@ class ViewWidget(WidgetBase):
             def _finish():
                 #print("FINISH!")
                 self.update(cv, None)
+
             self.anim(
                 'scroll',
                 self, 'scroll',
@@ -225,11 +226,19 @@ class ViewWidget(WidgetBase):
             self.scroll = clamp(self.scroll+off_y, 0, self.tot_scroll) # self.view_size.y - self.slot_size)
             self.update(cv, None)
 
-    def on_scroll_up(self, ctx, cv: Canvas):
-        self.do_scroll(cv, -self.grid_slot_size*cv.scale if self.use_smooth_scroll else -10*cv.scale, anim=self.use_smooth_scroll)
+    def on_scroll_up(self, ctx, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
+        if prefs.use_smooth_scroll:
+            scroll_off = -self.item_size.y if self.scroll_axis == 'Y' else self.item_size.x
+        else:
+            scroll_off = -10 * cv.scale
+        self.do_scroll(cv, scroll_off, anim=prefs.use_smooth_scroll)
 
-    def on_scroll_down(self, ctx, cv: Canvas):
-        self.do_scroll(cv, self.grid_slot_size*cv.scale if self.use_smooth_scroll else 10*cv.scale, anim=self.use_smooth_scroll)
+    def on_scroll_down(self, ctx, cv: Canvas, prefs: SCULPTPLUS_AddonPreferences):
+        if prefs.use_smooth_scroll:
+            scroll_off = self.item_size.y if self.scroll_axis == 'Y' else self.item_size.x
+        else:
+            scroll_off = 10 * cv.scale
+        self.do_scroll(cv, scroll_off, anim=prefs.use_smooth_scroll)
 
     def draw_item(self, slot_p, slot_s, item, is_hovered: bool, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         pass
