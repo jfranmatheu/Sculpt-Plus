@@ -9,6 +9,13 @@ def singleton(orig_cls):
     def get_instance(cls):
         nonlocal instance
         return instance
+    
+    @classmethod
+    def clear_instance(cls):
+        nonlocal instance
+        if instance is not None:
+            del instance
+            instance = None
 
     @classmethod
     def set_instance(cls, data):

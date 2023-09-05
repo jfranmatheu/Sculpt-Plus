@@ -35,4 +35,7 @@ class SCULPTPLUS_OT_set_clear_data(Operator):
         data_path = SculptPlusPaths.APP__DATA()
         if data_path.exists() and data_path.is_dir():
             rmtree(data_path)
+        
+        from ..management.hotbar_manager import HotbarManager
+        HotbarManager.clear_instance()
         return {'FINISHED'}
