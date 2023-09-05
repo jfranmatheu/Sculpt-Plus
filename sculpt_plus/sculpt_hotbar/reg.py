@@ -71,7 +71,8 @@ class Master(GZ):
     @classmethod
     def get_cv(cls, ctx: Context | None = None) -> CV:
         if cls._cv_instance is None:
-            cls._cv_instance = CV(ctx.region if ctx is not None else bpy.context.region)
+            ctx = ctx if ctx is not None else bpy.context
+            cls._cv_instance = CV(ctx.region, get_prefs(ctx))
         return cls._cv_instance
 
     def setup(x): pass

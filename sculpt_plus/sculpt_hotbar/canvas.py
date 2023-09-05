@@ -13,13 +13,14 @@ from sculpt_plus.prefs import get_prefs
 from .di import set_font
 from sculpt_plus.lib.fonts import Fonts
 from sculpt_plus.globals import G
+from sculpt_plus.prefs import SCULPTPLUS_AddonPreferences
 
 start_time = 0
 counter = 0
 fps_count = 0
 
 class Canvas:
-    def __init__(self, reg) -> None:
+    def __init__(self, reg, prefs: SCULPTPLUS_AddonPreferences) -> None:
         self.size = Vector((reg.width,reg.height))
         self.pos = Vector((0, 0))
         self.scale = 1.0
@@ -28,7 +29,7 @@ class Canvas:
         self.hover_ctx = None
         self.tag_redraw = False
         self.modal_override_all = False
-        self.init_ui()
+        self.init_ui(prefs)
         set_font(Fonts.NUNITO)
         self.draw_progress = False
         self.progress = 0
@@ -50,7 +51,7 @@ class Canvas:
         if label:
             self.progress_label = label
 
-    def init_ui(self):
+    def init_ui(self, prefs: SCULPTPLUS_AddonPreferences):
         from .wg_base import WidgetBase
         from .wg_hotbar import Hotbar
         from .wg_shelf import Shelf, ShelfDragHandle, ShelfSearch, ShelfGrid, ShelfGridItemInfo
@@ -88,10 +89,16 @@ class Canvas:
                          self.group_mask, self.group_t,
                          self.ctx_shelf_item, self.ctx_shelf_sidebar_item,
                          )
-    
+
+        # SYNC WIDGET STATES WITH PREFERENCES.
+        self.group_mask.enabled = prefs.show_hotbar_mask_group
+        self.group_t.enabled = prefs.show_hotbar_transform_group
+
+
+        # TIMING.
         self.prev_event_time = time()
         self.prev_event = None, None
-    
+
         global start_time
         start_time = time()
 

@@ -1,7 +1,7 @@
 from bpy.types import AddonPreferences, Context
 from bpy.props import StringProperty
 from sculpt_plus.path import SculptPlusPaths
-from bpy.types import AddonPreferences, Region
+from bpy.types import AddonPreferences, Region, UILayout
 from bpy.props import FloatProperty, BoolProperty, EnumProperty, IntVectorProperty, IntProperty, FloatVectorProperty, StringProperty
 from mathutils import Vector
 import bpy
@@ -34,24 +34,33 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
         min=0, max=10
     )
 
+    def get_cv(self, context):
+        if not hasattr(bpy, 'sculpt_hotbar'):
+            return None
+        if bpy.sculpt_hotbar is None:
+            return None
+        from .sculpt_hotbar.canvas import Canvas
+        cv: Canvas = bpy.sculpt_hotbar.get_cv(context.region)
+        if cv is None:
+            return None
+        return cv
 
     def get_scale(self, context) -> float:
         ui_scale = context.preferences.system.ui_scale # context.preferences.view.ui_scale
         return ui_scale * self.scale
 
     def update_ui(self, context):
-        #from .controller import SculptHotbarGizmo
-        #cv = SculptHotbarGizmo.get()
-        if not hasattr(bpy, 'sculpt_hotbar'):
-            return
-        if bpy.sculpt_hotbar is None:
-            return
-        cv = bpy.sculpt_hotbar.get_cv(context.region)
-        if not cv:
-            return
-        scale = self.get_scale(context)
-        #dimensions = Vector((context.region.width, context.region.height))
-        cv.update(None, None, scale, self)
+        if cv := self.get_cv(context):
+            scale = self.get_scale(context)
+            cv.update(None, None, scale, self)
+
+    def update_hotbar_mask_group(self, context):
+        if cv := self.get_cv(context):
+            cv.group_mask.enabled = self.show_hotbar_mask_group
+
+    def update_hotbar_transform_group(self, context):
+        if cv := self.get_cv(context):
+            cv.group_t.enabled = self.show_hotbar_transform_group
 
     data_path_local = StringProperty(
         default=join(dirname(abspath(__file__)), 'data'),
@@ -63,6 +72,9 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     )
 
     use_smooth_scroll : BoolProperty(default=True, name="Smooth Scroll", update=update_ui)
+
+    show_hotbar_mask_group : BoolProperty(default=False, name="Show Hotbar Mask Buttons", update=update_hotbar_mask_group)
+    show_hotbar_transform_group : BoolProperty(default=False, name="Show Hotbar Transform Buttons", update=update_hotbar_transform_group)
 
     padding : IntProperty(default=1, min=0, max=6, name="Hotbar Brush-Icon Padding", update=update_ui)
     margin_bottom : IntProperty(default=8, min=0, max=64, name="Hotbar Bottom Margin", update=update_ui)
@@ -132,13 +144,13 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
 
     def draw(self, context):
-        layout = self.layout
+        layout: UILayout = self.layout
         layout.use_property_split = True
 
         if self.first_time:
             return
 
-        def section(title: str, icon: str = 'NONE', align=True, _layout=None, *props):
+        def section(title: str, icon: str = 'NONE', align=True, _layout=None, props: tuple[str] = ()):
             _layout = _layout or layout
             section = _layout.column(align=True)
             section.box().row(align=True).label(text=title, icon=icon)
@@ -153,32 +165,39 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
 
         ''' SCULPT HOTBAR.... '''
-        hotbar_prefs = section('Sculpt Hotbar Preferences', 'STATUSBAR')
-        hotbar_prefs = hotbar_prefs.split(factor=0.4)
+        hotbar_prefs = section('Sculpt Hotbar Settings', 'STATUSBAR', align=False)
+        _row_1 = hotbar_prefs.split(factor=0.4)
 
-        general = section("General UI Settings", 'SETTINGS', align=False, _layout=hotbar_prefs)
-        # col = layout.column(align=True)
+        general = section("General UI Settings", 'SETTINGS', align=False, _layout=_row_1)
         general.prop(self, 'scale', slider=True)
         general.prop(self, 'use_smooth_scroll')
 
-
-        #hotbar_styles = ('theme_hotbar', 'theme_hotbar_slot')
-        hotbar = section("Style", 'STATUSBAR', align=False, _layout=hotbar_prefs)# *hotbar_styles)
-        #hotbar.separator()
+        hotbar = section("Style", 'STATUSBAR', align=False, _layout=_row_1)
         hotbar.prop(self, 'margin_bottom', text="Bottom Margin", slider=True)
         hotbar.prop(self, 'padding', text="Brush Icon Padding", slider=True)
 
-        #shelf_styles = ('theme_shelf', 'theme_shelf_slot')
-        #section("Brush-Shelf Style", 'DESKTOP', *shelf_styles)
-        
-        #sidebar_styles = ('theme_sidebar', 'theme_sidebar_slot')
-        #section("Texture-Sidebar Style", 'MENU_PANEL', *sidebar_styles)
+        hotbar_prefs.separator()
+        _row_2 = hotbar_prefs.split()
+
+        hotbar = section("Button Groups - Visibility", 'HIDE_OFF', align=False, _layout=_row_2)
+        hotbar.prop(self, 'show_hotbar_mask_group', text="Mask Group")
+        hotbar.prop(self, 'show_hotbar_transform_group', text="Transform Group")
 
 
-        #col.label(text="Slot size: "+str(int(self.scale*SLOT_SIZE))+'px')
-        
+        # hotbar_themes = section('Themes', 'COLOR', align=False)
+        # _grid = hotbar_themes.grid_flow(row_major=True, align=False)
+        # hotbar_styles = ('theme_hotbar', 'theme_hotbar_slot')
+        # section("Hotbar Theme", 'STATUSBAR', align=True, _layout=_grid, props=hotbar_styles)
+        # shelf_styles = ('theme_shelf', 'theme_shelf_slot')
+        # section("Brush-Shelf Theme", 'DESKTOP', align=True, _layout=_grid, props=shelf_styles)
+
+        #### sidebar_styles = ('theme_sidebar', 'theme_sidebar_slot')
+        #### section("Texture-Sidebar Theme", 'MENU_PANEL', align=True, _layout=_grid, props=sidebar_styles)
+
+
+
         layout.separator(factor=2)
-        
+
         layout.alert = True
         layout.operator('sculpt_plust.clear_data', text="Clear Sculpt+ Data")
         layout.alert = False
