@@ -176,6 +176,12 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
 
 
         #col.label(text="Slot size: "+str(int(self.scale*SLOT_SIZE))+'px')
+        
+        layout.separator(factor=2)
+        
+        layout.alert = True
+        layout.operator('sculpt_plust.clear_data', text="Clear Sculpt+ Data")
+        layout.alert = False
 
 
 
