@@ -1,7 +1,7 @@
 from bpy.types import Operator
 from bpy.props import BoolProperty
 from sculpt_plus.globals import G
-from sculpt_plus.path import SculptPlusPaths
+from sculpt_plus.path import app_dir
 
 from shutil import rmtree
 
@@ -32,10 +32,9 @@ class SCULPTPLUS_OT_set_clear_data(Operator):
     bl_label: str = "Clear Sculpt+ Data"
 
     def execute(self, context):
-        data_path = SculptPlusPaths.APP__DATA()
-        if data_path.exists() and data_path.is_dir():
-            rmtree(data_path)
-        
+        if app_dir.exists() and app_dir.is_dir():
+            rmtree(app_dir)
+
         from ..management.hotbar_manager import HotbarManager
         HotbarManager.clear_instance()
         return {'FINISHED'}

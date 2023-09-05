@@ -1,4 +1,4 @@
-from brush_manager.api import BM_DATA, bm_types
+from brush_manager.api import bm_types, GLOBALS as BM_GLOBALS
 from sculpt_plus.management.hotbar_manager import HotbarManager
 
 
@@ -9,7 +9,7 @@ class _Globals:
 
     @property
     def bm_data(self):
-        return BM_DATA.SCULPT
+        return BM_GLOBALS.BM_DATA.SCULPT
 
     @property
     def hm_data(self):

@@ -31,4 +31,5 @@ def singleton(orig_cls):
     orig_cls.__new__ = __new__
     orig_cls.get_instance = get_instance
     orig_cls.set_instance = set_instance
+    orig_cls.clear_instance = clear_instance
     return orig_cls
