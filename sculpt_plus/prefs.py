@@ -69,6 +69,18 @@ class SCULPTPLUS_AddonPreferences(AddonPreferences):
     margin_left : IntProperty(default=8, min=0, max=64, name="Sidebar Left Margin", update=update_ui)
     scale : FloatProperty(default=1.0, min=0.8, max=2.0, name="Scale", update=update_ui)
 
+    # Sidebar props.
+    sidebar_position: EnumProperty(
+        name="Sidebar Position",
+        items=(
+            ('AUTO', "Automatic", "Based on the toolbar alignment, will be positioned in the other side of the viewport"),
+            ('LEFT', 'Left', ''),
+            ('RIGHT', 'Right', ''),
+            ('TOP', 'Top', ''),
+        ),
+        default='AUTO'
+    )
+
     theme_hotbar : FloatVectorProperty(size=4, default=(.007,.007,.007,.95), min=0.0, max=1.0, name="Background Color", subtype='COLOR')
     #theme_hotbar_outline : FloatVectorProperty(size=4, default=(.09,.09,.09,.9), min=0.0, max=1.0, name="Outline Color", subtype='COLOR')
     theme_hotbar_slot : FloatVectorProperty(size=4, default=(.09,.09,.09,.85), min=0.0, max=1.0, name="Slot Background Color", subtype='COLOR')

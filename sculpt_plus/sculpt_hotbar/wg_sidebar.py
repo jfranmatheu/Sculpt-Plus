@@ -39,10 +39,23 @@ class Sidebar(WidgetBase):
         bar_height = (cv.hotbar.size.y) * 2.0
         height = cv.size.y - bar_height * 2
 
+        slot_size = SLOT_SIZE * self.cv.scale
+        width = slot_size * 5.5
+        
+        alignment = prefs.sidebar_position
+
+        if alignment == 'AUTO':
+            if cv.reg.alignment == 'LEFT':
+                alignment = 'RIGHT'
+            else:
+                alignment = 'LEFT'
+                
+
+        # To the left!
+        cv.reg.id_data
+        
         if self.expand:
             self.pos = Vector((prefs.margin_left, bar_height))
-            slot_size = SLOT_SIZE * self.cv.scale
-            width = slot_size * 5.5
             self.size = Vector((width, height))
         else:
             self.size = Vector((0, height)) # Vector((SLOT_SIZE*cv.scale*.5, SLOT_SIZE*cv.scale*2))
@@ -100,7 +113,7 @@ class Sidebar(WidgetBase):
 
     def on_hover_exit(self) -> None:
         self.cv.sidebar_grid.on_hover_exit()
-        
+
     def draw_poll(self, context, cv: Canvas) -> bool:
         return True
 
@@ -116,7 +129,7 @@ class Sidebar(WidgetBase):
             else:
                 DiRct(self.pos, self.size, prefs.theme_sidebar)
                 DiCage(self.pos, self.size, 3.2*scale, out_col)
-     
+
     def draw_over(self, context, cv: Canvas, mouse: Vector, scale: float, prefs: SCULPTPLUS_AddonPreferences):
         if not self.expand:
             DiRct(self.handler_pos, self.handler_size, (.16, .16, .16, .5))
