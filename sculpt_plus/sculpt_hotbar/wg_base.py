@@ -81,8 +81,6 @@ class WidgetBase:
     def invoke(self, ctx, evt, cv: Canvas, m: Vector) -> bool:
         if not self.enabled:
             return False
-        if not self.enabled:
-            return False
         ret = None
         if evt.type == 'LEFTMOUSE':
             if evt.value == 'PRESS':
