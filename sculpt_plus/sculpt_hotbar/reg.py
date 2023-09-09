@@ -80,7 +80,7 @@ class Master(GZ):
     def invoke(x,c,e): return Master.get_cv(c).invoke(c,e)
     def modal(x,c,e,t): return Master.get_cv(c).modal(c,e,t)
     def exit(x,c,ca): return Master.get_cv(c).exit(c,ca)
-    def draw(x,c): Master.get_cv(c).draw(c)
+    def draw(x,c): pass
 
 
 
