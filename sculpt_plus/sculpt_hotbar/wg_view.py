@@ -211,7 +211,7 @@ class ViewWidget(WidgetBase):
             def _finish():
                 #print("FINISH!")
                 self.update(cv, None)
-            print("anim scroll from:", self.scroll, "to:", target_scroll)
+            ## print("anim scroll from:", self.scroll, "to:", target_scroll)
             self.anim(
                 'scroll',
                 self, 'scroll',
