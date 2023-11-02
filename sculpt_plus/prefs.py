@@ -9,6 +9,8 @@ import bpy
 import os
 from os.path import dirname, abspath, join
 
+# from sculpt_plus.ackit import better_prefs
+
 app_data_path = os.getenv('APPDATA')
 
 SLOT_SIZE = 56
@@ -16,8 +18,40 @@ SLOT_SIZE = 56
 enum_list = [("NONE", "None", "")]
 
 
+# @better_prefs.new_panel(tab='TOOLBAR', label='Main', order=0, hide_header=True)
+# def draw__toolbar__settings(panel, layout: UILayout, prefs: 'SCULPTPLUS_AddonPreferences') -> None:
+#     box = layout.box()
+#     box.row().prop(prefs, 'toolbar_position', expand=True)
+#     box.prop(prefs, 'toolbar_panel_mask_layout')
+# 
+# @better_prefs.new_panel(tab='HOTBAR', label='Main', order=0, hide_header=True)
+# def draw__hotbar__settings(panel, layout: UILayout, prefs: 'SCULPTPLUS_AddonPreferences') -> None:
+#     box = layout.box()
+#     box.prop(prefs, 'scale', slider=True)
+#     box.prop(prefs, 'use_smooth_scroll')
+# 
+# @better_prefs.new_panel(tab='HOTBAR', label='Style', order=1)
+# def draw__hotbar__style(panel, layout: UILayout, prefs: 'SCULPTPLUS_AddonPreferences') -> None:
+#     layout.prop(prefs, 'margin_bottom', text="Bottom Margin", slider=True)
+#     layout.prop(prefs, 'padding', text="Brush Icon Padding", slider=True)
+# 
+# @better_prefs.new_panel(tab='HOTBAR', label='Button Groups', order=2)
+# def draw__hotbar__button_groups(panel, layout: UILayout, prefs: 'SCULPTPLUS_AddonPreferences') -> None:
+#     layout.prop(prefs, 'show_hotbar_mask_group', text="Mask Group")
+#     layout.prop(prefs, 'show_hotbar_transform_group', text="Transform Group")
+
+
 class SCULPTPLUS_AddonPreferences(AddonPreferences):
     bl_idname: str = __package__
+    
+    # better_tabs: EnumProperty(
+    #     name="Sections",
+    #     items=(
+    #         ('TOOLBAR', '3D-View Toolbar Settings', ""),
+    #         ('HOTBAR', "Sculpt Hotbar", ""),
+    #         ('THEMES', "Themes", "")
+    #     )
+    # )
 
     first_time: BoolProperty(default=False)
 
