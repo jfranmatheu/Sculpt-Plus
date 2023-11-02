@@ -47,7 +47,7 @@ def install_pill():
     from . import PILLOW_VERSION
 
     # path to python.exe
-    python_exe = os.path.join(sys.prefix, 'bin', 'python.exe')
+    python_exe = sys.executable # os.path.join(sys.prefix, 'bin', 'python.exe')
     target = os.path.join(sys.prefix, 'lib', 'site-packages')
 
     try:
@@ -83,7 +83,7 @@ def install_pill():
 
 def install():
     check_brush_manager()
-    install_pill()
+    # install_pill()
 
 
     '''
