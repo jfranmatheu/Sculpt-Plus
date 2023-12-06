@@ -1,15 +1,24 @@
-from .content_actions import (
-    BRUSHMANAGER_OT_append_selected_from_library_to_category,
-    BRUSHMANAGER_OT_select_all,
-    BRUSHMANAGER_OT_moved_selected_to_category,
-    BRUSHMANAGER_OT_remove_selected_from_category,
-    BRUSHMANAGER_OT_duplicate_selected,
+from .op_library_actions import (
+    ImportLibrary,
+)
+
+from .op_category_actions import (
+    AsignIconToCategory,
+    NewCategory,
+    RemoveCategory,
+    SelectCategory,
+    RenameCategory,
+)
+
+from .op_content_actions import (
+    SelectAll,
+    MoveSelectedToCategory,
+    RemoveSelectedFromActiveCategory,
+    AsignIconToBrush,
+    SelectItem,
+    RenameItem,
+    DuplicateBrush,
 )
 
 
-
-AppendSelectedToCategory = BRUSHMANAGER_OT_append_selected_from_library_to_category
-SelectAll = BRUSHMANAGER_OT_select_all
-MoveSelectedToCategory = BRUSHMANAGER_OT_moved_selected_to_category
-RemoveSelectedFromCategory = BRUSHMANAGER_OT_remove_selected_from_category
-DuplicateSelected = BRUSHMANAGER_OT_duplicate_selected
+RemoveSelectedFromCategory = RemoveSelectedFromActiveCategory

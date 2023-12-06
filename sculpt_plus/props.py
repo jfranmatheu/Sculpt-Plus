@@ -9,8 +9,8 @@ from sculpt_plus.path import SculptPlusPaths
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
-from brush_manager.api import bm_types, BM_UI
-from brush_manager.globals import GLOBALS, CM_UIContext
+from sculpt_plus.brush_manager.api import bm_types, BM_UI
+from sculpt_plus.brush_manager.globals import GLOBALS, CM_UIContext
 from sculpt_plus.globals import G
 
 

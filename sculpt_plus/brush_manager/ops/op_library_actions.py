@@ -1,40 +1,29 @@
 import bpy
-from bpy.types import Operator, Context
-from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, IntProperty
-from bpy.app import timers
+from bpy.types import Event, Context
 
-from functools import partial
+from bpy.props import StringProperty, BoolProperty
+
 from os.path import basename
 from pathlib import Path
 from time import time, sleep
 import json
 import subprocess
+from collections import deque
+from typing import Type
 
 from ..paths import Paths
-from .base_op import BaseOp
-from ..types import AddonData, UIProps, AddonDataByMode
-from ..icons import register_icons
+from ..types import UIProps, AddonDataByMode, BrushItem, TextureItem, Item
+from brush_manager.addon_utils import Reg
+from brush_manager.globals import GLOBALS
 
 
-def refresh_icons(process):
-    while process.poll() is None:
-        return 0.1
-    register_icons()
-    
 
-
-class BRUSHMANAGER_OT_add_library(Operator, ImportHelper, BaseOp):
-    bl_idname = 'brushmanager.add_library'
+@Reg.Ops.setup
+class ImportLibrary(Reg.Ops.Import.BLEND):
+    bl_idname = 'brushmanager.import_library'
     bl_label = "Import a .blend Library"
 
-    filename_ext = '.blend'
-
-    filter_glob: StringProperty(
-        default='*.blend',
-        options={'HIDDEN'}
-    )
-
+    # INTERNAL PROPERTY... MUST HAVE ENABLED.
     create_category: BoolProperty(
         default=True,
         name="Setup Category",
@@ -42,14 +31,28 @@ class BRUSHMANAGER_OT_add_library(Operator, ImportHelper, BaseOp):
         options={'HIDDEN'}
     )
 
-    def action(self, context: Context, addon_data: AddonDataByMode) -> None:
+    custom_uuid: StringProperty(default='')
+
+    exclude_defaults: BoolProperty(default=True, options={'HIDDEN', 'SKIP_SAVE'})
+
+    use_modal: BoolProperty(default=True, options={'HIDDEN', 'SKIP_SAVE'})
+
+    def action(self, context: Context, ui_props: UIProps, addon_data: AddonDataByMode) -> None:
+        print("[brush_manager] ImportLibrary:", self.filepath)
+
+        if self.filepath == '':
+            raise ValueError("filepath must not be empty")
+            return {'CANCELLED'}
+
+        GLOBALS.is_importing_a_library = True
+
         export_json: Path = Paths.Scripts.EXPORT_JSON.value
         if export_json.exists():
             export_json.unlink(missing_ok=True)
 
         print("Start Subprocess")
 
-        process = subprocess.Popen(
+        self.process = subprocess.Popen(
             [
                 bpy.app.binary_path,
                 self.filepath,
@@ -57,138 +60,150 @@ class BRUSHMANAGER_OT_add_library(Operator, ImportHelper, BaseOp):
                 '--python',
                 Paths.Scripts.EXPORT(),
                 '-',
-                UIProps.get_data(context).ui_context_mode # AddonData.get_data(context).ui_context_mode
+                ui_props.ui_context_mode,
+                str(int(self.exclude_defaults))
             ],
-            stdin=None, # subprocess.PIPE,
-            stdout=None, # subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
             shell=False
         )
 
         timeout = time() + 60 # 1 minute timeout
-        print("Wait until timeout or export json completion")
+        ## print("Wait until timeout or export json completion")
         while 1:
             if export_json.exists():
-                print("WE CAN NOW IMPORT JSON DATA")
+                ## print("WE CAN NOW IMPORT JSON DATA")
                 break
             if time() > timeout:
-                raise TimeoutError("BRUSHMANAGER_OT_add_library: Timeout expired")
+                raise TimeoutError("ImportLibrary: Timeout expired for checking json existence")
 
-        # timers.register(partial(refresh_icons, process), first_interval=1.0)
+        sleep(0.1)
 
+        timeout = time() + 60 # 1 minute timeout
         libdata = None
-        with export_json.open('r') as f:
-            raw_data = f.read()
-            if not raw_data:
-                print("No raw data in export.json")
-                return
-            libdata: dict[str, dict] = json.loads(raw_data)
+        while libdata is None:
+            with export_json.open('r') as f:
+                raw_data = f.read()
+                if not raw_data:
+                    print("\t> No raw data in export.json")
+                    sleep(0.1)
+                    return
+                libdata: dict[str, dict] = json.loads(raw_data)
+
+            if time() > timeout:
+                raise TimeoutError("ImportLibrary: Timeout expired for reading json")
 
         if libdata is None:
-            print("Invalid data in export.json")
-            return
+            print("\t> Invalid data in export.json")
+            self.end()
+            return {'CANCELLED'}
 
         export_json.unlink()
 
-        sleep(1.0)
+        # PREPARE queue FOR MODAL ITERATION.
+        self.brushes = deque(libdata['brushes'])
+        self.textures = deque(libdata['textures'])
 
-        brushes_data: dict[str, dict] = libdata['brushes']
-        textures_data: dict[str, dict] = libdata['textures']
+        self.brushes_count = brushes_count = len(self.brushes)
+        self.textures_count = textures_count = len(self.textures)
 
-        print(f"export.json: brushes_count {len(brushes_data)} - textures_count {len(textures_data)}")
+        print(f"export.json: brushes_count {brushes_count} - textures_count {textures_count}")
 
-        lib_index = len(addon_data.libraries)
-        lib = addon_data.libraries.add()
-        lib.filepath = self.filepath
-        addon_data.active_library_index = lib_index
+        if brushes_count == 0 and textures_count == 0:
+            print("WARN: No data in export.json")
+            self.end()
+            return {'CANCELLED'}
 
-        for br_uuid, br_data in brushes_data.items():
-            item_uuid = lib.brushes.add()
-            item_uuid.uuid = br_uuid
-            item_uuid.name = br_data['name']
+        # Create category.
+        brush_cat = None
+        texture_cat = None
 
-            brush_item = addon_data.brushes.add()
-            brush_item.uuid = br_uuid
-            brush_item.name = br_data['name']
-            brush_item.type = br_data['type']
-            brush_item.use_custom_icon = br_data['use_custom_icon']
-            brush_item.texture_uuid = br_data['texture_uuid']
+        ui_props = UIProps.get_data(context)
 
-        for tex_uuid, tex_data in textures_data.items():
-            item_uuid = lib.textures.add()
-            item_uuid.uuid = tex_uuid
-            item_uuid.name = tex_data['name']
+        lib_name = Path(self.filepath).stem.title()
 
-            tex_item = addon_data.textures.add()
-            tex_item.uuid = tex_uuid
-            tex_item.name = tex_data['name']
-            tex_item.type = tex_data['type']
+        if textures_count != 0:
+            print("Create Texture Category")
+            ui_props.ui_context_item = 'TEXTURE'
+            texture_cat = addon_data.new_texture_cat(lib_name, self.custom_uuid)
 
-        if self.create_category:
-            from .op_category_actions import BRUSHMANAGER_OT_new_category
+        if brushes_count != 0:
+            print("Create Brush Category")
+            ui_props.ui_context_item = 'BRUSH'
+            brush_cat = addon_data.new_brush_cat(lib_name, self.custom_uuid)
 
-            ui_props = UIProps.get_data(context)
-            ui_props.ui_active_section = 'CATS'
+        # Util functions to add data items.
+        brush_cat_items_add = brush_cat.items.add if brushes_count != 0 else None
+        texture_cat_items_add = texture_cat.items.add if textures_count != 0 else None
 
-            if textures_data:
-                ui_props.ui_item_type_context = 'TEXTURE'
-                BRUSHMANAGER_OT_new_category.run()
-                texture_cat = addon_data.active_texture_cat
-                texture_cat.name = lib.name
-                cat_items = texture_cat.items
-                for tex_uuid, tex_data in textures_data.items():
-                    item = cat_items.add()
-                    item.uuid = tex_uuid
-                    item.name = tex_data['name']
+        texture_items: dict[str, object] = {}
 
-            if brushes_data:
-                ui_props.ui_item_type_context = 'BRUSH'
-                BRUSHMANAGER_OT_new_category.run()
-                brush_cat = addon_data.active_brush_cat
-                brush_cat.name = lib.name
-                cat_items = brush_cat.items
-                for brush_uuid, brush_data in brushes_data.items():
-                    item = cat_items.add()
-                    item.uuid = brush_uuid
-                    item.name = brush_data['name']
+        def _add_brush_to_data(item_data: dict):
+            tex_item = texture_items.get(item_data.pop('texture_uuid', ''), None)
+            brush_cat_items_add(texture=tex_item, **item_data) # item_data['uuid']
 
-        context.area.tag_redraw()
+        def _add_tex_to_data(item_data: dict):
+            texture_items[item_data['uuid']] = texture_cat_items_add(**item_data)
 
+        self.add_brush_to_data = _add_brush_to_data
+        self.add_texture_to_data = _add_tex_to_data
 
+        self.refresh_timer = time() + .2
+        self.addon_data = addon_data
 
-class BRUSHMANAGER_OT_remove_library(BaseOp, Operator):
-    bl_idname = 'brushmanager.remove_library'
-    bl_label = "Remove Library"
+        if self.use_modal:
+            # print("Create Modal Handler and Timer!")
+            if not context.window_manager.modal_handler_add(self):
+                print("ERROR: Window Manager was unable to add a modal handler")
+                self.end()
+                return {'CANCELLED'}
+            self._timer = context.window_manager.event_timer_add(0.000001, window=context.window)
+            self.tag_redraw()
+            return {'RUNNING_MODAL'}
 
-    def action(self, context: Context, addon_data: AddonData) -> None:
-        active_lib = addon_data.active_library
-        if not active_lib:
-            return
-
-        # Remove library brush data from brushes collection.
-        brush_uuids = {brush.uuid for brush in active_lib.brushes}
-        for idx, brush in reversed(list(enumerate(addon_data.brushes))): # enumerate(reversed(addon_data.brushes)):
-            if brush.uuid in brush_uuids:
-                addon_data.brushes.remove(idx)
-
-        # Remove library brush references from brush categories collection.
-        for brush_cat in addon_data.brush_cats:
-            for idx, brush in reversed(list(enumerate(brush_cat.items))): # enumerate(reversed(brush_cat.items)):
-                if brush.uuid in brush_uuids:
-                    brush_cat.items.remove(idx)
-
-        # Remove library from library collection.
-        addon_data.libraries.remove(addon_data.active_library_index)
-
-        context.area.tag_redraw()
+        while 1:
+            if 'FINISHED' in self.modal(None, None):
+                break
+        self.end()
+        return {'FINISHED'}
 
 
-class BRUSHMANAGER_OT_select_library(BaseOp, Operator):
-    bl_idname = 'brushmanager.select_library'
-    bl_label = "Select Active Library"
+    def end(self):
+        ## self.process.wait()
+        GLOBALS.is_importing_a_library = False
 
-    index: IntProperty()
+    def modal(self, context: Context, event: Event):
+        # print(event.type, event.value)
 
-    def action(self, context: Context, addon_data: AddonData) -> None:
-        addon_data.active_library_index = self.index
-        context.area.tag_redraw()
+        if event is not None and event.type != 'TIMER':
+            return {'PASS_THROUGH'}
+
+        # print("Modal Timer Event...", self.brushes_count, self.textures_count)
+        if context is not None:
+            if time() > self.refresh_timer:
+                # Don't over-refresh!
+                self.refresh_timer = time() + .2
+                self.tag_redraw()
+
+        if self.textures_count != 0:
+            self.textures_count -= 1
+            self.add_texture_to_data(self.textures.popleft())
+
+            return {'RUNNING_MODAL'}
+
+        if self.brushes_count != 0:
+            self.brushes_count -= 1
+            self.add_brush_to_data(self.brushes.popleft())
+
+            return {'RUNNING_MODAL'}
+
+        if self.brushes_count == 0 and self.textures_count == 0:
+            ## print("FINISHED!")
+            if context is not None:
+                context.window_manager.event_timer_remove(self._timer)
+                del self._timer
+            self.end()
+            self.addon_data.save()
+            return {'FINISHED'}
+
+        return {'RUNNING_MODAL'}

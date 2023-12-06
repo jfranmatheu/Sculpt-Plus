@@ -9,10 +9,12 @@ import numpy as np
 from os.path import splitext, exists, isfile
 import glob
 from os.path import basename
+from os import remove
 
 from .paths import Paths
 
 preview_collections: dict[str, previews.ImagePreviewCollection] = {}
+
 
 # icon_previews: previews.ImagePreviewCollection = None
 icon_gputex: dict[str, GPUTexture] = {}
@@ -26,11 +28,15 @@ class Icons(Enum):
 
     @property
     def icon_path(self) -> str:
-        return Paths.Lib.ICONS(self.name.lower() + '.png')
+        return Paths.Images.ICONS(self.name.lower() + '.png')
 
     @property
     def icon_id(self) -> int:
         return get_preview(self.name, self.icon_path, collection='builtin')
+
+    @property
+    def gputex(self) -> GPUTexture:
+        return get_gputex(self.name, self.icon_path)
 
     def __call__(self) -> int:
         return self.icon_id
@@ -39,8 +45,25 @@ class Icons(Enum):
         layout.label(text=text, icon_value=self.icon_id)
 
 
+def create_preview_from_filepath(uuid: str, input_filepath: str, output_filepath: str):
+    if not isinstance(input_filepath, str) or not isinstance(output_filepath, str):
+        raise TypeError("path should be string, bytes, os.PathLike or integer, not ", type(input_filepath), type(output_filepath))
+
+    if exists(output_filepath):
+        remove(output_filepath)
+
+    image = bpy.data.images.load(input_filepath)
+    image.scale(92, 92)
+    image.filepath_raw = output_filepath
+    image.save()
+    bpy.data.images.remove(image)
+    del image
+
+    new_preview(uuid, output_filepath, collection='runtime', force_reload=True)
+
+
 def new_preview(uuid: str, filepath: str, collection: str = 'runtime', force_reload: bool = True) -> None:
-    print("New preview ->", uuid, filepath)
+    # print("New preview ->", uuid, filepath)
     if preview := preview_collections[collection].get(uuid, None):
         del preview
         del preview_collections[collection][uuid]
@@ -52,8 +75,8 @@ def new_preview(uuid: str, filepath: str, collection: str = 'runtime', force_rel
     )
 
 def get_preview(uuid: str, filepath: str, collection: str = 'runtime') -> int:
-    if not uuid or not exists(filepath) or not isfile(filepath):
-        print("\t>", uuid, " DOES NOT EXIST > ", filepath)
+    if not exists(filepath) or not isfile(filepath):
+        # print("\t>", uuid, " DOES NOT EXIST > ", filepath)
         return 0
     # bpy.utils.user_resource('SCRIPTS', path='Brush Manager\icons', create=False)
     pcoll = preview_collections[collection]
@@ -95,12 +118,32 @@ def new_gputex(uuid: str, filepath: str) -> GPUTexture:
     return gputex
 
 
-def get_gputex(uuid: str, filepath: str) -> GPUTexture:
+def get_gputex(uuid: str, filepath: str, fallback: GPUTexture | None = None) -> GPUTexture:
     if gputex := icon_gputex.get(uuid, None):
         return gputex
-    if filepath is not None:
-        return new_gputex(uuid, filepath)
-    return None
+    if not exists(filepath) or not isfile(filepath):
+        # print("\t>", uuid, " DOES NOT EXIST > ", filepath)
+        return fallback
+    return new_gputex(uuid, filepath)
+
+
+def clear_icon(uuid: str, icon_filepath: str) -> None:
+    if not isinstance(icon_filepath, str):
+        raise TypeError("path should be string, bytes, os.PathLike or integer, not ", type(icon_filepath))
+
+    if not exists(icon_filepath) or not isfile(icon_filepath):
+        return
+    
+    remove(icon_filepath)
+
+    if gputex := icon_gputex.get(uuid, None):
+        del gputex
+        del icon_gputex[uuid]
+
+    if preview_coll := preview_collections.get('runtime', None):
+        if preview := preview_coll.get(uuid, None):
+            del preview
+            del preview_coll[uuid]
 
 
 def register_icons():
@@ -112,12 +155,12 @@ def register_icons():
     preview_collections['runtime'] = previews.new()
     from .paths import Paths
 
-    for filepath in glob.glob(Paths.Data.Icons._ICONS('**', '*.png')):
+    for filepath in glob.glob(Paths.Icons._ICONS('**', '*.png')):
         uuid, ext = splitext(basename(filepath))
         new_preview(uuid, filepath, collection='runtime')
         # new_gputex(uuid, filepath)
 
-    for filepath in glob.glob(Paths.Lib.ICONS('**', '*.png')):
+    for filepath in glob.glob(Paths.Images._IMAGES('**', '*.png')):
         uuid, ext = splitext(basename(filepath))
         new_preview(uuid.upper(), filepath, collection='builtin')
 
