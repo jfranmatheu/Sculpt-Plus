@@ -7,26 +7,37 @@ from sculpt_plus.prefs import get_prefs
 from sculpt_plus.core.data.cy_structs import CyBlStruct
 
 
-def _draw_mask_filters(content, only_icons: bool = False):
-    row = content.row(align=True)
-    row.operator('sculpt.mask_filter', text='' if only_icons else "Smooth", icon_value=Previews.Mask.SMOOTH()).filter_type = 'SMOOTH'
-    row.operator('sculpt.mask_filter', text='' if only_icons else "Sharpen", icon_value=Previews.Mask.SHARP()).filter_type = 'SHARPEN'
-    row = content.row(align=True)
-    row.operator('sculpt.mask_filter', text='' if only_icons else "Grow", icon_value=Previews.Mask.GROW()).filter_type = 'GROW'
-    row.operator('sculpt.mask_filter', text='' if only_icons else "Shrink", icon_value=Previews.Mask.SHRINK()).filter_type = 'SHRINK'
-    row = content.row(align=True)
-    row.operator('sculpt.mask_filter', text='' if only_icons else "Contrast (+)", icon_value=Previews.Mask.CONTRAST_UP()).filter_type = 'CONTRAST_INCREASE'
-    row.operator('sculpt.mask_filter', text='' if only_icons else "Contrast (--)", icon_value=Previews.Mask.CONTRAST_DOWN()).filter_type = 'CONTRAST_DECREASE'
+def _draw_mask_filters(content: UILayout, only_icons: bool = False, align: bool = True, scale_y: float = 1):
+    grid = content.grid_flow(align=align, even_columns=True, even_rows=True, row_major=True, columns=0 if only_icons else 2)
+    grid.scale_y = scale_y
+
+    grid.operator('sculpt.mask_filter', text='' if only_icons else "Smooth", icon_value=Previews.Mask.SMOOTH()).filter_type = 'SMOOTH'
+    grid.operator('sculpt.mask_filter', text='' if only_icons else "Sharpen", icon_value=Previews.Mask.SHARP()).filter_type = 'SHARPEN'
+    grid.operator('sculpt.mask_filter', text='' if only_icons else "Grow", icon_value=Previews.Mask.GROW()).filter_type = 'GROW'
+    grid.operator('sculpt.mask_filter', text='' if only_icons else "Shrink", icon_value=Previews.Mask.SHRINK()).filter_type = 'SHRINK'
+    grid.operator('sculpt.mask_filter', text='' if only_icons else "Contrast +", icon_value=Previews.Mask.CONTRAST_UP()).filter_type = 'CONTRAST_INCREASE'
+    grid.operator('sculpt.mask_filter', text='' if only_icons else "Contrast -", icon_value=Previews.Mask.CONTRAST_DOWN()).filter_type = 'CONTRAST_DECREASE'
 
 
-def _draw_mask_expand(content, keep_previous_mask, invert_mask, align=False):
-    row = content.row(align=align)
-    mask_op = row.operator('sculpt_plus.mask_expand_wrapper', icon='MONKEY', text="By Topology")
-    mask_op.keep_previous_mask = keep_previous_mask
-    mask_op.invert = invert_mask
-    mask_op = row.operator('sculpt_plus.mask_expand_normal_wrapper', icon='SNAP_NORMAL', text="By Normals")
-    mask_op.keep_previous_mask = keep_previous_mask
-    mask_op.invert = invert_mask
+def _draw_mask_expand(content: UILayout, use_mask_preserve: bool, invert: bool, use_reposition_pivot: bool = True, align=False, scale_y: float = 1):
+    expand_methods = (
+        ('TOPOLOGY', {'icon': 'MONKEY'}),
+        ('NORMALS', {'icon': 'SNAP_NORMAL'}),
+        ('TOPOLOGY_DIAGONALS', {'icon': 'MONKEY'}),
+        ('GEODESIC', {'icon': 'MESH_ICOSPHERE'}),
+        ('BOUNDARY_TOPOLOGY', {'icon': 'OVERLAY'}),
+        ('SPHERICAL', {'icon': 'MESH_UVSPHERE'}),
+    )
+    grid = content.grid_flow(align=align, even_columns=True, even_rows=True, row_major=True, columns=2)
+    grid.scale_y = scale_y
+    
+    for (falloff_type, draw_props) in expand_methods:
+        mask_op = grid.operator('sculpt.expand', text=falloff_type.replace('_', ' ').title(), **draw_props)
+        mask_op.target = 'MASK'
+        mask_op.falloff_type = falloff_type
+        mask_op.use_reposition_pivot  = use_reposition_pivot
+        mask_op.use_mask_preserve  = use_mask_preserve
+        mask_op.invert = invert
 
 
 def _draw_mask_effects(content, align: bool = False):
@@ -46,8 +57,9 @@ def draw_mask(layout: UILayout, context):
 
     scene_props = Props.Scene(context)
     use_front_faces_only = scene_props.mask_op_use_front_faces_only
-    keep_previous_mask = not scene_props.mask_op_clear_previous_mask
+    use_mask_preserve = not scene_props.mask_op_clear_previous_mask
     invert_mask = scene_props.mask_op_invert
+    use_reposition_pivot = scene_props.mask_op_use_reposition_pivot
 
     prefs = get_prefs(context)
     # TODO: Make the use mask tabs workaroudn better here below...
@@ -118,9 +130,10 @@ def draw_mask(layout: UILayout, context):
             toggles.scale_x = 1.2
             toggles.prop(scene_props, 'mask_op_clear_previous_mask', text="", icon_value=Previews.Mask.CLEAR())
             toggles.prop(scene_props, 'mask_op_invert', text="", icon_value=Previews.Mask.INVERT())
+            toggles.prop(scene_props, 'mask_op_use_reposition_pivot', text="", icon='PIVOT_BOUNDBOX')
 
-        _draw_mask_filters(_compact_section("Mask Filters"), only_icons=False)
-        _draw_mask_expand(_compact_section("Mask Expand", header_inject=_draw_expand_toggles), keep_previous_mask, invert_mask, align=True)
+        _draw_mask_filters(_compact_section("Mask Filters"), only_icons=False, scale_y=1.0)
+        _draw_mask_expand(_compact_section("Mask Expand", header_inject=_draw_expand_toggles), use_mask_preserve, invert_mask, use_reposition_pivot, align=True)
         _draw_mask_effects(_compact_section("Mask Generator"), align=True)
         _draw_mask_to_mesh(_compact_section("Mask to Mesh"), align=True)
 
@@ -141,7 +154,7 @@ def draw_mask(layout: UILayout, context):
         header.label(text="M a s k   F i l t e r s :")
         filter_col = filter_col.column(align=True)
         filter_col.scale_y = 1.25
-        _draw_mask_filters(filter_col)
+        _draw_mask_filters(filter_col, scale_y=.85)
 
 
     ''' MASK EXPAND. '''
@@ -157,9 +170,10 @@ def draw_mask(layout: UILayout, context):
         header_toggles.scale_x = 1.2
         header_toggles.prop(scene_props, 'mask_op_clear_previous_mask', text="", icon_value=Previews.Mask.CLEAR())
         header_toggles.prop(scene_props, 'mask_op_invert', text="", icon_value=Previews.Mask.INVERT())
+        header_toggles.prop(scene_props, 'mask_op_use_reposition_pivot', text="", icon='PIVOT_BOUNDBOX')
         mask_mod_ops_col = mask_mod_ops_col.column(align=True)
         mask_mod_ops_col.scale_y = 1.25
-        _draw_mask_expand(mask_mod_ops_col.column(align=True), keep_previous_mask, invert_mask, align=True)
+        _draw_mask_expand(mask_mod_ops_col.column(align=True), use_mask_preserve, invert_mask, use_reposition_pivot, align=True, scale_y=.85)
 
 
     ''' MASK EFFECTS. '''
@@ -200,11 +214,11 @@ def draw_mask(layout: UILayout, context):
         mask_tab_content = mask_tab.box() # .grid_flow(row_major=True, even_columns=True, even_rows=True, columns=2)
         mask_tab_content.scale_y = 1.2
         if act_mask_tab == 'MASK_EXPAND':
-            _draw_mask_expand(mask_tab_content.column(), keep_previous_mask, invert_mask)
+            _draw_mask_expand(mask_tab_content.column(), use_mask_preserve, invert_mask, use_reposition_pivot)
         elif act_mask_tab == 'MASK_EFFECTS':
             _draw_mask_effects(mask_tab_content.column())
         elif act_mask_tab == 'MASK_FILTERS':
-            _draw_mask_filters(mask_tab_content.column(align=True))
+            _draw_mask_filters(mask_tab_content.column(), align=False)
         elif act_mask_tab == 'MASK_TO_MESH':
             _draw_mask_to_mesh(mask_tab_content.column())
 
@@ -255,7 +269,7 @@ def draw_facesets(layout: UILayout, context):
 
     header, content = _sub("V i s i b i l i t y :", icon='CAMERA_STEREO', align=True, use_content_box=False, columns=2)
     content.operator('sculpt.reveal_all', text='Reveal All', icon='HIDE_OFF')
-    content.operator('sculpt.face_set_change_visibility', text='Invert', icon='HOLDOUT_ON').mode='TOGGLE' # 3.6 -> ('TOGGLE', 'SHOW_ACTIVE', 'HIDE_ACTIVE')
+    content.operator('sculpt.face_set_change_visibility', text='Isolate', icon='HOLDOUT_ON').mode='TOGGLE'
 
     header, content = _sub("C r e a t e   F a c e - S e t   f r o m ...", toggle_prop='show_facesets_panel_createfrom_section')
     if content:

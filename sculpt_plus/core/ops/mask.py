@@ -16,8 +16,8 @@ class SCULPTPLUS_OT_mask_slice_wrapper:
         if context.mode != 'SCULPT':
             OPS.object.mode_set(False, mode='SCULPT')
 
-
-class SCULPTPLUS_OT_mask_expand_normal_wrapper:
+'''
+class SCULPTPLUS_OT_expand_normal_wrapper:
     bl_idname = 'sculpt_plus.mask_expand_normal_wrapper'
     bl_label = "Mask Expand by Normals"
 
@@ -37,7 +37,7 @@ class SCULPTPLUS_OT_mask_expand_normal_wrapper:
         DiText(Vector((center, top)), "Left-Click over mesh surface to start expanding a Mask by normals", 24, scale, pivot=(.5, 1), draw_rect_props={})
 
 
-class SCULPTPLUS_OT_mask_expand_wrapper:
+class SCULPTPLUS_OT_expand_wrapper:
     bl_idname = 'sculpt_plus.mask_expand_wrapper'
     bl_label = "Mask Expand by Topology"
 
@@ -55,42 +55,45 @@ class SCULPTPLUS_OT_mask_expand_wrapper:
         center = context.region.width / 2
         top = context.region.height - 64*scale
         DiText(Vector((center, top)), "Left-Click over mesh surface to start expanding a Mask by topology", 24, scale, pivot=(.5, 0), draw_rect_props={})
+'''
 
 
-def register():
+def post_register():
     create_op_props_popup_wrapper(
         OPS.mesh.paint_mask_slice,
         SCULPTPLUS_OT_mask_slice_wrapper
     )
 
+    '''
     create_op_modal_exec_wrapper(
-        OPS.sculpt.mask_expand,
-        SCULPTPLUS_OT_mask_expand_wrapper,
+        OPS.sculpt.expand,
+        SCULPTPLUS_OT_expand_wrapper,
         props_overwrite={
             # 'target': 'MASK',
             # 'falloff_type': 'NORMALS',
-            'use_normals': False,
-            'keep_previous_mask': True,
-            'invert': False,
-            'create_face_set': False,
-            'edge_sensitivity': 2000,
+            # 'use_normals': False,
+            # 'keep_previous_mask': True,
+            # 'invert': False,
+            # 'create_face_set': False,
+            # 'edge_sensitivity': 2000,
             #'smooth_iterations': 0,
         },
         copy_props=True
     )
 
     create_op_modal_exec_wrapper(
-        OPS.sculpt.mask_expand,
-        SCULPTPLUS_OT_mask_expand_normal_wrapper,
+        OPS.sculpt.expand,
+        SCULPTPLUS_OT_expand_normal_wrapper,
         props_overwrite={
             # 'target': 'MASK',
             # 'falloff_type': 'NORMALS',
-            'use_normals': True,
-            'keep_previous_mask': True,
-            'invert': False,
-            'create_face_set': False,
-            'edge_sensitivity': 2000,
-            'smooth_iterations': 0,
+            # 'use_normals': True,
+            # 'keep_previous_mask': True,
+            # 'invert': False,
+            # 'create_face_set': False,
+            # 'edge_sensitivity': 2000,
+            # 'smooth_iterations': 0,
         },
         copy_props=True
     )
+    '''
