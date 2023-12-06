@@ -4,8 +4,8 @@ from mathutils import Vector
 from bpy.app import background
 p='pos';op='op';co='color';hl='hl';T='TRIS';TF='TRI_FAN';texidx='texCoord';i='image';A='ALPHA';LL='LINE_LOOP';L='LINES';P='POINTS'
 from gpu.shader import from_builtin as get_builtin_shader
-sh_unif = None if background else get_builtin_shader('2D_UNIFORM_COLOR')
-sh_img = None if background else get_builtin_shader('2D_IMAGE')
+sh_unif = None if background else get_builtin_shader('UNIFORM_COLOR')
+sh_img = None if background else get_builtin_shader('IMAGE')
 from gpu.texture import from_image as get_tex
 from gpu_extras.batch import batch_for_shader as bat
 from gpu_extras.presets import draw_circle_2d
@@ -279,7 +279,7 @@ def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shad
     state.blend_set('NONE')
     id=font_info['id'] if id is None else id
     text_color(id, *_co)
-    text_size(id, max(7.5, _size), int(72*_scale))
+    text_size(id, max(int(7.5*_scale), _size))
     if rotation is not None:
         text_enable(id, ROTATION)
         text_rotation(id, rotation)
@@ -317,7 +317,7 @@ def DiText(_p, _text, _size, _scale,  _co=(.92, .92, .92, 1.0), pivot=None, shad
 
 def get_rect_from_text(_p, _text, _size, _scale, _pivot=(0, 0), _margin:float = 0):
     id=font_info['id']
-    text_size(id, _size, int(72*_scale))
+    text_size(id, int(_size*_scale))
     dim = text_dim(id, _text)
     p = (_p.x - dim[0] * _pivot[0], # X
             _p.y - dim[1] * _pivot[1]) # Y
@@ -327,7 +327,7 @@ def get_rect_from_text(_p, _text, _size, _scale, _pivot=(0, 0), _margin:float = 
     return p, s
 def get_text_dim(_text, _size, _scale):
     id=font_info['id']
-    text_size(id, _size, int(72*_scale))
+    text_size(id, int(_size*_scale))
     return text_dim(id, _text)
 def get_rect_center(p,s):
     return p+s*.5
