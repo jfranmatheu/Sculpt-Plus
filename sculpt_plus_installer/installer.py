@@ -23,7 +23,7 @@ class VersionError(Exception):
 # ----------------------------------------------------------------
 
 
-def install_bm():
+def install_bm_from_web():
     print("Installing Brush Manager addon...")
 
     try:
@@ -69,21 +69,49 @@ def install_bm():
             bpy.ops.preferences.addon_enable(module_name)
     '''
 
+def install_bm():
+    print("Installing Brush-Manager addon...")
+
+    bpy.ops.preferences.addon_install(filepath=str(src_path / 'brush_manager_build.zip'))
+    print("Brush Manager addon installed successfully!")
+    bpy.ops.preferences.addon_enable(module='sculpt_plus')
+
 
 def install_sculpt_plus():
     print("Installing Sculpt Plus addon...")
 
     bpy.ops.preferences.addon_install(filepath=str(src_path / 'sculpt_plus_build.zip'))
+    print("Sculpt Plus addon installed successfully!")
     bpy.ops.preferences.addon_enable(module='sculpt_plus')
     bpy.ops.preferences.addon_show(module='sculpt_plus')
+    bpy.ops.preferences.addon_expand(module='sculpt_plus')
 
 
 def install_addon():
     print("Starting Sculpt Plus Intaller...")
-    install_bm()
+    try:
+        import brush_manager
+        if hasattr(brush_manager, 'tag_version') and brush_manager.tag_version != BM_TAG_VERSION:
+            raise VersionError(f"Required Brush Manager version is {BM_TAG_VERSION} but found {brush_manager.tag_version}")
+    except (ModuleNotFoundError, ImportError) as e:
+        install_bm()
+    except VersionError as e:
+        ## print("Saving data from Brush Manager's old version...")
+        ## bm_data = brush_manager.prefs.get_prefs(bpy.context).serialize_data()
+        print("Uninstalling Brush Manager's old version...")
+        bpy.ops.preferences.addon_disable(module='brush_manager')
+        bpy.ops.preferences.addon_remove(module='brush_manager')
+        del brush_manager
+        import sys
+        del sys.modules['brush_manager']
+        ## bpy.ops.preferences.addon_refresh()
+        print("Brush Manager' old version uninstalled successfully!")
+        install_bm()
+        ## print("Loading data from Brush Manager's old version...")
+        ## import brush_manager
+        ## brush_manager.prefs.get_prefs(bpy.context).deserialize_data(bm_data)
     install_sculpt_plus()
 
-    # addon_utils.disable('sculpt_plus_installer')
     print("Uninstalling Sculpt Plus Installer...")
     bpy.ops.preferences.addon_disable(module='sculpt_plus_installer')
     bpy.ops.preferences.addon_remove(module='sculpt_plus_installer')

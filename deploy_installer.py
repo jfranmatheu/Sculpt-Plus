@@ -64,5 +64,6 @@ with zipfile.ZipFile(join(_installer_path, f'{module_installer_name}.zip'), mode
     zip_ref.write(join(_installer_path, 'installer.py'), arcname=f'{module_installer_name}/installer.py')
     ## zip_ref.write(_installer_zipfile, arcname=f'{module_name}/{module_name}_build.zip')
     zip_ref.write(zip_path + '.zip', arcname=f'{module_installer_name}/{module_name}_build.zip')
+    zip_ref.write(join(_installer_path, 'brush_manager.zip'), arcname=f'{module_installer_name}/brush_manager_build.zip')
 
 os.system(join(_installer_path, 'pack_installer.bat'))
