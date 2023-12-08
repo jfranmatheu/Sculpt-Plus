@@ -114,6 +114,7 @@ def load_brush_sets():
     # )
     brush_manager.api.BM_OPS.import_library_internal(
         libpath=SculptPlusPaths.SRC_LIB_BRUSH_PACKS('OrbBrushes', 'OrbBrushes.blend'),
+        custom_uuid='ORB_BRUSHES',
         ui_context_mode='SCULPT',
         ui_context_item='BRUSH'
     )
@@ -146,6 +147,7 @@ def uninstall_old_addon_versions():
         pass
     try:
         import brush_manager
+        # brush_manager.api.BM_OPS.clear_data()
         uninstall_module('brush_manager')
         del brush_manager
     except (ModuleNotFoundError, ImportError) as e:
