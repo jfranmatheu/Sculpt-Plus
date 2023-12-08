@@ -112,12 +112,15 @@ def load_brush_sets():
     #     ui_context_mode='SCULPT',
     #     ui_context_item='BRUSH'
     # )
-    brush_manager.api.BM_OPS.import_library_internal(
-        libpath=SculptPlusPaths.SRC_LIB_BRUSH_PACKS('OrbBrushes', 'OrbBrushes.blend'),
-        custom_uuid='ORB_BRUSHES',
-        ui_context_mode='SCULPT',
-        ui_context_item='BRUSH'
-    )
+    try:
+        brush_manager.api.BM_OPS.import_library_internal(
+            libpath=SculptPlusPaths.SRC_LIB_BRUSH_PACKS('OrbBrushes', 'OrbBrushes.blend'),
+            custom_uuid='ORB_BRUSHES',
+            ui_context_mode='SCULPT',
+            ui_context_item='BRUSH'
+        )
+    except Exception:
+        pass
 
 
 def install_bm():
