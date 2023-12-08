@@ -24,10 +24,11 @@ bl_info = {
 
 import bpy
 from .installer import install_addon
+from functools import partial
 
 
 def register():
-    bpy.app.timers.register(install_addon)
+    bpy.app.timers.register(partial(install_addon, uninstall_old=True))
 
 def unregister():
     pass
