@@ -31,7 +31,7 @@ def get_toolbar_brush_sections_items(self, context):
 def get_toolbar_sculpt_sections_items(self, context):
     if context.sculpt_object.use_dynamic_topology_sculpting:
         return (
-            ('DYNTOPO', "Dyntopo", "Dyntopo", 'MESH_ICOSPHERE', 0),
+            ('DYNTOPO', "Dyntopo", "Dyntopo", 'MESH_ICOSPHERE', 2),
         )
     ob = context.sculpt_object
     md = None
@@ -41,7 +41,7 @@ def get_toolbar_sculpt_sections_items(self, context):
             break
     if md is not None and md.total_levels > 0:
         return (
-            ('MULTIRES', "Multires", "Multires", 'MOD_MULTIRES', 0),
+            ('MULTIRES', "Multires", "Multires", 'MOD_MULTIRES', 3),
         )
 
     return (
