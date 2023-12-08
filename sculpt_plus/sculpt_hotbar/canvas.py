@@ -335,7 +335,7 @@ class Canvas:
                 DiText(center + Vector((0, (16+8)*self.scale)), self.progress_label, 20, self.scale, pivot=(.5, 0), draw_rect_props={}, shadow_props={})
 
         #print("[DEBUG] FPS: ", fps_count / (time() - start_time)) # FPS = 1 / time to process loop
-        DiText(Vector((10, 10)), "FPS: " + str(fps_count), 16, 1.0, (1.0, 0.2, 0.1, 1.0))
+        DiText(Vector((10, 10)), "FPS: " + str(fps_count), 9, 1.0, (1.0, 0.2, 0.1, 1.0))
 
         counter += 1
         if (time() - start_time) > 1.0:
