@@ -42,10 +42,11 @@ class SCULPTPLUS_OT_multires_apply(Operator):
         if not mod:
             return {'CANCELLED'}
         bpy.ops.object.mode_set(False, mode='OBJECT', toggle=False)
+        mod.levels = mod.sculpt_levels
         if self.as_shape_key:
-            bpy.ops.object.modifier_apply_as_shapekey(False, keep_modifier=False, modifier=mod.name)
+            bpy.ops.object.modifier_apply_as_shapekey(False, keep_modifier=False, modifier=mod.name, report=True)
         else:
-            bpy.ops.object.modifier_apply(modifier=mod.name)
+            bpy.ops.object.modifier_apply(modifier=mod.name, report=True)
         bpy.ops.object.mode_set(False, mode='SCULPT', toggle=False)
         return {'FINISHED'}
 
