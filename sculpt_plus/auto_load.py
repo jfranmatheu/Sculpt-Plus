@@ -112,7 +112,7 @@ if __package__ == 'sculpt_plus':
     #################################################
 
     def get_all_submodules(directory, USE_DEV_ENVIRONMENT):
-        return list(iter_submodules(directory, directory.name, USE_DEV_ENVIRONMENT))
+        return list(iter_submodules(directory, __package__, USE_DEV_ENVIRONMENT))
 
     def iter_submodules(path, package_name, USE_DEV_ENVIRONMENT):
         #print(sys.modules.keys())

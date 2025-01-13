@@ -153,3 +153,14 @@ def rect_overlaps_rect(R1, R2):
 
 def point_inside_node(_p, _pos, _size):
     return _pos[0] < _p[0] < (_pos[0] + _size[0]) and (_pos[1] - _size[1]) < _p[1] < _pos[1]
+
+
+def euler_angles_to_vector(euler_angles):
+    yaw, pitch, roll = euler_angles
+
+    # Calculate the direction vector components
+    vx = math.cos(yaw) * math.cos(pitch)
+    vy = -math.sin(yaw) * math.cos(pitch)
+    vz = math.sin(pitch)
+
+    return vx, vy, vz

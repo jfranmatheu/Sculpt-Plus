@@ -1,4 +1,5 @@
 from functools import wraps
+from time import time
 
 
 def singleton(orig_cls):
@@ -33,3 +34,14 @@ def singleton(orig_cls):
     orig_cls.set_instance = set_instance
     orig_cls.clear_instance = clear_instance
     return orig_cls
+
+
+def time_it(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        # ts = time()
+        result = f(*args, **kw)
+        # te = time()
+        # print("[TIME-IT]: '%r' took: %2.4f sec" % (f.__name__, te-ts))
+        return result
+    return wrap
