@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "sculpt_plus"
+version = "1.0.0"
+name = "Sculpt+"
+tagline = "Tools to enhance sculpting"
+maintainer = "Juan Fran Matheu"
+type = "add-on"
+permissions = ["files"]
+# website = ""
+tags = ["3D View", "Sculpting", "Mesh", "User Interface"]
+blender_version_min = "4.4.0"
+# blender_version_max = "5.1.0"
+license = ["SPDX:GPL-2.0-or-later",]
+copyright = ["2024 Juan Fran Matheu"]
