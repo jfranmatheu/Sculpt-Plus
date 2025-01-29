@@ -1,5 +1,4 @@
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
+# This program is under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
@@ -10,28 +9,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-bl_info = {
-    "name" : "Sculpt +",
-    "author" : "J. Fran Matheu (@jfranmatheu)",
-    "description" : "",
-    "blender" : (4, 0, 2),
-    "version" : (1, 1, 2),
-    "location" : "Topbar [S+] button > 'Sculpt+' WorkSpace",
-    "warning" : "BETA VERSION! May be unstable!",
-    "category" : "General"
-}
-
-
-PILLOW_VERSION = "Pillow>=9.3.0"
-BM_VERSION = 'v1.0-b3.6.x'
-
-USE_DEV_ENVIRONMENT = False
-
+'''
 if __package__ != 'sculpt_plus':
     import sys
     print("[Sculpt+] Please, rename the addon folder as 'sculpt_plus'")
     sys.exit(0)
+'''
 
 import bpy
 if bpy.app.background:
@@ -39,14 +22,16 @@ if bpy.app.background:
     def register(): pass
     def unregister(): pass
 else:
-    from . import install_deps
-    install_deps.install()
+    print(f">>>>>>>>>>>>>>> Loading addon: {__package__} <<<<<<<<<<<<<<<<<<<<<<<<<")
 
     from . import auto_load
-    auto_load.init(USE_DEV_ENVIRONMENT)
+
+    auto_load.init()
 
     def register():
+        bpy.hurr = {}
         auto_load.register()
 
     def unregister():
         auto_load.unregister()
+        del bpy.hurr
