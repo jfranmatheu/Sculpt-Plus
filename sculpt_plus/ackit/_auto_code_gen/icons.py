@@ -209,6 +209,9 @@ def codegen__icons_py(icons_path: Path = GLOBALS.ICONS_PATH, icons_output_py: Pa
     icons_per_category: dict[str, list[IconData]] = {} # defaultdict(list)
 
     print_debug("Searching icons from...", str(icons_path))
+    if not os.path.exists(icons_path):
+        print_debug("No icons found at path '%s'" % icons_path)
+        return
 
     def _add_icons_from_directory(dirpath: Path, category_name: str = 'MAIN', is_subdir: bool = False):
         _icons = []
