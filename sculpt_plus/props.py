@@ -130,7 +130,7 @@ class SculptTool:
 
 
 
-def pre_unregister():
+def unregister_pre():
     if workspace := Props.Workspace(bpy.context):
         del workspace['sculpt_plus']
 

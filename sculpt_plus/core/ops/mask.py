@@ -57,7 +57,7 @@ class SCULPTPLUS_OT_expand_wrapper:
 '''
 
 
-def post_register():
+def register_post():
     create_op_props_popup_wrapper(
         OPS.mesh.paint_mask_slice,
         SCULPTPLUS_OT_mask_slice_wrapper

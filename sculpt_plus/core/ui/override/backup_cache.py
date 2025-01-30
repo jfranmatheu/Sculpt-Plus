@@ -52,11 +52,11 @@ def set_cls_attribute(cls, attr: str, new_value):
     setattr(cls, 'old_' + attr, cache[attr])
 
 
-def pre_register():
+def register_pre():
     for cls in classes_to_cache:
         cache_cls_attributes(cls)
 
-def pre_unregister():
+def unregister_pre():
     for cls, mod_cls_attributes in _mod_cls_attributes.items():
         cache = _cache_reset[cls] # raises AttributeError on class without decorator
         for mod_attr in mod_cls_attributes:
