@@ -9,7 +9,7 @@ import bpy
 import os
 from os.path import dirname, abspath, join
 
-from .ackit import ACK
+from .ackit import ACK, GLOBALS
 
 # from sculpt_plus.ackit import better_prefs
 
@@ -241,7 +241,7 @@ class SCULPTPLUS_AddonPreferences(ACK.Type.PREFS):
 
 
 
-def get_prefs(context: Context) -> SCULPTPLUS_AddonPreferences:
-    if __package__ not in context.preferences.addons:
-        return None
-    return context.preferences.addons[__package__].preferences
+def get_prefs(context: Context) -> SCULPTPLUS_AddonPreferences | None:
+    if addon := context.preferences.addons.get(GLOBALS.ADDON_MODULE, None):
+        return addon.preferences
+    return None
