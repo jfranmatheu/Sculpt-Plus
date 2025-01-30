@@ -40,38 +40,6 @@ class SCULPTPLUS_PG_scn:
 				return bpy_type_data.sculpt_plus
 
 
-class sculpt_plus_ui_panel_toggles:
-	# Root PG, attached to bpy.types.WindowManager
-	name: str
-
-	@classmethod
-	def get_data(cls, context: Context) -> 'sculpt_plus_ui_panel_toggles':
-		bpy_type_data: ExtendedWindowManager = context.window_manager
-		if hasattr(bpy_type_data, "sculpt_plus_ui_panels"): 
-				return bpy_type_data.sculpt_plus_ui_panels
-
-
-class _SCULPTPLUS_PG_ui_toggles:
-	name: str
-	show_brush_settings: bool
-	show_brush_settings_advanced: bool
-	show_brush_settings_stroke: bool
-	show_brush_settings_falloff: bool
-	show_brush_settings_texture: bool
-	show_brush_settings_panel: bool
-	show_mask_facesets_panel: bool
-	show_sculpt_mesh_panel: bool
-	show_facesets_panel_initialize_section: bool
-	show_facesets_panel_createfrom_section: bool
-	toolbar_brush_sections: str
-	toolbar_maskfacesets_sections: str
-	toolbar_sculpt_sections: str
-	mask_panel_tabs: str
-	color_toolbar_panel_tool: tuple[float]
-	color_toolbar_panel_maskfacesets: tuple[float]
-	color_toolbar_panel_sculptmesh: tuple[float]
-	color_toolbar_panel_emboss_bottom: tuple[float]
-
 class SCULPTPLUS_AddonPreferences:
 	bl_idname: str
 	first_time: bool
@@ -121,6 +89,27 @@ class SCULPTPLUS_AddonPreferences:
 		pass
 
 
+class _SCULPTPLUS_PG_ui_toggles:
+	name: str
+	show_brush_settings: bool
+	show_brush_settings_advanced: bool
+	show_brush_settings_stroke: bool
+	show_brush_settings_falloff: bool
+	show_brush_settings_texture: bool
+	show_brush_settings_panel: bool
+	show_mask_facesets_panel: bool
+	show_sculpt_mesh_panel: bool
+	show_facesets_panel_initialize_section: bool
+	show_facesets_panel_createfrom_section: bool
+	toolbar_brush_sections: str
+	toolbar_maskfacesets_sections: str
+	toolbar_sculpt_sections: str
+	mask_panel_tabs: str
+	color_toolbar_panel_tool: tuple[float]
+	color_toolbar_panel_maskfacesets: tuple[float]
+	color_toolbar_panel_sculptmesh: tuple[float]
+	color_toolbar_panel_emboss_bottom: tuple[float]
+
 class SCULPTPLUS_PG_wm:
 	# Root PG, attached to bpy.types.WindowManager
 	name: str
@@ -144,7 +133,6 @@ class ExtendedScene(Scene):
 class ExtendedWindowManager(WindowManager):
 	sculpt_plus: SCULPTPLUS_PG_wm
 	sculpt_plus_ui_panels: sculpt_plus_ui_panel_toggles
-	sculpt_plus_ui_panels: sculpt_plus_ui_panel_toggles
 
 class ExtendedTypes:
 	Scene = ExtendedScene
@@ -159,7 +147,6 @@ class RootPG:
 
 	WM = sculpt_plus_ui_panel_toggles.get_data
 	SCN = SCULPTPLUS_PG_scn.get_data
-	WM = sculpt_plus_ui_panel_toggles.get_data
 	WM = SCULPTPLUS_PG_wm.get_data
 
 # Alias:
