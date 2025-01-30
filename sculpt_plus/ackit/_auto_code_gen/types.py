@@ -78,12 +78,14 @@ def prop_type_to_py_type(prop) -> str:
         return 'str'
     if 'Pointer' in bpy_prop_name:
         if isinstance(prop, _PropertyDeferred):
+            # print(f'PROPPPP POINTERRRR ---------->>>>>>>>>>>>>>>>>>> {prop.keywords["type"].__name__}')
             return f'{prop.keywords["type"].__name__}'
         else:
             if hasattr(prop.fixed_type, 'original_idname'):
+                # print("PROPPPP POINTERRRR ---------->>>>>>>>>>>>>>>>>>>", prop.type, prop.fixed_type.original_idname, '--', prop.fixed_type.name)
                 return prop.fixed_type.original_idname
-            # print(prop.type, prop.fixed_type.name)
-            return 'bpy.types.' + prop.fixed_type.name
+            # print("PROPPPP POINTERRRR ---------->>>>>>>>>>>>>>>>>>>", prop.type, prop.fixed_type.name)
+            return 'bpy.types.' + prop.fixed_type.name.replace(' ', '')
     if 'Collection' in bpy_prop_name:
         if isinstance(prop, _PropertyDeferred):
             return f'{prop.keywords["type"].__name__}_Collection'
