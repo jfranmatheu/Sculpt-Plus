@@ -1,9 +1,11 @@
-from bpy.types import PropertyGroup, Context, Scene as SCN
 from bpy.props import PointerProperty, BoolProperty
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture
 
+from ...ackit import ACK
 
-class SCULPTPLUS_PG_scn(PropertyGroup):
+
+@ACK.Deco.PROP_GROUP.ROOT.SCENE('sculpt_plus')
+class SCULPTPLUS_PG_scn:
     @staticmethod
     def get_data(ctx: Context) -> 'SCULPTPLUS_PG_scn':
         return ctx.scene.sculpt_plus
@@ -18,9 +20,3 @@ class SCULPTPLUS_PG_scn(PropertyGroup):
     mask_op_use_reposition_pivot: BoolProperty(default=False, name="Reposition Pivot", description="Reposition the sculpt transform pivot to the boundary of the expand active area")
 
     facesets_op_use_front_faces_only : BoolProperty(default=False, name="Front Faces Only", description="Affect only faces facing towards the view")
-
-# -------------------------------------------------------------------
-
-
-def register():
-    SCN.sculpt_plus = PointerProperty(type=SCULPTPLUS_PG_scn)

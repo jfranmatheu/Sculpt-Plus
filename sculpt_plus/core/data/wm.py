@@ -1,9 +1,12 @@
-from bpy.types import PropertyGroup, Context, WindowManager as WM
+from bpy.types import Context
 from bpy.props import PointerProperty, BoolProperty
 
 from .ui import SCULPTPLUS_PG_ui_toggles
+from ...ackit import ACK
 
-class SCULPTPLUS_PG_wm(PropertyGroup):
+
+@ACK.Deco.PROP_GROUP.ROOT.WINDOW_MANAGER('sculpt_plus')
+class SCULPTPLUS_PG_wm:
     @staticmethod
     def get_data(ctx: Context) -> 'SCULPTPLUS_PG_wm':
         return ctx.window_manager.sculpt_plus
@@ -11,13 +14,3 @@ class SCULPTPLUS_PG_wm(PropertyGroup):
     ui: PointerProperty(type=SCULPTPLUS_PG_ui_toggles)
     
     test_context: BoolProperty()
-
-
-# -------------------------------------------------------------------
-
-
-def register():
-    WM.sculpt_plus = PointerProperty(type=SCULPTPLUS_PG_wm)
-
-def unregister():
-    del WM.sculpt_plus

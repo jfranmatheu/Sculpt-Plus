@@ -1,8 +1,8 @@
-from bpy.types import PropertyGroup
 from bpy.props import PointerProperty, BoolProperty, EnumProperty, FloatVectorProperty
 
 from sculpt_plus.previews import Previews
 
+from ...ackit import ACK
 
 toolbar_brush_sections_items = [
         ('BRUSH_SETTINGS', "Brush", "Brush Settings", 'BRUSH_DATA', 0),
@@ -59,7 +59,8 @@ def get_toolbar_maskfacesets_sections_items(self, context):
     )
 
 
-class SCULPTPLUS_PG_ui_toggles(PropertyGroup):
+@ACK.Deco.PROP_GROUP.CHILD
+class SCULPTPLUS_PG_ui_toggles:
     show_brush_settings: BoolProperty(default=True)
     show_brush_settings_advanced: BoolProperty(default=False)
     show_brush_settings_stroke: BoolProperty(default=False)
