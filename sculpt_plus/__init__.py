@@ -24,8 +24,13 @@ if bpy.app.background:
 else:
     print(f">>>>>>>>>>>>>>> Loading addon: {__package__} <<<<<<<<<<<<<<<<<<<<<<<<<")
 
-    from .ackit import init_modules, register_modules, unregister_modules
+    import sys
+    import bl_ext
+    # sys.modules['sculpt_plus'] = bl_ext.user_default.sculpt_plus
+    # print("1 +++++++++++++++++++++++++++++++++++++++", sys.modules.get('bl_ext.user_default.sculpt_plus', None))
+    sys.modules['sculpt_plus'] = sys.modules.get('bl_ext.user_default.sculpt_plus', None)
 
+    from .ackit import init_modules, register_modules, unregister_modules
     init_modules()
 
     def register():
