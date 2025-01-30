@@ -24,14 +24,14 @@ if bpy.app.background:
 else:
     print(f">>>>>>>>>>>>>>> Loading addon: {__package__} <<<<<<<<<<<<<<<<<<<<<<<<<")
 
-    from . import auto_load
+    from .ackit import init_modules, register_modules, unregister_modules
 
-    auto_load.init()
+    init_modules()
 
     def register():
-        bpy.hurr = {}
-        auto_load.register()
+        bpy.splus = {}
+        register_modules()
 
     def unregister():
-        auto_load.unregister()
-        del bpy.hurr
+        unregister_modules()
+        del bpy.splus

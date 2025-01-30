@@ -17,13 +17,18 @@ blender_version = bpy.app.version
 
 modules = None
 ordered_classes = None
+registered = False
 
-def init():
+def init_modules():
     global modules
     global ordered_classes
+    
+    if modules is not None:
+        cleanse_modules()
 
     modules = get_all_submodules(Path(__file__).parent)
     ordered_classes = get_ordered_classes_to_register(modules)
+    registered = False
 
     for module in modules:
         if module.__name__ == __name__:
@@ -44,7 +49,25 @@ def init():
             module.init_post()
 
 
-def register():
+def cleanse_modules():
+    # Based on https://devtalk.blender.org/t/plugin-hot-reload-by-cleaning-sys-modules/20040
+    global modules
+
+    sys_modules = sys.modules
+    sorted_addon_modules = sorted([module.__name__ for module in modules])
+    for module_name in sorted_addon_modules:
+        del sys_modules[module_name]
+
+
+def register_modules():
+    global registered
+    global modules
+
+    if modules is None:
+        init_modules()
+    if registered:
+        return
+
     for cls in ordered_classes:
         bpy.utils.register_class(cls)
 
@@ -66,16 +89,23 @@ def register():
         if hasattr(module, "register_post"):
             module.register_post()
 
-    from .ackit.globals import GLOBALS
+    registered = True
+
+    from .globals import GLOBALS
     if GLOBALS.check_in_development():
         print("[Sculpt+] Generating types, ops and icons...")
-        from .ackit._auto_code_gen import AddonCodeGen
+        from ._auto_code_gen import AddonCodeGen
         AddonCodeGen.TYPES(types_alias='splus')
         AddonCodeGen.OPS()
         AddonCodeGen.ICONS()
 
 
-def unregister():
+def unregister_modules():
+    global modules
+    global registered
+    if not registered:
+        return
+
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
 
@@ -96,6 +126,13 @@ def unregister():
             continue
         if hasattr(module, "unregister_post"):
             module.unregister_post()
+
+    # Clear modules.
+    for module in modules:
+        if module.__name__ in sys.modules:
+            del sys.modules[module.__name__]
+
+    registered = False
 
 
 # Import modules

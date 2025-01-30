@@ -94,7 +94,7 @@ def clear_cache():
 
 def init_post():
     # Ensure that property group classes are correctly sorted to avoid dependency issues.
-    from ...auto_load import get_ordered_pg_classes_to_register
+    from .._loader import get_ordered_pg_classes_to_register
     BlenderTypes.PropertyGroup.sort_classes(get_ordered_pg_classes_to_register)
 
     # for btype in BlenderTypes:

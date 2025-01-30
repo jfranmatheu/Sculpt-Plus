@@ -124,7 +124,7 @@ def codegen__types_py(types_filepath: str | Path | None = None, filter_module: s
     if parent_classes != set():
         pg_classes.extend(list(parent_classes))
 
-    from ...auto_load import get_ordered_pg_classes_to_register
+    from .._loader import get_ordered_pg_classes_to_register
     pg_sorted_classes: list[PropertyGroup] = get_ordered_pg_classes_to_register(pg_classes)
 
     pg_classes: set[PropertyGroup] = set(pg_classes)
