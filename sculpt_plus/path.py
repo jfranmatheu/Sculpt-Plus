@@ -53,12 +53,13 @@ def ensure_paths():
         # Do versioning code if needed.
 
         # Update the registered version.
-        with version_file.open('w', encoding='ascii') as file:
-            from . import bl_info
-            file.write(f"{bl_info['version']}\n")
+        # with version_file.open('w', encoding='ascii') as file:
+        #     from . import bl_info
+        #     file.write(f"{bl_info['version']}\n")
 
         data_dir.mkdir(parents=False)
         temp_dir.mkdir()
+
         (temp_dir / "fake_items").mkdir()
         (temp_dir / "thumbnails").mkdir()
         if not management_config_file.exists():
@@ -74,7 +75,7 @@ class SculptPlusPaths(Enum):
     SRC = dirname(abspath(__file__))
     SRC_LIB = join(SRC, 'lib')
     SRC_LIB_IMAGES = join(SRC_LIB, 'images')
-    SRC_LIB_IMAGES_ICONS = join(SRC_LIB_IMAGES, 'icons')
+    SRC_LIB_IMAGES_ICONS = join(SRC_LIB, 'icons')
     SRC_LIB_IMAGES_BRUSHES = join(SRC_LIB_IMAGES, 'brushes')
     SRC_LIB_SCRIPTS = join(SRC_LIB, 'scripts')
     SRC_LIB_BLEND = join(SRC_LIB, 'blend')

@@ -4,13 +4,10 @@ from enum import Enum, auto
 import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush, WorkSpace
 
-from sculpt_plus.sculpt_hotbar.canvas import Canvas
 from sculpt_plus.path import SculptPlusPaths
 
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
-from brush_manager.api import bm_types, BM_UI
-from brush_manager.globals import GLOBALS, CM_UIContext
 from sculpt_plus.globals import G
 
 
@@ -78,11 +75,11 @@ class Props:
         context.window.workspace = old_workspace
         return workspace
 
-    @staticmethod
-    def Canvas() -> Union[Canvas, None]:
-        if not hasattr(bpy, 'sculpt_hotbar'):
-            return None
-        return bpy.sculpt_hotbar._cv_instance
+    # @staticmethod
+    # def Canvas() -> Union[Canvas, None]:
+    #     if not hasattr(bpy, 'sculpt_hotbar'):
+    #         return None
+    #     return bpy.sculpt_hotbar._cv_instance
 
     @staticmethod
     def Scene(context: Context):# -> SCULPTPLUS_PG_scn:

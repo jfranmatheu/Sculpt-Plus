@@ -3,7 +3,6 @@ from mathutils import Vector
 
 from sculpt_plus.utils.operator import create_op_props_popup_wrapper, create_op_modal_exec_wrapper
 
-from sculpt_plus.sculpt_hotbar.di import DiText
 from sculpt_plus.prefs import get_prefs
 
 
