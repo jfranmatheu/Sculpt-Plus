@@ -45,8 +45,8 @@ class BlenderTypes(Enum):
         classes_per_type[self].append(cls)
 
         if self == BlenderTypes.Operator:
-            print(f"--> Add-Class '{cls.__name__}' of type Operator to the name relation dictionary! wiii", type(cls), cls)
-            ot_original_name_relation[cls.__name__] = cls
+            # print(f"--> Add-Class '{cls.__name__}' of type Operator to the name relation dictionary! wiii", type(cls.original_cls), cls.original_cls)
+            ot_original_name_relation[cls.original_cls.__name__] = cls
 
         if GLOBALS.get_addon_global_value('IS_INITIALIZED', False):
             print_debug(
