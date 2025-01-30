@@ -84,12 +84,14 @@ def draw_toolbar(self, context):
     color_scale = 0.19
     color_bot_scale = 0.2
 
+    is_brush = tool_active_type == 'builtin_brush' or tool_active_id == 'BRUSH'
+
     # brush settings sections.
     panel_tool = col_2.column(align=True)
     col = panel_tool.row(align=True)
     col.scale_y = color_scale
     col.prop(ui_props, 'color_toolbar_panel_tool', text="")
-    if tool_active_type == 'builtin_brush':
+    if is_brush:
         draw_brush_settings_tabs(panel_tool, context)
     else:
         draw_tool_settings(panel_tool, context, tool_active, tool_active_id)
