@@ -16,8 +16,6 @@ def draw_toolbar(self, context):
         VIEW3D_PT_tools_active.draw_cls(self.layout, context)
         return
 
-    use_legacy_sculpt = 'sculpt_plus' not in context.workspace
-
     prefs = context.preferences
     ui_scale = prefs.system.ui_scale # prefs.view.ui_scale
 
@@ -28,7 +26,7 @@ def draw_toolbar(self, context):
         return
 
     # toolbar_is_wide_open
-    if context.region.width <= (96 * ui_scale) or use_legacy_sculpt:
+    if context.region.width <= (96 * ui_scale):
         # self.layout.operator('sculpt_plus.expand_toolbar', text="", icon='RIGHTARROW', emboss=False)
         # draw_cls(VIEW3D_PT_tools_active, self.layout, context, spacing=0.1)
         VIEW3D_PT_tools_active.draw_cls(self.layout, context)
@@ -73,7 +71,7 @@ def draw_toolbar(self, context):
     # print(context.area.height, reg.height, view_scroll_y, offset_factor_y)
 
     # TOOLBAR.
-    toolbar = col_1.column(align=True)
+    toolbar = col_1.column(align=False)
     # draw_cls(VIEW3D_PT_tools_active, toolbar, context, spacing=1.0) # row, context, detect_layout=False, default_layout='ROW', scale_y=1.35
     VIEW3D_PT_tools_active.draw_cls(toolbar, context)
     #cy_toolbar = CyBlStruct.UI_LAYOUT(toolbar)
