@@ -3,10 +3,11 @@ from enum import Enum, auto
 
 import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush, WorkSpace
+from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
 from sculpt_plus.path import SculptPlusPaths
+from sculpt_plus.ackit import GLOBALS
 
-from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
 
 # SOME NICE SCULPT TOOL - BRUSH NAME CONSTANTS:
@@ -131,8 +132,10 @@ class SculptTool:
 
 
 def unregister_pre():
-    if workspace := Props.Workspace(bpy.context):
-        del workspace['sculpt_plus']
+    # Avoid deleting workspace while in development environment!
+    if GLOBALS.check_in_production():
+        if workspace := Props.Workspace(bpy.context):
+            del workspace['sculpt_plus']
 
-    if bpy.context.workspace == workspace:
-        bpy.ops.workspace.delete()
+        if bpy.context.workspace == workspace:
+            bpy.ops.workspace.delete()
