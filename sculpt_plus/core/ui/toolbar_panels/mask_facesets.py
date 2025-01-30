@@ -49,7 +49,7 @@ def _draw_mask_effects(content, align: bool = False):
 def _draw_mask_to_mesh(content, align: bool = False):
     row = content.row(align=align)
     row.operator('mesh.paint_mask_extract', icon_value=Previews.Mask.EXTRACT())
-    row.operator('sculpt_plus.mask_slice_wrapper', icon_value=Previews.Mask.SLICE()) # (mask_threshold=0.5, fill_holes=True, new_object=True)
+    row.operator('mesh.paint_mask_slice', icon_value=Previews.Mask.SLICE()) # sculpt_plus.mask_slice_wrapper # (mask_threshold=0.5, fill_holes=True, new_object=True)
 
 
 def draw_mask(layout: UILayout, context):
