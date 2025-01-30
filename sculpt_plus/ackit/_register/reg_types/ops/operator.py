@@ -2,7 +2,7 @@
 import bpy
 from bpy import types as bpy_types
 
-from .....utils.operator import OpsReturn
+from ....utils.operator import OpsReturn
 from .._base import BaseType
 
 
