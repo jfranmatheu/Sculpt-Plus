@@ -6,8 +6,8 @@ from sculpt_plus.prefs import get_prefs
 
 # from sculpt_plus.core.data.cy_structs import CyBlStruct
 
-from .panels import *
-from ...backup_cache import set_cls_attribute
+from ..toolbar_panels import *
+from .backup_cache import set_cls_attribute
 
 
 
