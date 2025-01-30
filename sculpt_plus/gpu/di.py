@@ -15,8 +15,6 @@ from bpy.types import UILayout
 from sculpt_plus.lib import BrushIcon
 from sculpt_plus.utils.gpu import get_brush_tex, get_ui_image_tex
 from gpu import *
-from brush_manager.api import bm_types
-from brush_manager.icons import Icons
 sh_img_co=CreateShader();sh_img_co=None if background else SH("""
 uniform mat4 ModelViewProjectionMatrix;in vec2 texCoord;in vec2 pos;out vec2 texCoord_interp;void main(){gl_Position=ModelViewProjectionMatrix * vec4(pos.xy, 0.0f, 1.0f); gl_Position.z=1.0; texCoord_interp=texCoord;}
 ""","""
@@ -331,14 +329,3 @@ def get_text_dim(_text, _size, _scale):
     return text_dim(id, _text)
 def get_rect_center(p,s):
     return p+s*.5
-
-def DiBMType(_p,_s,_i:bm_types.Item,_act=False,_op=1,draw_fallback=None):
-    if gputex := _i.icon_gputex:
-        DiImaOpGamHl(_p,_s,gputex,_op=_op,_hl=int(_act))
-    elif draw_fallback is not None:
-        draw_fallback(_p,_s,_i,_act,_op)
-    else:
-        if isinstance(_i, bm_types.BrushItem):
-            DiBr(_p,_s,_i.type,_act=_act,_op=_op)
-        elif isinstance(_i, bm_types.TextureItem):
-            DiIcoOpGamHl(_p,_s,Icons.TEXTURE_PLACEHOLDER.gputex,_op=_op,_hl=int(_act))

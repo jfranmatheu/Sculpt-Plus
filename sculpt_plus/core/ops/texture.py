@@ -31,8 +31,7 @@ class SCULPTPLUS_OT_import_texture(Operator, ImportHelper):
         new_tex: ImageTexture = bpy.data.textures.new(basename(self.filepath), 'IMAGE')
         new_tex.image = loaded_image
 
-        from sculpt_plus.globals import G
-        G.bm_data.add_bl_texture(context, new_tex, set_active=True)
+        # BM.add_bl_texture(context, new_tex, set_active=True)
 
         return {'FINISHED'}
 
@@ -50,12 +49,14 @@ class SCULPTPLUS_OT_unasign_bl_texture(Operator):
         if context.tool_settings.sculpt.brush.texture is None:
             return {'CANCELLED'}
 
-        from sculpt_plus.globals import G
         act_brush = context.tool_settings.sculpt.brush
         act_brush.texture = None
-        act_brush_item = G.bm_data.active_brush
+        
+        '''
+        act_brush_item = BM.active_brush
 
         if act_brush['uuid'] == act_brush_item.uuid:
             act_brush_item.texture = None
+        '''
 
         return {'FINISHED'}

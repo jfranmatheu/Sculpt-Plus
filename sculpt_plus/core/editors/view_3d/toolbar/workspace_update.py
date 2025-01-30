@@ -1,14 +1,10 @@
 import bpy
 from  bpy.types import Window, WorkSpace
 
-from .override_tools import toggle_toolbar_tools
-
-
 def on_workspace_change():
     context = bpy.context
     window: Window = context.window
     workspace: WorkSpace = window.workspace
-    toggle_toolbar_tools(use_legacy='sculpt_plus' not in workspace)
 
 owner = object()
 

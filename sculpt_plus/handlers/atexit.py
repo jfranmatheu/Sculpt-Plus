@@ -11,5 +11,3 @@ def on_quit():
         return
     print("[Sculpt+] atexit::on_quit()")
     first_time = False
-    # from sculpt_plus.globals import G
-    # G.hm_data.save()

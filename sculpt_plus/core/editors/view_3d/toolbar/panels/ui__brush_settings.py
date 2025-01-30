@@ -5,7 +5,6 @@ from bl_ui.properties_paint_common import brush_settings, brush_settings_advance
 from bpy.types import UILayout, Context
 
 from sculpt_plus.props import Props
-from sculpt_plus.globals import G
 
 
 def draw_brush_settings_tabs(layout: UILayout, context: Context):
