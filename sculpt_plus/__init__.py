@@ -31,11 +31,11 @@ else:
     sys.modules['sculpt_plus'] = sys.modules.get('bl_ext.user_default.sculpt_plus', None)
 
     from .ackit import init_modules, register_modules, unregister_modules
-    init_modules({'TYPES', 'OPS', 'ICONS'}, types_alias='splus')
+    init_modules()
 
     def register():
         bpy.splus = {}
-        register_modules()
+        register_modules({'TYPES', 'OPS', 'ICONS'}, types_alias='splus')
 
     def unregister():
         unregister_modules()

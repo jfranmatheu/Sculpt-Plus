@@ -17,7 +17,7 @@ modules = None
 registered = False
 
 
-def init_modules(code_gen: set[str] = {'TYPES', 'OPS', 'ICONS'}, types_alias: str = 'addon_types'):
+def init_modules():
     """Initialize the addon modules.
     
     You can decide wheter you want to automatically use the code-gen utility to output:
@@ -52,21 +52,6 @@ def init_modules(code_gen: set[str] = {'TYPES', 'OPS', 'ICONS'}, types_alias: st
         if hasattr(module, "init_post"):
             module.init_post()
 
-    if code_gen and GLOBALS.check_in_development():
-        from .debug import print_debug
-        from ._auto_code_gen import AddonCodeGen
-        code_gen_kwargs = {
-            'OPS': {},
-            'ICONS': {},
-            'TYPES': {
-                'types_alias': types_alias
-            }
-        }
-        for name in code_gen:
-            print_debug(f"AutoCodeGen! Generating '{name}' file")
-            if code_gen_func := getattr(AddonCodeGen, name, None):
-                code_gen_func(**code_gen_kwargs.get(name, {}))
-
 
 def cleanse_modules():
     # Based on https://devtalk.blender.org/t/plugin-hot-reload-by-cleaning-sys-modules/20040
@@ -78,7 +63,7 @@ def cleanse_modules():
         del sys_modules[module_name]
 
 
-def register_modules():
+def register_modules(code_gen: set[str] = {'TYPES', 'OPS', 'ICONS'}, types_alias: str = 'addon_types'):
     global registered
     global modules
 
@@ -101,6 +86,21 @@ def register_modules():
             module.register_post()
 
     registered = True
+    
+    if code_gen and GLOBALS.check_in_development():
+        from .debug import print_debug
+        from ._auto_code_gen import AddonCodeGen
+        code_gen_kwargs = {
+            'OPS': {},
+            'ICONS': {},
+            'TYPES': {
+                'types_alias': types_alias
+            }
+        }
+        for name in code_gen:
+            print_debug(f"AutoCodeGen! Generating '{name}' file")
+            if code_gen_func := getattr(AddonCodeGen, name, None):
+                code_gen_func(**code_gen_kwargs.get(name, {}))
 
 def unregister_modules():
     global modules
