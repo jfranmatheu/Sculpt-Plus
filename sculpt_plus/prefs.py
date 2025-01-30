@@ -9,6 +9,8 @@ import bpy
 import os
 from os.path import dirname, abspath, join
 
+from .ackit import ACK
+
 # from sculpt_plus.ackit import better_prefs
 
 app_data_path = os.getenv('APPDATA')
@@ -41,9 +43,10 @@ enum_list = [("NONE", "None", "")]
 #     layout.prop(prefs, 'show_hotbar_transform_group', text="Transform Group")
 
 
-class SCULPTPLUS_AddonPreferences(AddonPreferences):
+
+class SCULPTPLUS_AddonPreferences(ACK.Type.PREFS):
     bl_idname: str = __package__
-    
+
     # better_tabs: EnumProperty(
     #     name="Sections",
     #     items=(
