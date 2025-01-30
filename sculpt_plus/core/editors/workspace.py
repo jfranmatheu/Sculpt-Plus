@@ -5,9 +5,10 @@ import bpy
 from bl_ui.space_topbar import TOPBAR_HT_upper_bar
 from sculpt_plus.previews import Previews
 
+from ...ackit import ACK
 
-# OPERATOR
-class SCULPTPLUS_OT_setup_workspace(Operator):
+
+class SCULPTPLUS_OT_setup_workspace(ACK.Type.OPS.ACTION):
     bl_idname = 'sculpt_plus.setup_workspace'
     bl_label = 'Setup Sculpt+ Workspace'
     bl_description = "Add the 'Sculpt+' Workspace to your .blend and set it up to start using Sculpt+ in your project!"
