@@ -3,8 +3,8 @@ from bpy.props import BoolProperty
 
 from time import time
 
-from sculpt_plus.utils.math import map_value
-from sculpt_plus.core.data.cy_structs import CyBlStruct
+from ...utils.math import map_value
+from ...core.data.cy_structs import CyBlStruct
 
 
 class SCULPTPLUS_OT_expand_toolbar(Operator):

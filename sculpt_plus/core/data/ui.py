@@ -1,6 +1,6 @@
 from bpy.props import PointerProperty, BoolProperty, EnumProperty, FloatVectorProperty
 
-from sculpt_plus.previews import Previews
+from ...previews import Previews
 
 from ...ackit import ACK
 

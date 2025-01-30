@@ -44,6 +44,10 @@ class BlenderTypes(Enum):
         ### print_debug(f"--> Add-Class '{cls.__name__}' of type '{self.name}', {id(cls)}")
         classes_per_type[self].append(cls)
 
+        if self == BlenderTypes.Operator:
+            print(f"--> Add-Class '{cls.__name__}' of type Operator to the name relation dictionary! wiii", type(cls), cls)
+            ot_original_name_relation[cls.__name__] = cls
+
         if GLOBALS.get_addon_global_value('IS_INITIALIZED', False):
             print_debug(
                 f"[ACKit] (+) Runtime-Register {self.name} class: {cls.__name__}, {id(cls)}"
@@ -86,10 +90,16 @@ class BlenderTypes(Enum):
 classes_per_type: Dict[BlenderTypes, List[Type]] = defaultdict(list)
 register_factory: Dict[BlenderTypes, RegisterFactory] = {}
 
+ot_original_name_relation = {}
+
+def get_operator_by_name(op_name: str) -> Type | None:
+    return ot_original_name_relation.get(op_name, None)
+
 
 def clear_cache():
     classes_per_type.clear()
     register_factory.clear()
+    ot_original_name_relation.clear()
 
 
 def init_post():

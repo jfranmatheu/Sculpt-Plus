@@ -1,9 +1,10 @@
 from bpy.types import Operator, Context, Event, WorkSpace, Menu
-from sculpt_plus.props import Props
-from sculpt_plus.path import SculptPlusPaths
 import bpy
 from bl_ui.space_topbar import TOPBAR_HT_upper_bar
-from sculpt_plus.previews import Previews
+
+from ...props import Props
+from ...path import SculptPlusPaths
+from ...previews import Previews
 
 from ...ackit import ACK
 

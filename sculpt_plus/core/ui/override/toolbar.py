@@ -1,8 +1,8 @@
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
-from sculpt_plus.props import Props, toolbar_hidden_brush_tools, SculptTool
-from sculpt_plus.prefs import get_prefs
+from ....props import Props, toolbar_hidden_brush_tools, SculptTool
+from ....prefs import get_prefs
 
 # from sculpt_plus.core.data.cy_structs import CyBlStruct
 

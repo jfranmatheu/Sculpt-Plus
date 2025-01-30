@@ -1,7 +1,7 @@
 from os.path import realpath, relpath, abspath, join, basename, dirname, exists, isfile
 import bpy
 
-from sculpt_plus.path import SculptPlusPaths
+from ..path import SculptPlusPaths
 
 images_folder = SculptPlusPaths.SRC_LIB_IMAGES()
 

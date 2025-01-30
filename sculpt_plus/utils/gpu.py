@@ -12,8 +12,8 @@ from .get_image_size import get_image_size
 import imbuf
 import gpu
 from imbuf.types import ImBuf
-from sculpt_plus.path import data_brush_dir, SculptPlusPaths
-from sculpt_plus.lib import BrushIcon, Icon
+from ..path import data_brush_dir, SculptPlusPaths
+from ..lib import BrushIcon, Icon
 import numpy as np
 from gpu_extras.presets import draw_texture_2d
 

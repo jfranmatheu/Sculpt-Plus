@@ -5,8 +5,8 @@ import bpy
 from bpy.types import Context, Image as BlImage, ImageTexture as BlImageTexture, Brush as BlBrush, WorkSpace
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
-from sculpt_plus.path import SculptPlusPaths
-from sculpt_plus.ackit import GLOBALS
+from .path import SculptPlusPaths
+from .ackit import GLOBALS
 
 
 

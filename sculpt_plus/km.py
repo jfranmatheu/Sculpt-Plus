@@ -1,6 +1,6 @@
 import bpy
 
-from sculpt_plus.core.ops.gestures import SCULPTPLUS_OT_gesture_size_strength
+from .core.ops.gestures import SCULPTPLUS_OT_gesture_size_strength
 
 
 def register():

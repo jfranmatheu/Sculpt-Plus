@@ -4,12 +4,12 @@ from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 from bl_ui.properties_paint_common import brush_settings, brush_settings_advanced, brush_texture_settings, StrokePanel, FalloffPanel, SmoothStrokePanel
 from bpy.types import UILayout, Context
 
-from sculpt_plus.props import Props
+from ....props import Props
 
 
 def draw_brush_settings_tabs(layout: UILayout, context: Context):
     # BRUSH SETTINGS.
-    from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
+    from ....core.data.wm import SCULPTPLUS_PG_ui_toggles
     ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
     ui_section: str = ui_props.toolbar_brush_sections
 
@@ -96,7 +96,7 @@ def draw_brush_settings_tabs(layout: UILayout, context: Context):
 
 def draw_brush_settings_expandable(layout: UILayout, context: Context):
     # BRUSH SETTINGS.
-    from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
+    from ....core.data.wm import SCULPTPLUS_PG_ui_toggles
     ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
 
     sculpt = context.tool_settings.sculpt

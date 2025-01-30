@@ -3,8 +3,8 @@ from enum import Enum
 from bpy.types import Image, Brush
 from bpy.path import abspath
 
-from sculpt_plus.utils.image import load_image, load_image_from_filepath
-from sculpt_plus.path import SculptPlusPaths
+from ..utils.image import load_image, load_image_from_filepath
+from ..path import SculptPlusPaths
 
 
 class BrushIcon(Enum):

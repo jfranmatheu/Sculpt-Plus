@@ -2,9 +2,10 @@ from gpu_extras.presets import draw_circle_2d
 from bpy.types import Operator
 from mathutils import Vector
 from math import dist
-from sculpt_plus.gpu.di import DiText
-from sculpt_plus.utils.math import clamp, map_value
 from gpu import state
+
+from ...gpu.di import DiText
+from ...utils.math import clamp, map_value
 
 
 class SCULPTPLUS_OT_gesture_size_strength(Operator):

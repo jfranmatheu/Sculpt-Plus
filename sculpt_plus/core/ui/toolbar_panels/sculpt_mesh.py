@@ -1,7 +1,8 @@
 from bpy.types import UILayout, MultiresModifier, VIEW3D_PT_sculpt_voxel_remesh, VIEW3D_PT_sculpt_dyntopo
 
-from sculpt_plus.utils.modifiers import get_modifier_by_type
-from sculpt_plus.props import Props
+from ....utils.modifiers import get_modifier_by_type
+from ....props import Props
+from ....ops import OPS
 
 from ._dummy import DummyPanel
 
@@ -68,29 +69,29 @@ def draw_sculpt_sections(layout: UILayout, context):
         _vox_size.label(text="Increment / Decrement Voxel Size :")
         vox_size_add = _vox_size.row(align=True)
         vox_size_add.label(text="", icon='ADD')
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_size", text="0.1").value = 0.1
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_size", text="0.01").value = 0.01
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_size", text="0.001").value = 0.001
+        OPS.IncreaseRemeshVoxelSize.draw_in_layout(vox_size_add, label="0.1").value = 0.1
+        OPS.IncreaseRemeshVoxelSize.draw_in_layout(vox_size_add, label="0.1").value = 0.01
+        OPS.IncreaseRemeshVoxelSize.draw_in_layout(vox_size_add, label="0.1").value = 0.001
         vox_size_add = _vox_size.row(align=True)
         vox_size_add.label(text="", icon='REMOVE')
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_size", text="-0.1").value = -0.1
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_size", text="-0.01").value = -0.01
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_size", text="-0.001").value = -0.001
+        OPS.IncreaseRemeshVoxelSize.draw_in_layout(vox_size_add, label="0.1").value = -0.1
+        OPS.IncreaseRemeshVoxelSize.draw_in_layout(vox_size_add, label="0.1").value = -0.01
+        OPS.IncreaseRemeshVoxelSize.draw_in_layout(vox_size_add, label="0.1").value = -0.001
 
         _vox_size = vox_size.column(align=True)
         _vox_size.label(text="Change Voxel Density (in %) :")
         vox_size_add = _vox_size.row(align=True)
         vox_size_add.label(text="", icon='ADD')
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="10%").value = 10
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="20%").value = 20
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="33%").value = 33
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="50%").value = 50
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="10%").value = 10
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="25%").value = 25
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="33%").value = 33
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="50%").value = 50
         vox_size_add = _vox_size.row(align=True)
         vox_size_add.label(text="", icon='REMOVE')
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="-10%").value = -10
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="-20%").value = -20
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="-33%").value = -33
-        vox_size_add.operator("sculpt_plus.remesh_voxel_increase_density", text="-50%").value = -50
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="10%").value = -10
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="25%").value = -25
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="33%").value = -33
+        OPS.IncreaseRemeshVoxelDensity.draw_in_layout(vox_size_add, label="50%").value = -50
 
         content.separator()
 

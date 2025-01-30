@@ -2,7 +2,7 @@ import bpy
 from bpy.types import Operator, MultiresModifier
 from bpy.props import IntProperty, BoolProperty
 
-from sculpt_plus.utils.modifiers import get_modifier_by_type
+from ...utils.modifiers import get_modifier_by_type
 
 
 class SCULPTPLUS_OT_multires_change_level(Operator):

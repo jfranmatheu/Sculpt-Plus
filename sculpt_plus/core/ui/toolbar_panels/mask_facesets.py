@@ -1,10 +1,10 @@
 from bpy.types import UILayout
 
-from sculpt_plus.props import Props
-from sculpt_plus.previews import Previews
-from sculpt_plus.prefs import get_prefs
+from ....props import Props
+from ....previews import Previews
+from ....prefs import get_prefs
 
-from sculpt_plus.core.data.cy_structs import CyBlStruct
+from ....core.data.cy_structs import CyBlStruct
 
 
 def _draw_mask_filters(content: UILayout, only_icons: bool = False, align: bool = True, scale_y: float = 1):
@@ -297,7 +297,7 @@ def draw_facesets(layout: UILayout, context):
 
 
 def draw_mask_facesets(layout: UILayout, context):
-    from sculpt_plus.core.data.wm import SCULPTPLUS_PG_ui_toggles
+    from ....core.data.wm import SCULPTPLUS_PG_ui_toggles
     ui_props: SCULPTPLUS_PG_ui_toggles = Props.UI(context)
 
     ui = Props.UI(context)

@@ -1,7 +1,7 @@
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active, _defs_sculpt, _defs_transform, _defs_annotate
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper, ToolDef
 
-from sculpt_plus.props import Props
+from ....props import Props
 
 
 def draw_tool_settings(layout, context, active_tool, active_tool_id: str):

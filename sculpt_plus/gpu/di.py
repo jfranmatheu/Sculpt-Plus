@@ -12,8 +12,8 @@ from gpu_extras.presets import draw_circle_2d
 from gpu.types import Buffer, GPUTexture as TEX, GPUShader as SH, GPUShaderCreateInfo as CreateShader
 from bgl import *
 from bpy.types import UILayout
-from sculpt_plus.lib import BrushIcon
-from sculpt_plus.utils.gpu import get_brush_tex, get_ui_image_tex
+from ..lib import BrushIcon
+from ..utils.gpu import get_brush_tex, get_ui_image_tex
 from gpu import *
 sh_img_co=CreateShader();sh_img_co=None if background else SH("""
 uniform mat4 ModelViewProjectionMatrix;in vec2 texCoord;in vec2 pos;out vec2 texCoord_interp;void main(){gl_Position=ModelViewProjectionMatrix * vec4(pos.xy, 0.0f, 1.0f); gl_Position.z=1.0; texCoord_interp=texCoord;}

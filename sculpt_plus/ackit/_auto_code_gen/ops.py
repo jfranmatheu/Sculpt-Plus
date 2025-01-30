@@ -15,17 +15,16 @@ from ..globals import GLOBALS
 # IMPORT CODE.
 
 from .._register.reg_types.ops import Operator
-from .._register import BlenderTypes
-
-
-ot_original_name_relation: dict[str, Operator] = {}
-
+from .._register._register import get_operator_by_name
 
 
 class OpTypeEnum:
+
     @property
     def operator(self) -> Operator:
-        return ot_original_name_relation[self.name]
+        op_cls = get_operator_by_name(self.name)
+        assert op_cls is not None, f"OpTypeEnum: operator not found. Is it registered? {self.name}"
+        return op_cls
 
     def run(self, **operator_properties: dict) -> None:
         self.operator.run(**operator_properties)
@@ -38,15 +37,6 @@ class OpTypeEnum:
 
     def __call__(self, *args, **kwargs) -> None:
         return self.operator.run_invoke(*args, **kwargs)
-
-
-def register():
-    for cls in BlenderTypes.Operator.get_classes():
-        ot_original_name_relation[cls.original_name] = cls
-
-def unregister():
-    ot_original_name_relation.clear()
-
 
 
 # ----------------------------------------------------------------
