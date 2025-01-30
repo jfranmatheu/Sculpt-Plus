@@ -1,13 +1,13 @@
 '''
     OPS.PY GENERATION
 '''
-
-import bpy
-from bpy.ops import _BPyOpsSubModOp
-
+import sys
 from collections import defaultdict
 from string import Template
 from pathlib import Path
+
+import bpy
+from bpy.ops import _BPyOpsSubModOp
 
 from ..globals import GLOBALS
 
@@ -55,7 +55,9 @@ def unregister():
 def codegen__ops_py(ops_py_filepath: Path = None, filter_module: callable = None) -> None:
     from .._register import BlenderTypes
     
+    use_default_path = False
     if ops_py_filepath is None:
+        use_default_path = True
         ops_submodule = GLOBALS.ADDON_SOURCE_PATH / 'ops'
         if ops_submodule.exists() and ops_submodule.is_dir():
             ops_py_filepath = ops_submodule / '__init__.py'
@@ -109,7 +111,22 @@ def codegen__ops_py(ops_py_filepath: Path = None, filter_module: callable = None
     with ops_py_filepath.open('w', encoding='utf-8') as f:
         f.write("# /ops.py\n# Code automatically generated!\n")
         f.write('from enum import Enum, auto\n\n')
-        f.write(f'from {__package__}.ops import OpTypeEnum\n\n')
+
+        use_bl_ext = __package__.startswith('bl_ext')
+        if use_bl_ext:
+            fake_module_available = GLOBALS.ADDON_MODULE_SHORT in sys.modules
+            if use_default_path:
+                module_name = __package__.removeprefix(f'bl_ext.user_default.{GLOBALS.ADDON_MODULE_SHORT}')
+            elif fake_module_available:
+                module_name = __package__.removeprefix('bl_ext.user_default.')
+            else: module_name = __package__
+        else:
+            if use_default_path:
+                module_name = __package__.removeprefix(f'{GLOBALS.ADDON_MODULE_SHORT}.')
+            else:
+                module_name = __package__
+
+        f.write(f'from {module_name}.ops import OpTypeEnum\n\n')
         f.write('__all__ = ["OPS",]\n\n\n')
 
         f.write('\n\nclass OPS(OpTypeEnum, Enum):\n')
