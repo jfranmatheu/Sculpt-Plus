@@ -5,6 +5,7 @@ from bl_ui.properties_paint_common import brush_settings, brush_settings_advance
 from bpy.types import UILayout, Context
 
 from ....props import Props
+from ....ops import OPS
 
 
 def draw_brush_settings_tabs(layout: UILayout, context: Context):
@@ -81,7 +82,7 @@ def draw_brush_settings_tabs(layout: UILayout, context: Context):
             brush_texture_settings(content, act_brush, sculpt=True)
             content.separator()
             content.alert = True
-            content.operator('sculpt_plus.unasign_bl_texture', text="Unasign Texture")
+            OPS.UnasignTexture.draw_in_layout(content, label="Unasign Texture")
             content.alert = False
         else:
             content.alert = True
@@ -90,7 +91,7 @@ def draw_brush_settings_tabs(layout: UILayout, context: Context):
             content.separator()
             content.prop(act_brush, 'texture', text='Asign Existing')
             content.separator()
-            content.operator('sculpt_plus.import_texture', text='Import from image file')
+            OPS.ImportTexture.draw_in_layout(content, label='Import from image file')
 
     content.separator(factor=0.5)
 

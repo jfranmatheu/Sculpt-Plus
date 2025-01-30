@@ -5,14 +5,13 @@ from bpy_extras.io_utils import ImportHelper
 
 from os.path import isfile, basename
 
+from ...ackit import ACK
 
 
-class SCULPTPLUS_OT_import_texture(Operator, ImportHelper):
-    bl_idname = "sculpt_plus.import_texture"
-    bl_label = "Import Texture"
-    bl_description = "Import texture from an image file and asign it to the active brush"
-
-    filter_glob: StringProperty(options={'HIDDEN'}, default='*.jpg;*.jpeg;*.png;*.bmp;*.psd;*.tiff;*.tif')
+@ACK.Deco.OPS.IMPORT('jpg', 'jpeg', 'png', 'bmp', 'psd', '.tiff', 'tif')
+class ImportTexture:
+    label = "Import Texture"
+    tooltip = "Import texture from an image file and asign it to the active brush"
 
     @classmethod
     def poll(cls, context):
@@ -36,18 +35,17 @@ class SCULPTPLUS_OT_import_texture(Operator, ImportHelper):
         return {'FINISHED'}
 
 
-class SCULPTPLUS_OT_unasign_bl_texture(Operator):
-    bl_idname = 'sculpt_plus.unasign_bl_texture'
-    bl_label = "Unasign Texture"
-    bl_description = "Un-asign the texture from the Brush"
+class UnasignTexture(ACK.Type.OPS.ACTION):
+    label = "Unasign Texture"
+    tooltip = "Un-asign the texture from the Brush"
 
     @classmethod
     def poll(cls, context):
         return context.mode == "SCULPT" and context.sculpt_object is not None and context.tool_settings.sculpt.brush is not None
 
-    def execute(self, context):
+    def action(self, context):
         if context.tool_settings.sculpt.brush.texture is None:
-            return {'CANCELLED'}
+            return -1
 
         act_brush = context.tool_settings.sculpt.brush
         act_brush.texture = None
@@ -58,5 +56,3 @@ class SCULPTPLUS_OT_unasign_bl_texture(Operator):
         if act_brush['uuid'] == act_brush_item.uuid:
             act_brush_item.texture = None
         '''
-
-        return {'FINISHED'}
