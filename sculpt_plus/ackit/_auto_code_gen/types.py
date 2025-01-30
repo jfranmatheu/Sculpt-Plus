@@ -102,8 +102,9 @@ def codegen__types_py(types_filepath: str | Path | None = None, filter_module: s
     # Get PropertyGroup classes in the proper order.
     from .._register._register import BlenderTypes
     pg_classes = BlenderTypes.PropertyGroup.get_classes()
-    prefs_cls = BlenderTypes.AddonPreferences.get_classes()[0]
-    pg_classes.append(prefs_cls)
+    prefs_cls = BlenderTypes.AddonPreferences.get_classes()
+    if len(prefs_cls) > 0:
+        pg_classes.append(prefs_cls[0])
 
     if pg_classes == []:
         # SAD. No PropertyGroup classes to process... :-(
