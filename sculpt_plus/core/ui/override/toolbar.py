@@ -3,8 +3,7 @@ from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 
 from ....props import Props, toolbar_hidden_brush_tools, SculptTool
 from ....prefs import get_prefs
-
-# from sculpt_plus.core.data.cy_structs import CyBlStruct
+from ....ops import OPS
 
 from ..toolbar_panels import *
 from .backup_cache import set_cls_attribute
@@ -27,7 +26,7 @@ def draw_toolbar(self, context):
 
     # toolbar_is_wide_open
     if context.region.width <= (96 * ui_scale):
-        # self.layout.operator('sculpt_plus.expand_toolbar', text="", icon='RIGHTARROW', emboss=False)
+        OPS.ExpandToolbar.draw_in_layout(self.layout, label='', icon='RIGHTARROW', emboss=False)
         # draw_cls(VIEW3D_PT_tools_active, self.layout, context, spacing=0.1)
         VIEW3D_PT_tools_active.draw_cls(self.layout, context)
         return

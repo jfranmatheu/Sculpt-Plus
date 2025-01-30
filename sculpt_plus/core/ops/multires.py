@@ -3,12 +3,12 @@ from bpy.types import Operator, MultiresModifier
 from bpy.props import IntProperty, BoolProperty
 
 from ...utils.modifiers import get_modifier_by_type
+from ...ackit import ACK
 
 
-class SCULPTPLUS_OT_multires_change_level(Operator):
-    bl_idname = "sculpt_plus.multires_change_level"
-    bl_label = "Change Multires Level"
-    bl_description = "Change Multires Level"
+class MultiresChangeLevel(ACK.Type.OPS.ACTION):
+    label = "Change Multires Level"
+    tooltip = "Change Multires Level"
 
     level: IntProperty(default=0, name="Multires Level")
 
@@ -16,20 +16,18 @@ class SCULPTPLUS_OT_multires_change_level(Operator):
     def poll(cls, context):
         return context.mode == "SCULPT" and context.sculpt_object is not None
 
-    def execute(self, context):
+    def action(self, context):
         mod: MultiresModifier = get_modifier_by_type(context.sculpt_object, 'MULTIRES')
         if not mod:
-            return {'CANCELLED'}
+            return -1
         if self.level > mod.total_levels:
-            return {'CANCELLED'}
+            return -1
         mod.sculpt_levels = self.level
-        return {'FINISHED'}
 
 
-class SCULPTPLUS_OT_multires_apply(Operator):
-    bl_idname = "sculpt_plus.multires_apply"
-    bl_label = "Apply Multires Modifier"
-    bl_description = "Apply Multires Modifier"
+class MultiresApply(ACK.Type.OPS.ACTION):
+    label = "Apply Multires Modifier"
+    tooltip = "Apply Multires Modifier"
 
     as_shape_key: BoolProperty(name="Apply as Shape Key", default=False)
 
@@ -37,10 +35,10 @@ class SCULPTPLUS_OT_multires_apply(Operator):
     def poll(cls, context):
         return context.mode == "SCULPT" and context.sculpt_object is not None
 
-    def execute(self, context):
+    def action(self, context):
         mod: MultiresModifier = get_modifier_by_type(context.sculpt_object, 'MULTIRES')
         if not mod:
-            return {'CANCELLED'}
+            return -1
         bpy.ops.object.mode_set(False, mode='OBJECT', toggle=False)
         mod.levels = mod.sculpt_levels
         if self.as_shape_key:
@@ -48,23 +46,20 @@ class SCULPTPLUS_OT_multires_apply(Operator):
         else:
             bpy.ops.object.modifier_apply(modifier=mod.name, report=True)
         bpy.ops.object.mode_set(False, mode='SCULPT', toggle=False)
-        return {'FINISHED'}
 
 
-class SCULPTPLUS_OT_multires_remove(Operator):
-    bl_idname = "sculpt_plus.multires_remove"
-    bl_label = "Remove Multires Modifier"
-    bl_description = "Remove Multires Modifier"
+class MultiresRemove(Operator):
+    label = "Remove Multires Modifier"
+    tooltip = "Remove Multires Modifier"
 
     @classmethod
     def poll(cls, context):
         return context.mode == "SCULPT" and context.sculpt_object is not None
 
-    def execute(self, context):
+    def action(self, context):
         mod: MultiresModifier = get_modifier_by_type(context.sculpt_object, 'MULTIRES')
         if not mod:
-            return {'CANCELLED'}
+            return -1
         bpy.ops.object.mode_set(False, mode='OBJECT', toggle=False)
         context.active_object.modifiers.remove(mod)
         bpy.ops.object.mode_set(False, mode='SCULPT', toggle=False)
-        return {'FINISHED'}

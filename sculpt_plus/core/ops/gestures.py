@@ -6,11 +6,11 @@ from gpu import state
 
 from ...gpu.di import DiText
 from ...utils.math import clamp, map_value
+from ...ackit import ACK
 
 
-class SCULPTPLUS_OT_gesture_size_strength(Operator):
-    bl_label: str = "Gesture Size Strength"
-    bl_idname: str = 'sculpt_plus.gesture_size_strength'
+class GestureSizeStrength(ACK.Type.OPS.ACTION):
+    label: str = "Gesture Size Strength"
 
     @classmethod
     def poll(cls, context):

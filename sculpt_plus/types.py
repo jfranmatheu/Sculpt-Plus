@@ -6,40 +6,10 @@ from typing import List, Set, Tuple, Dict, Any
 import bpy
 import bpy_types
 import bl_ext
-from bpy.types import WindowManager, Scene, Context
+from bpy.types import Context, WindowManager, Scene
 
 
 """ Addon-Defined PropertyGroup: """
-class sculpt_plus_ui_panel_toggles:
-	# Root PG, attached to bpy.types.WindowManager
-	name: str
-
-	@classmethod
-	def get_data(cls, context: Context) -> 'sculpt_plus_ui_panel_toggles':
-		bpy_type_data: ExtendedWindowManager = context.window_manager
-		if hasattr(bpy_type_data, "sculpt_plus_ui_panels"): 
-				return bpy_type_data.sculpt_plus_ui_panels
-
-
-class SCULPTPLUS_PG_scn:
-	# Root PG, attached to bpy.types.Scene
-	name: str
-	texture: bpy.types.ImageTexture
-	image: bpy.types.Image
-	image_seq: bpy.types.Image
-	mask_op_use_front_faces_only: bool
-	mask_op_clear_previous_mask: bool
-	mask_op_invert: bool
-	mask_op_use_reposition_pivot: bool
-	facesets_op_use_front_faces_only: bool
-
-	@classmethod
-	def get_data(cls, context: Context) -> 'SCULPTPLUS_PG_scn':
-		bpy_type_data: ExtendedScene = context.scene
-		if hasattr(bpy_type_data, "sculpt_plus"): 
-				return bpy_type_data.sculpt_plus
-
-
 class SCULPTPLUS_AddonPreferences:
 	bl_idname: str
 	first_time: bool
@@ -110,6 +80,36 @@ class _SCULPTPLUS_PG_ui_toggles:
 	color_toolbar_panel_sculptmesh: tuple[float]
 	color_toolbar_panel_emboss_bottom: tuple[float]
 
+class SCULPTPLUS_PG_scn:
+	# Root PG, attached to bpy.types.Scene
+	name: str
+	texture: bpy.types.ImageTexture
+	image: bpy.types.Image
+	image_seq: bpy.types.Image
+	mask_op_use_front_faces_only: bool
+	mask_op_clear_previous_mask: bool
+	mask_op_invert: bool
+	mask_op_use_reposition_pivot: bool
+	facesets_op_use_front_faces_only: bool
+
+	@classmethod
+	def get_data(cls, context: Context) -> 'SCULPTPLUS_PG_scn':
+		bpy_type_data: ExtendedScene = context.scene
+		if hasattr(bpy_type_data, "sculpt_plus"): 
+				return bpy_type_data.sculpt_plus
+
+
+class sculpt_plus_ui_panel_toggles:
+	# Root PG, attached to bpy.types.WindowManager
+	name: str
+
+	@classmethod
+	def get_data(cls, context: Context) -> 'sculpt_plus_ui_panel_toggles':
+		bpy_type_data: ExtendedWindowManager = context.window_manager
+		if hasattr(bpy_type_data, "sculpt_plus_ui_panels"): 
+				return bpy_type_data.sculpt_plus_ui_panels
+
+
 class SCULPTPLUS_PG_wm:
 	# Root PG, attached to bpy.types.WindowManager
 	name: str
@@ -145,8 +145,8 @@ class RootPG:
 	def Preferences(context: bpy.types.Context) -> SCULPTPLUS_AddonPreferences:
 		return context.preferences.addons['bl_ext.user_default.sculpt_plus'].preferences
 
-	WM = sculpt_plus_ui_panel_toggles.get_data
 	SCN = SCULPTPLUS_PG_scn.get_data
+	WM = sculpt_plus_ui_panel_toggles.get_data
 	WM = SCULPTPLUS_PG_wm.get_data
 
 # Alias:
@@ -161,7 +161,7 @@ splus_types = RootPG
 from bl_ext.user_default.sculpt_plus.types import splus_types
 
 # Your property_group variable will have the correct typing. :-)
-splus_wm = splus_types.WM(context)
+splus_scn = splus_types.SCN(context)
 ui = property_group.ui
 print(ui)
 '''

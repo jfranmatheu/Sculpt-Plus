@@ -5,6 +5,7 @@ from ....previews import Previews
 from ....prefs import get_prefs
 
 from ....core.data.cy_structs import CyBlStruct
+from ....ops import OPS
 
 
 def _draw_mask_filters(content: UILayout, only_icons: bool = False, align: bool = True, scale_y: float = 1):
@@ -49,7 +50,7 @@ def _draw_mask_effects(content, align: bool = False):
 def _draw_mask_to_mesh(content, align: bool = False):
     row = content.row(align=align)
     row.operator('mesh.paint_mask_extract', icon_value=Previews.Mask.EXTRACT())
-    row.operator('mesh.paint_mask_slice', icon_value=Previews.Mask.SLICE()) # sculpt_plus.mask_slice_wrapper # (mask_threshold=0.5, fill_holes=True, new_object=True)
+    row.operator('mesh.paint_mask_slice', icon_value=Previews.Mask.SLICE()) # sculpt_plus . mask_slice_wrapper # (mask_threshold=0.5, fill_holes=True, new_object=True)
 
 
 def draw_mask(layout: UILayout, context):
@@ -262,8 +263,8 @@ def draw_facesets(layout: UILayout, context):
     toggles = header.row(align=True)
     toggles.scale_x = 1.2
     toggles.prop(scene_props, 'facesets_op_use_front_faces_only', text='', icon_value=Previews.Main.FRONT_FACES())
-    content.operator('sculpt_plus.select_tool__face_set_edit', text="Grow", icon_value=Previews.FaceSets.GROW()).mode='GROW'
-    content.operator('sculpt_plus.select_tool__face_set_edit', text="Shrink", icon_value=Previews.FaceSets.SHRINK()).mode='SHRINK'
+    OPS.SelectTool_FaceSetEdit.draw_in_layout(content, label="Grow", icon_value=Previews.FaceSets.GROW()).mode='GROW'
+    OPS.SelectTool_FaceSetEdit.draw_in_layout(content, label="Shrink", icon_value=Previews.FaceSets.SHRINK()).mode='SHRINK'
     content.operator('sculpt.face_set_box_gesture', text="Box Tool", icon_value=Previews.FaceSets.BOX()).use_front_faces_only = use_front_faces_only
     content.operator('sculpt.face_set_lasso_gesture', text="Lasso Tool", icon_value=Previews.FaceSets.LASSO()).use_front_faces_only = use_front_faces_only
 

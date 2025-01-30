@@ -5,11 +5,11 @@ from time import time
 
 from ...utils.math import map_value
 from ...core.data.cy_structs import CyBlStruct
+from ...ackit import ACK
 
 
-class SCULPTPLUS_OT_expand_toolbar(Operator):
-    bl_idname = 'sculpt_plus.expand_toolbar'
-    bl_label = "[Sculpt+] Expand Toolbar"
+class ExpandToolbar(ACK.Type.OPS.ACTION):
+    label = "[Sculpt+] Expand Toolbar"
 
     use_smooth: BoolProperty(default=True)
 

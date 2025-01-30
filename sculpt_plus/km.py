@@ -1,6 +1,6 @@
 import bpy
 
-from .core.ops.gestures import SCULPTPLUS_OT_gesture_size_strength
+from .core.ops.gestures import GestureSizeStrength
 
 
 def register():
@@ -12,7 +12,7 @@ def register():
             sculpt_km.keymap_items.remove(kmi)
 
     # sculpt_km.keymap_items.new_modal()
-    sculpt_km.keymap_items.new(SCULPTPLUS_OT_gesture_size_strength.bl_idname, 'RIGHTMOUSE', 'CLICK_DRAG')
+    sculpt_km.keymap_items.new(GestureSizeStrength.bl_idname, 'RIGHTMOUSE', 'CLICK_DRAG', alt=True)
 
     # if act_keymap_config.keymaps.get('VIEW3D_GZG_sculpt_hotbar', None) is None:
     #     from .sculpt_hotbar.km import hotkeys, op

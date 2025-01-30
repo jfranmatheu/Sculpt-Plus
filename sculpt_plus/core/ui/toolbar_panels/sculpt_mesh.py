@@ -148,7 +148,7 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
     levels_layout = levels_layout.grid_flow(row_major=True, columns=4, even_columns=True, even_rows=True, align=True)
     levels_layout.scale_y = 1.5
     for i in range(mod.total_levels + 1):
-        levels_layout.operator('sculpt_plus.multires_change_level', text=str(i), depress=i==mod.sculpt_levels).level = i
+        OPS.MultiresChangeLevel.draw_in_layout(levels_layout, label=str(i), depress=i==mod.sculpt_levels).level = i
 
     layout.separator(factor=0.25)
 
@@ -198,13 +198,13 @@ def draw_sculpt_multires(layout: UILayout, mod: MultiresModifier):
     actions = layout.column(align=False)
     row = actions.split(factor=0.33,align=False)
     row.scale_y = 1.5
-    row.operator('sculpt_plus.multires_apply', text="Apply").as_shape_key = False
-    row.operator('sculpt_plus.multires_apply', text="Apply as ShapeKey").as_shape_key = False
+    OPS.MultiresApply.draw_in_layout(row, label="Apply").as_shape_key = False
+    OPS.MultiresApply.draw_in_layout(row, label="Apply as ShapeKey").as_shape_key = False
     actions.separator(factor=0.5)
     row = actions.row()
     row.scale_y = 1.2
     row.alert = True
-    row.operator('sculpt_plus.multires_remove', text="Remove")
+    OPS.MultiresChangeLevel.draw_in_layout(row, label="Remove")
 
     #row = content.row()
     #row.scale_y = 1.5

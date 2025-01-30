@@ -10,7 +10,7 @@ from os.path import dirname, abspath, join
 
 from .ackit import ACK, GLOBALS
 from .path import SculptPlusPaths
-# from sculpt_plus.ackit import better_prefs
+# from .ackit import better_prefs
 
 app_data_path = os.getenv('APPDATA')
 
