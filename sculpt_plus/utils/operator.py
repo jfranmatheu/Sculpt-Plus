@@ -233,11 +233,11 @@ def create_op_modal_exec_wrapper(builtin_op, your_class, props_overwrite={}, cop
     create_op_wrapper(builtin_op, your_class, OpModalOnReleaseExecuteWrapper, props_overwrite=props_overwrite, copy_props=copy_props)
 
 
-'''
+# ----------------------------------------------------------------
+
 def register():
     pass
 
 def unregister():
     for op in dynamic_operators:
         unregister_class(op)
-'''
