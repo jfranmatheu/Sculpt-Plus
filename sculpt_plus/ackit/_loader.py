@@ -17,7 +17,18 @@ modules = None
 registered = False
 
 
-def init_modules():
+def init_modules(code_gen: set[str] = {'TYPES', 'OPS', 'ICONS'}, types_alias: str = 'addon_types'):
+    """Initialize the addon modules.
+    
+    You can decide wheter you want to automatically use the code-gen utility to output:
+    - types.py {'TYPES'} for typing purposes.
+    - ops.py {'OPS'} for quick operator access (drawing in UI and calling).
+    - icons.py {'ICONS'} to draw custom icons in the UI (default picks the icons at /lib/icons, subfolders are supported).
+
+    Args:
+        code_gen (set[str], optional): files to generate. Defaults to {'TYPES', 'OPS', 'ICONS'}.
+        types_alias (str, optional): alias for addon root types access. Defaults to the module's name.
+    """
     global modules
     ## global ordered_classes
     global registered
@@ -40,6 +51,21 @@ def init_modules():
     for module in modules:
         if hasattr(module, "init_post"):
             module.init_post()
+
+    if code_gen and GLOBALS.check_in_development():
+        from .debug import print_debug
+        from ._auto_code_gen import AddonCodeGen
+        code_gen_kwargs = {
+            'OPS': {},
+            'ICONS': {},
+            'TYPES': {
+                'types_alias': types_alias
+            }
+        }
+        for name in code_gen:
+            print_debug(f"AutoCodeGen! Generating '{name}' file")
+            if code_gen_func := getattr(AddonCodeGen, name, None):
+                code_gen_func(**code_gen_kwargs.get(name, {}))
 
 
 def cleanse_modules():
